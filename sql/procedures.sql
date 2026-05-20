@@ -1,0 +1,2 @@
+-- Placeholder stored procedures.
+-- Keep procedures focused on database coursework requirements.

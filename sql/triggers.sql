@@ -1,0 +1,2 @@
+-- Placeholder triggers.
+-- Add small database-side consistency rules here only when they support the coursework requirements.
