@@ -1,0 +1,2 @@
+-- Placeholder test data for StudyPal.
+-- Add INSERT statements here after the schema is finalized.

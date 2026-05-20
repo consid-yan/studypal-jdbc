@@ -1,0 +1,2 @@
+-- Placeholder advanced SQL queries for testing and coursework demonstration.
+-- Example topics: schedule conflicts, dependency chains, overdue tasks, study statistics.

@@ -1,0 +1,2 @@
+-- Placeholder views for reporting and calculated data.
+-- A future priority view may calculate scores from importance_level and deadline/planned_end_time.

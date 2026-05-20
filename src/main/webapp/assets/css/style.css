@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #222;
+    background: #f7f8fa;
+}
+
+a {
+    color: #1f5fbf;
+    text-decoration: none;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #dde2ea;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.app-header nav {
+    display: flex;
+    gap: 16px;
+}
+
+.page {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 24px;
+}
