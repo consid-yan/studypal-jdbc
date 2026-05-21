@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StudyPal UI Preview</title>
+    <link rel="stylesheet" href="../src/main/webapp/assets/css/style.css">
+    <style>
+        .preview-banner {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #6d4c00;
+        }
+        .preview-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .preview-link-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .preview-link-card h3 { margin: 0 0 8px; font-size: 16px; }
+        .preview-link-card p { margin: 0 0 12px; color: #666; font-size: 13px; }
+    </style>
+</head>
+<body>
+<header class="app-header">
+    <h1><a href="index.html">StudyPal</a></h1>
+    <nav>
+        <a href="courses.html">Courses</a>
+        <a href="main-tasks.html">Main Tasks</a>
+        <a href="sub-tasks.html">Sub Tasks</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="study-sessions.html">Study Sessions</a>
+    </nav>
+</header>
+
+<main class="page">
+    <div class="page-header">
+        <h2>UI Preview</h2>
+    </div>
+
+    <div class="preview-banner">
+        这是<strong>静态 UI 预览</strong>，使用项目真实的 <code>style.css</code> 和测试数据渲染，无需 MySQL/Tomcat 即可查看页面效果。
+        完整动态功能需启动 MySQL + Tomcat 后访问 <code>/studypal/dashboard</code>。
+    </div>
+
+    <div class="preview-links">
+        <div class="preview-link-card">
+            <h3>Dashboard</h3>
+            <p>首页汇总：统计卡片 + 高优先级任务</p>
+            <a class="btn btn-primary" href="dashboard.html">查看</a>
+        </div>
+        <div class="preview-link-card">
+            <h3>Courses</h3>
+            <p>课程列表 + 增删改表单</p>
+            <a class="btn btn-primary" href="courses.html">查看</a>
+        </div>
+        <div class="preview-link-card">
+            <h3>Main Tasks</h3>
+            <p>主任务列表 + badge + 编辑表单</p>
+            <a class="btn btn-primary" href="main-tasks.html">查看</a>
+        </div>
+        <div class="preview-link-card">
+            <h3>Task Detail</h3>
+            <p>任务详情 + 子任务 CRUD</p>
+            <a class="btn btn-primary" href="task-detail.html">查看</a>
+        </div>
+        <div class="preview-link-card">
+            <h3>Sub Tasks</h3>
+            <p>子任务列表 + 主任务筛选</p>
+            <a class="btn btn-primary" href="sub-tasks.html">查看</a>
+        </div>
+        <div class="preview-link-card">
+            <h3>Schedule</h3>
+            <p>日程表 + 日期筛选</p>
+            <a class="btn btn-primary" href="schedule.html">查看</a>
+        </div>
+        <div class="preview-link-card">
+            <h3>Study Sessions</h3>
+            <p>学习记录 + 时长统计</p>
+            <a class="btn btn-primary" href="study-sessions.html">查看</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -39,12 +39,32 @@ public class TaskService {
         return subTaskDao.findByMainTaskId(mainTaskId);
     }
 
+    public Optional<SubTask> findSubTask(Integer subTaskId) {
+        return subTaskDao.findById(subTaskId);
+    }
+
     public void createMainTask(MainTask mainTask) {
         mainTaskDao.insert(mainTask);
     }
 
+    public void updateMainTask(MainTask mainTask) {
+        mainTaskDao.update(mainTask);
+    }
+
+    public void deleteMainTask(Integer mainTaskId) {
+        mainTaskDao.delete(mainTaskId);
+    }
+
     public void createSubTask(SubTask subTask) {
         subTaskDao.insert(subTask);
+    }
+
+    public void updateSubTask(SubTask subTask) {
+        subTaskDao.update(subTask);
+    }
+
+    public void deleteSubTask(Integer subTaskId) {
+        subTaskDao.delete(subTaskId);
     }
 
     public void addDependency(TaskDependency dependency) {

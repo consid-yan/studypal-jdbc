@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Courses - StudyPal</title>
+    <link rel="stylesheet" href="../src/main/webapp/assets/css/style.css">
+</head>
+<body>
+<header class="app-header">
+    <h1><a href="index.html">StudyPal</a></h1>
+    <nav>
+        <a href="courses.html">Courses</a>
+        <a href="main-tasks.html">Main Tasks</a>
+        <a href="sub-tasks.html">Sub Tasks</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="study-sessions.html">Study Sessions</a>
+    </nav>
+</header>
+
+<main class="page">
+    <div class="page-header"><h2>Courses</h2></div>
+
+    <table class="data-table">
+        <thead>
+        <tr><th>Code</th><th>Name</th><th>Lecturer</th><th>Semester</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>COMP2013J</td>
+            <td>Databases and Information Systems</td>
+            <td>Dr. John Smith</td>
+            <td>Spring 2026</td>
+            <td class="action-cell">
+                <button type="button" class="btn btn-sm">Edit</button>
+                <button type="button" class="btn btn-sm btn-danger">Delete</button>
+            </td>
+        </tr>
+        <tr>
+            <td>COMP2014J</td>
+            <td>Data Structures and Algorithms II</td>
+            <td>Dr. Sarah Johnson</td>
+            <td>Spring 2026</td>
+            <td class="action-cell">
+                <button type="button" class="btn btn-sm">Edit</button>
+                <button type="button" class="btn btn-sm btn-danger">Delete</button>
+            </td>
+        </tr>
+        <tr>
+            <td>COMP2015J</td>
+            <td>Software Engineering</td>
+            <td>Dr. Michael Brown</td>
+            <td>Spring 2026</td>
+            <td class="action-cell">
+                <button type="button" class="btn btn-sm">Edit</button>
+                <button type="button" class="btn btn-sm btn-danger">Delete</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="form-card">
+        <h3>Add Course</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Course Code</label>
+                <input type="text" placeholder="e.g. COMP2013J">
+            </div>
+            <div class="form-group">
+                <label>Course Name</label>
+                <input type="text" placeholder="e.g. Database Systems">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn btn-primary">Add Course</button>
+        </div>
+    </div>
+</main>
+</body>
+</html>

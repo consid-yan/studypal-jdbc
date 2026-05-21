@@ -37,6 +37,20 @@ public class ScheduleService {
         scheduleSlotDao.insert(newSlot);
     }
 
+    public void updateSlot(ScheduleSlot slot) {
+        if (slot == null || !slot.hasValidTimeRange()) {
+            throw new ValidationException("Schedule slot must have a valid start and end time.");
+        }
+        if (hasConflict(slot)) {
+            throw new ScheduleConflictException("Schedule slot overlaps with an existing slot.");
+        }
+        scheduleSlotDao.update(slot);
+    }
+
+    public void deleteSlot(Integer slotId) {
+        scheduleSlotDao.delete(slotId);
+    }
+
     public boolean hasConflict(ScheduleSlot newSlot) {
         List<ScheduleSlot> existingSlots = scheduleSlotDao.findByStudentIdAndDate(
                 newSlot.getStudentId(),
