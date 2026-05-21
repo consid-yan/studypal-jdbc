@@ -1,6 +1,8 @@
 package com.studypal.service;
 
-import com.studypal.dao.*;
+import com.studypal.dao.MainTaskDao;
+import com.studypal.dao.SubTaskDao;
+import com.studypal.dao.TaskDependencyDao;
 import com.studypal.exception.TaskDependencyException;
 import com.studypal.model.MainTask;
 import com.studypal.model.SubTask;
@@ -18,10 +20,10 @@ public class TaskService {
         this(new MainTaskDao(), new SubTaskDao(), new TaskDependencyDao());
     }
 
-    public TaskService(MainTaskDao mainTaskDAO, SubTaskDao subTaskDAO,
+    public TaskService(MainTaskDao mainTaskDao, SubTaskDao subTaskDao,
                        TaskDependencyDao taskDependencyDao) {
-        this.mainTaskDao = mainTaskDAO;
-        this.subTaskDao = subTaskDAO;
+        this.mainTaskDao = mainTaskDao;
+        this.subTaskDao = subTaskDao;
         this.taskDependencyDao = taskDependencyDao;
     }
 
@@ -53,7 +55,9 @@ public class TaskService {
     }
 
     public boolean canStartSubTask(Integer subTaskId) {
-        // TODO: query dependencies and verify prerequisite sub-tasks are completed.
-        return true;
+        return taskDependencyDao.findBySubTaskId(subTaskId).stream()
+                .map(TaskDependency::getDependsOnSubTaskId)
+                .map(subTaskDao::findById)
+                .allMatch(dependency -> dependency.isPresent() && dependency.get().isCompleted());
     }
 }
