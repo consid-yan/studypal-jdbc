@@ -1,6 +1,6 @@
 package com.studypal.service;
 
-import com.studypal.dao.ScheduleSlotDAO;
+import com.studypal.dao.ScheduleSlotDao;
 import com.studypal.exception.ScheduleConflictException;
 import com.studypal.exception.ValidationException;
 import com.studypal.model.ScheduleSlot;
@@ -9,22 +9,22 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class ScheduleService {
-    private final ScheduleSlotDAO scheduleSlotDAO;
+    private final ScheduleSlotDao scheduleSlotDao;
 
     public ScheduleService() {
-        this(new ScheduleSlotDAO());
+        this(new ScheduleSlotDao());
     }
 
-    public ScheduleService(ScheduleSlotDAO scheduleSlotDAO) {
-        this.scheduleSlotDAO = scheduleSlotDAO;
+    public ScheduleService(ScheduleSlotDao scheduleSlotDao) {
+        this.scheduleSlotDao = scheduleSlotDao;
     }
 
     public List<ScheduleSlot> listSlotsForStudent(Integer studentId) {
-        return scheduleSlotDAO.findByStudentId(studentId);
+        return scheduleSlotDao.findByStudentId(studentId);
     }
 
     public List<ScheduleSlot> listSlotsForDate(Integer studentId, LocalDate slotDate) {
-        return scheduleSlotDAO.findByStudentIdAndDate(studentId, slotDate);
+        return scheduleSlotDao.findByStudentIdAndDate(studentId, slotDate);
     }
 
     public void createSlot(ScheduleSlot newSlot) {
@@ -34,11 +34,11 @@ public class ScheduleService {
         if (hasConflict(newSlot)) {
             throw new ScheduleConflictException("Schedule slot overlaps with an existing slot.");
         }
-        scheduleSlotDAO.insert(newSlot);
+        scheduleSlotDao.insert(newSlot);
     }
 
     public boolean hasConflict(ScheduleSlot newSlot) {
-        List<ScheduleSlot> existingSlots = scheduleSlotDAO.findByStudentIdAndDate(
+        List<ScheduleSlot> existingSlots = scheduleSlotDao.findByStudentIdAndDate(
                 newSlot.getStudentId(),
                 newSlot.getSlotDate()
         );

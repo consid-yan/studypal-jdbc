@@ -1,34 +1,34 @@
 package com.studypal.service;
 
-import com.studypal.dao.StudySessionDAO;
+import com.studypal.dao.StudySessionDao;
 import com.studypal.model.StudySession;
 
 import java.util.List;
 import java.util.Optional;
 
 public class StudySessionService {
-    private final StudySessionDAO studySessionDAO;
+    private final StudySessionDao studySessionDao;
 
     public StudySessionService() {
-        this(new StudySessionDAO());
+        this(new StudySessionDao());
     }
 
-    public StudySessionService(StudySessionDAO studySessionDAO) {
-        this.studySessionDAO = studySessionDAO;
+    public StudySessionService(StudySessionDao studySessionDao) {
+        this.studySessionDao = studySessionDao;
     }
 
-    public Optional<StudySession> findStudySession(Integer studySessionId) {
-        return studySessionDAO.findById(studySessionId);
+    public Optional<StudySession> findStudySession(Integer sessionId) {
+        return studySessionDao.findById(sessionId);
     }
 
     public List<StudySession> listStudySessionsForStudent(Integer studentId) {
-        return studySessionDAO.findByStudentId(studentId);
+        return studySessionDao.findByStudentId(studentId);
     }
 
     public void recordStudySession(StudySession studySession) {
         if (studySession.getDurationHours() == null) {
             studySession.setDurationHours(studySession.calculateDurationHours());
         }
-        studySessionDAO.insert(studySession);
+        studySessionDao.insert(studySession);
     }
 }

@@ -1,8 +1,6 @@
 package com.studypal.service;
 
-import com.studypal.dao.MainTaskDAO;
-import com.studypal.dao.SubTaskDAO;
-import com.studypal.dao.TaskDependencyDAO;
+import com.studypal.dao.*;
 import com.studypal.exception.TaskDependencyException;
 import com.studypal.model.MainTask;
 import com.studypal.model.SubTask;
@@ -12,46 +10,46 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaskService {
-    private final MainTaskDAO mainTaskDAO;
-    private final SubTaskDAO subTaskDAO;
-    private final TaskDependencyDAO taskDependencyDAO;
+    private final MainTaskDao mainTaskDao;
+    private final SubTaskDao subTaskDao;
+    private final TaskDependencyDao taskDependencyDao;
 
     public TaskService() {
-        this(new MainTaskDAO(), new SubTaskDAO(), new TaskDependencyDAO());
+        this(new MainTaskDao(), new SubTaskDao(), new TaskDependencyDao());
     }
 
-    public TaskService(MainTaskDAO mainTaskDAO, SubTaskDAO subTaskDAO,
-                       TaskDependencyDAO taskDependencyDAO) {
-        this.mainTaskDAO = mainTaskDAO;
-        this.subTaskDAO = subTaskDAO;
-        this.taskDependencyDAO = taskDependencyDAO;
+    public TaskService(MainTaskDao mainTaskDAO, SubTaskDao subTaskDAO,
+                       TaskDependencyDao taskDependencyDao) {
+        this.mainTaskDao = mainTaskDAO;
+        this.subTaskDao = subTaskDAO;
+        this.taskDependencyDao = taskDependencyDao;
     }
 
     public Optional<MainTask> findMainTask(Integer mainTaskId) {
-        return mainTaskDAO.findById(mainTaskId);
+        return mainTaskDao.findById(mainTaskId);
     }
 
     public List<MainTask> listMainTasksForStudent(Integer studentId) {
-        return mainTaskDAO.findByStudentId(studentId);
+        return mainTaskDao.findByStudentId(studentId);
     }
 
     public List<SubTask> listSubTasks(Integer mainTaskId) {
-        return subTaskDAO.findByMainTaskId(mainTaskId);
+        return subTaskDao.findByMainTaskId(mainTaskId);
     }
 
     public void createMainTask(MainTask mainTask) {
-        mainTaskDAO.insert(mainTask);
+        mainTaskDao.insert(mainTask);
     }
 
     public void createSubTask(SubTask subTask) {
-        subTaskDAO.insert(subTask);
+        subTaskDao.insert(subTask);
     }
 
     public void addDependency(TaskDependency dependency) {
         if (dependency != null && dependency.isSelfDependency()) {
             throw new TaskDependencyException("A sub-task cannot depend on itself.");
         }
-        taskDependencyDAO.insert(dependency);
+        taskDependencyDao.insert(dependency);
     }
 
     public boolean canStartSubTask(Integer subTaskId) {

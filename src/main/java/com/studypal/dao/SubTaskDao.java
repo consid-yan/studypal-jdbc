@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SubTaskDAO {
+public class SubTaskDao {
     public Optional<SubTask> findById(Integer subTaskId) {
         try (Connection connection = DBUtil.getConnection()) {
             return Optional.empty();
