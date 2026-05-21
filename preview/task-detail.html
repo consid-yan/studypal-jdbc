@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Detail - StudyPal</title>
+    <link rel="stylesheet" href="../src/main/webapp/assets/css/style.css">
+</head>
+<body>
+<header class="app-header">
+    <h1><a href="index.html">StudyPal</a></h1>
+    <nav>
+        <a href="courses.html">Courses</a>
+        <a href="main-tasks.html">Main Tasks</a>
+        <a href="sub-tasks.html">Sub Tasks</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="study-sessions.html">Study Sessions</a>
+    </nav>
+</header>
+
+<main class="page">
+    <p class="back-link"><a href="main-tasks.html">&larr; Back to Main Tasks</a></p>
+
+    <div class="form-card info-card">
+        <div class="page-header">
+            <h2>StudyPal database project</h2>
+            <span class="badge badge-status-in_progress">IN_PROGRESS</span>
+        </div>
+        <div class="info-grid">
+            <div><span class="info-label">Course</span><span class="info-value">Databases and Information Systems</span></div>
+            <div><span class="info-label">Importance</span><span class="badge badge-importance-very_high">VERY_HIGH</span></div>
+            <div><span class="info-label">Deadline</span><span class="info-value">2026-06-01T23:59:59</span></div>
+            <div><span class="info-label">Created</span><span class="info-value">2026-05-10T09:00:00</span></div>
+        </div>
+        <div class="info-description">
+            <span class="info-label">Description</span>
+            <p>Complete the database design and JDBC implementation for StudyPal.</p>
+        </div>
+    </div>
+
+    <div class="section-header"><h3>Sub Tasks (4)</h3></div>
+
+    <table class="data-table">
+        <thead>
+        <tr><th>Title</th><th>Est. Hours</th><th>Planned Start</th><th>Planned End</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Analyze requirements and design ER diagram</td>
+            <td>4.00</td>
+            <td>2026-05-15T09:00:00</td>
+            <td>2026-05-16T18:00:00</td>
+            <td><span class="badge badge-status-completed">COMPLETED</span></td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <td>Convert ER diagram to relational model</td>
+            <td>3.00</td>
+            <td>2026-05-17T09:00:00</td>
+            <td>2026-05-18T18:00:00</td>
+            <td><span class="badge badge-status-completed">COMPLETED</span></td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <td>Implement DAO layer with JDBC</td>
+            <td>8.00</td>
+            <td>2026-05-19T09:00:00</td>
+            <td>2026-05-24T18:00:00</td>
+            <td><span class="badge badge-status-in_progress">IN_PROGRESS</span></td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <td>Build Servlet/JSP frontend pages</td>
+            <td>6.00</td>
+            <td>2026-05-25T09:00:00</td>
+            <td>2026-05-30T18:00:00</td>
+            <td><span class="badge badge-status-todo">TODO</span></td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="form-card">
+        <h3>Add Sub Task</h3>
+        <div class="form-row">
+            <div class="form-group"><label>Title</label><input type="text" placeholder="e.g. Design database schema"></div>
+            <div class="form-group"><label>Estimated Hours</label><input type="number" placeholder="e.g. 4"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="btn btn-primary">Add Sub Task</button></div>
+    </div>
+</main>
+</body>
+</html>

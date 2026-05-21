@@ -31,4 +31,15 @@ public class StudySessionService {
         }
         studySessionDao.insert(studySession);
     }
+
+    public void updateStudySession(StudySession studySession) {
+        if (studySession.getDurationHours() == null) {
+            studySession.setDurationHours(studySession.calculateDurationHours());
+        }
+        studySessionDao.update(studySession);
+    }
+
+    public void deleteStudySession(Integer sessionId) {
+        studySessionDao.delete(sessionId);
+    }
 }

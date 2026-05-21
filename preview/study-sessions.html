@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Study Sessions - StudyPal</title>
+    <link rel="stylesheet" href="../src/main/webapp/assets/css/style.css">
+</head>
+<body>
+<header class="app-header">
+    <h1><a href="index.html">StudyPal</a></h1>
+    <nav>
+        <a href="courses.html">Courses</a>
+        <a href="main-tasks.html">Main Tasks</a>
+        <a href="sub-tasks.html">Sub Tasks</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="study-sessions.html">Study Sessions</a>
+    </nav>
+</header>
+
+<main class="page">
+    <div class="page-header"><h2>Study Sessions</h2></div>
+
+    <table class="data-table">
+        <thead>
+        <tr><th>Start</th><th>End</th><th>Duration</th><th>Type</th><th>Sub Task</th><th>Notes</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>2026-05-20T14:00:00</td>
+            <td>2026-05-20T16:30:00</td>
+            <td>2.50 h</td>
+            <td><span class="badge badge-session-actual">ACTUAL</span></td>
+            <td>Implement DAO layer with JDBC</td>
+            <td class="notes-cell">Finished MainTaskDao and SubTaskDao</td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <td>2026-05-19T09:00:00</td>
+            <td>2026-05-19T12:00:00</td>
+            <td>3.00 h</td>
+            <td><span class="badge badge-session-actual">ACTUAL</span></td>
+            <td>Convert ER diagram to relational model</td>
+            <td class="notes-cell">Schema review with team</td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <td>2026-05-22T14:00:00</td>
+            <td>2026-05-22T17:00:00</td>
+            <td>3.00 h</td>
+            <td><span class="badge badge-session-planned">PLANNED</span></td>
+            <td>Build Servlet/JSP frontend pages</td>
+            <td>-</td>
+            <td class="action-cell"><button class="btn btn-sm">Edit</button><button class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="form-card">
+        <h3>Record Study Session</h3>
+        <div class="form-row">
+            <div class="form-group"><label>Start Time</label><input type="datetime-local"></div>
+            <div class="form-group"><label>End Time</label><input type="datetime-local"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="btn btn-primary">Record Session</button></div>
+    </div>
+</main>
+</body>
+</html>

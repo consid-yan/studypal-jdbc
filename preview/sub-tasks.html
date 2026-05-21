@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sub Tasks - StudyPal</title>
+    <link rel="stylesheet" href="../src/main/webapp/assets/css/style.css">
+</head>
+<body>
+<header class="app-header">
+    <h1><a href="index.html">StudyPal</a></h1>
+    <nav>
+        <a href="courses.html">Courses</a>
+        <a href="main-tasks.html">Main Tasks</a>
+        <a href="sub-tasks.html">Sub Tasks</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="study-sessions.html">Study Sessions</a>
+    </nav>
+</header>
+
+<main class="page">
+    <div class="page-header">
+        <h2>Sub Tasks</h2>
+        <form class="filter-form">
+            <label>Filter by Main Task</label>
+            <select><option>All Main Tasks</option><option selected>StudyPal database project</option></select>
+        </form>
+    </div>
+
+    <table class="data-table">
+        <thead>
+        <tr><th>Main Task</th><th>Title</th><th>Est. Hours</th><th>Planned Start</th><th>Planned End</th><th>Status</th><th>Detail</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><a href="task-detail.html">StudyPal database project</a></td>
+            <td>Implement DAO layer with JDBC</td>
+            <td>8.00</td>
+            <td>2026-05-19T09:00:00</td>
+            <td>2026-05-24T18:00:00</td>
+            <td><span class="badge badge-status-in_progress">IN_PROGRESS</span></td>
+            <td><a class="btn btn-sm" href="task-detail.html">View</a></td>
+        </tr>
+        <tr>
+            <td><a href="task-detail.html">StudyPal database project</a></td>
+            <td>Build Servlet/JSP frontend pages</td>
+            <td>6.00</td>
+            <td>2026-05-25T09:00:00</td>
+            <td>2026-05-30T18:00:00</td>
+            <td><span class="badge badge-status-todo">TODO</span></td>
+            <td><a class="btn btn-sm" href="task-detail.html">View</a></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

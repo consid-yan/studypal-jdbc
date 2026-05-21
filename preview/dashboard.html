@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StudyPal Dashboard</title>
+    <link rel="stylesheet" href="../src/main/webapp/assets/css/style.css">
+</head>
+<body>
+<header class="app-header">
+    <h1><a href="index.html">StudyPal</a></h1>
+    <nav>
+        <a href="courses.html">Courses</a>
+        <a href="main-tasks.html">Main Tasks</a>
+        <a href="sub-tasks.html">Sub Tasks</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="study-sessions.html">Study Sessions</a>
+    </nav>
+</header>
+
+<main class="page">
+    <div class="page-header">
+        <h2>Dashboard</h2>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Active Tasks</div>
+            <div class="stat-value">3 / 3</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Today's Schedule</div>
+            <div class="stat-value">2 slots</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Study Hours (last 7 days)</div>
+            <div class="stat-value">12.50 h</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Enrolled Courses</div>
+            <div class="stat-value">3 courses</div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <h3>Upcoming Deadlines</h3>
+    </div>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>Task Title</th>
+            <th>Course</th>
+            <th>Deadline</th>
+            <th>Importance</th>
+            <th>Priority</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><a href="task-detail.html">StudyPal database project</a></td>
+            <td>Databases and Information Systems</td>
+            <td>2026-06-01T23:59:59</td>
+            <td><span class="badge badge-importance-very_high">VERY_HIGH</span></td>
+            <td>92.0</td>
+        </tr>
+        <tr>
+            <td><a href="task-detail.html">AVL tree implementation</a></td>
+            <td>Data Structures and Algorithms II</td>
+            <td>2026-05-25T23:59:59</td>
+            <td><span class="badge badge-importance-high">HIGH</span></td>
+            <td>78.0</td>
+        </tr>
+        <tr>
+            <td><a href="task-detail.html">Design pattern report</a></td>
+            <td>Software Engineering</td>
+            <td>2026-05-30T23:59:59</td>
+            <td><span class="badge badge-importance-medium">MEDIUM</span></td>
+            <td>54.0</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

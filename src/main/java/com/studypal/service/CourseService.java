@@ -32,4 +32,12 @@ public class CourseService {
     public void createCourse(Course course) {
         courseDao.insert(course);
     }
+
+    public void updateCourse(Course course) {
+        courseDao.update(course);
+    }
+
+    public void deleteCourse(Integer courseId) {
+        courseDao.delete(courseId);
+    }
 }
