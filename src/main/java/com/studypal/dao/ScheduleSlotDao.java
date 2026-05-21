@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ScheduleSlotDAO {
+public class ScheduleSlotDao {
     public Optional<ScheduleSlot> findById(Integer scheduleSlotId) {
         try (Connection connection = DBUtil.getConnection()) {
             return Optional.empty();

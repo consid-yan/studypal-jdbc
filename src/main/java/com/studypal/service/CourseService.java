@@ -1,35 +1,35 @@
 package com.studypal.service;
 
-import com.studypal.dao.CourseDAO;
+import com.studypal.dao.CourseDao;
 import com.studypal.model.Course;
 
 import java.util.List;
 import java.util.Optional;
 
 public class CourseService {
-    private final CourseDAO courseDAO;
+    private final CourseDao courseDao;
 
     public CourseService() {
-        this(new CourseDAO());
+        this(new CourseDao());
     }
 
-    public CourseService(CourseDAO courseDAO) {
-        this.courseDAO = courseDAO;
+    public CourseService(CourseDao courseDao) {
+        this.courseDao = courseDao;
     }
 
     public Optional<Course> findCourse(Integer courseId) {
-        return courseDAO.findById(courseId);
+        return courseDao.findById(courseId);
     }
 
     public List<Course> listCourses() {
-        return courseDAO.findAll();
+        return courseDao.findAll();
     }
 
     public List<Course> listCoursesForStudent(Integer studentId) {
-        return courseDAO.findByStudentId(studentId);
+        return courseDao.findByStudentId(studentId);
     }
 
     public void createCourse(Course course) {
-        courseDAO.insert(course);
+        courseDao.insert(course);
     }
 }

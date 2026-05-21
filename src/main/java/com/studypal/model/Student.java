@@ -8,19 +8,17 @@ public class Student {
     private String email;
     private String passwordHash;
     private String fullName;
-    private LocalDateTime createdAt;
 
     public Student() {
     }
 
     public Student(Integer studentId, String username, String email, String passwordHash,
-                   String fullName, LocalDateTime createdAt) {
+                   String fullName) {
         this.studentId = studentId;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
-        this.createdAt = createdAt;
     }
 
     public Integer getStudentId() {
@@ -61,14 +59,6 @@ public class Student {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     public boolean isPersisted() {

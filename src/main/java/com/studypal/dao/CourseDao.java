@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CourseDAO {
+public class CourseDao {
     public Optional<Course> findById(Integer courseId) {
         try (Connection connection = DBUtil.getConnection()) {
             return Optional.empty();
