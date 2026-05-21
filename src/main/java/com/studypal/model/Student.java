@@ -1,7 +1,5 @@
 package com.studypal.model;
 
-import java.time.LocalDateTime;
-
 public class Student {
     private Integer studentId;
     private String username;
