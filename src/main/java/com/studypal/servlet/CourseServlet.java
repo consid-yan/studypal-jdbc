@@ -2,6 +2,7 @@ package com.studypal.servlet;
 
 import com.studypal.model.Course;
 import com.studypal.service.CourseService;
+import com.studypal.util.ServletLogUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -39,6 +40,8 @@ public class CourseServlet extends HttpServlet {
                 handleDelete(request);
             }
         } catch (Exception e) {
+            ServletLogUtil.logSystemException(getServletContext(),
+                    "Failed to handle CourseServlet POST action: " + action, e);
             request.setAttribute("error", e.getMessage());
             doGet(request, response);
             return;
