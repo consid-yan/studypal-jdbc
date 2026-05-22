@@ -6,6 +6,7 @@ import com.studypal.model.MainTask;
 import com.studypal.model.TaskStatus;
 import com.studypal.service.CourseService;
 import com.studypal.service.TaskService;
+import com.studypal.util.ServletLogUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -58,6 +59,8 @@ public class MainTaskServlet extends HttpServlet {
                 handleDelete(request);
             }
         } catch (Exception e) {
+            ServletLogUtil.logSystemException(getServletContext(),
+                    "Failed to handle MainTaskServlet POST action: " + action, e);
             request.setAttribute("error", e.getMessage());
             doGet(request, response);
             return;
