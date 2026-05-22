@@ -8,33 +8,65 @@ The application uses Java Servlet/JSP, pure JDBC, and MySQL. It does not use Spr
 
 ```text
 StudyPal/
-├── src/
-│   └── main/
-│       ├── java/
-│       │   └── com/
-│       │       └── studypal/
-│       │           ├── model/
-│       │           ├── dao/
-│       │           ├── service/
-│       │           ├── servlet/
-│       │           ├── util/
-│       │           └── exception/
-│       └── webapp/
-│           ├── assets/
-│           │   ├── css/
-│           │   ├── js/
-│           │   └── images/
-│           ├── WEB-INF/
-│           │   └── jsp/
-│           └── index.jsp
-├── sql/
-├── docs/
-├── lib/
-├── pom.xml
-└── README.md
++-- .github/
++-- .mvn/
++-- docs/
+|   +-- README.md
++-- lib/
+|   +-- README.md
++-- preview/
+|   +-- courses.html
+|   +-- dashboard.html
+|   +-- index.html
+|   +-- main-tasks.html
+|   +-- schedule.html
+|   +-- study-sessions.html
+|   +-- sub-tasks.html
+|   +-- task-detail.html
++-- sql/
+|   +-- schema.sql
+|   +-- insert_test_data.sql
+|   +-- queries.sql
+|   +-- procedures.sql
+|   +-- triggers.sql
+|   +-- views.sql
++-- src/
+|   +-- main/
+|       +-- java/
+|       |   +-- com/
+|       |       +-- studypal/
+|       |           +-- dao/
+|       |           +-- exception/
+|       |           +-- listener/
+|       |           +-- model/
+|       |           +-- service/
+|       |           +-- servlet/
+|       |           +-- util/
+|       +-- webapp/
+|           +-- assets/
+|           |   +-- css/
+|           |   |   +-- style.css
+|           |   +-- js/
+|           |       +-- app.js
+|           +-- WEB-INF/
+|           |   +-- jsp/
+|           |   |   +-- common/
+|           |   |   |   +-- header.jsp
+|           |   |   +-- course-list.jsp
+|           |   |   +-- dashboard.jsp
+|           |   |   +-- main-task-list.jsp
+|           |   |   +-- schedule.jsp
+|           |   |   +-- study-statistics.jsp
+|           |   |   +-- sub-task-list.jsp
+|           |   |   +-- task-detail.jsp
+|           |   +-- web.xml
+|           +-- index.jsp
++-- LICENSE
++-- pom.xml
++-- README.md
 ```
 
-## Layered Architecture
+## Architecture
 
 StudyPal follows a simple coursework-friendly layered structure:
 
@@ -42,7 +74,21 @@ StudyPal follows a simple coursework-friendly layered structure:
 JSP pages -> Servlets -> Services -> DAOs -> MySQL
 ```
 
-Models are plain Java objects that map closely to database tables. They do not contain JDBC code. DAOs contain direct JDBC database access. Services coordinate DAOs and hold application rules. Servlets receive browser requests and forward to JSP pages.
+Models are plain Java objects that map closely to database tables. DAOs contain direct JDBC database access. Services coordinate DAOs and hold application rules. Servlets receive browser requests and forward to JSP pages.
+
+This is a traditional WAR-based Servlet/JSP application. It does not have a `public static void main` startup class. The application is started by a Jakarta Servlet container such as Tomcat 10.1+.
+
+## Main Packages
+
+```text
+com.studypal.model      Domain models and enums
+com.studypal.dao        JDBC data access classes
+com.studypal.service    Application rules and orchestration
+com.studypal.servlet    HTTP request handlers
+com.studypal.listener   Servlet container lifecycle listeners
+com.studypal.util       Shared utility classes
+com.studypal.exception  Custom runtime exceptions
+```
 
 ## Core Model Classes
 
@@ -76,81 +122,68 @@ task_dependency
 study_session
 ```
 
-`ScheduleSlot` is part of the database design and supports timetable blocks and conflict detection. The README, model layer, and SQL schema only describe tables that are part of the current database design.
+`ScheduleSlot` supports timetable blocks and conflict detection. Task priority is calculated dynamically and is not stored as a persistent model field.
 
-## Task Design
+## Web Layer
 
-`MainTask` represents a large coursework task. `SubTask` represents a smaller task under a main task. Both use the same `TaskStatus` enum:
-
-```text
-TODO
-IN_PROGRESS
-COMPLETED
-CANCELLED
-```
-
-Tasks use `ImportanceLevel` for user-entered importance. A dynamic priority score can be calculated from importance and deadline or planned end time, but that score is not stored as a persistent model field.
-
-## DAO Layer
-
-The DAO layer contains one DAO class per main entity:
+Servlets use Jakarta Servlet APIs and annotation-based routing:
 
 ```text
-StudentDAO
-CourseDAO
-EnrollmentDAO
-MainTaskDAO
-SubTaskDAO
-TaskDependencyDAO
-ScheduleSlotDAO
-StudySessionDAO
+DashboardServlet      /dashboard
+CourseServlet         /courses
+MainTaskServlet       /main-tasks
+SubTaskServlet        /sub-tasks
+TaskDetailServlet     /task-detail
+ScheduleServlet       /schedule
+StudySessionServlet   /study-sessions
 ```
 
-DAO classes use `DBUtil` to obtain JDBC connections. SQL should stay in DAO classes or SQL script files, not in JSP pages or model classes.
+`src/main/webapp/index.jsp` forwards to `/dashboard`. JSP files are stored under `src/main/webapp/WEB-INF/jsp/` so they are reached through servlets rather than direct browser URLs.
 
-## Service Layer
-
-The service layer contains small classes for application rules:
-
-```text
-CourseService
-TaskService
-ScheduleService
-StudySessionService
-PriorityService
-```
-
-`PriorityService` calculates priority dynamically from `ImportanceLevel` and deadline or planned end time.
-
-## Servlet and JSP Layer
-
-Servlets use Jakarta Servlet APIs for Tomcat 10:
-
-```text
-DashboardServlet
-CourseServlet
-MainTaskServlet
-SubTaskServlet
-ScheduleServlet
-StudySessionServlet
-```
-
-JSP pages are stored under `src/main/webapp/WEB-INF/jsp/` so they are reached through servlets rather than direct URLs.
+`AppStartupListener` listens for application startup and shutdown events. `ServletLogUtil` records system exceptions through the Servlet container log while leaving expected business validation errors as page-level messages.
 
 ## SQL Scripts
 
 Database scripts are stored in the `sql/` folder:
 
 ```text
-schema.sql
-insert_test_data.sql
-views.sql
-triggers.sql
-procedures.sql
-queries.sql
+schema.sql            Creates the database tables
+insert_test_data.sql  Inserts sample data
+queries.sql           Stores useful test and report queries
+procedures.sql        Stores stored procedures
+triggers.sql          Stores database triggers
+views.sql             Stores database views
 ```
 
-`schema.sql` defines the intended MySQL tables for the current database design. Additional SQL features such as views, triggers, stored procedures, and test queries can be added in the matching files as the coursework develops.
+## Build and Deployment
+
+Build the WAR package with Maven:
+
+```powershell
+mvn clean package
+```
+
+The generated WAR uses the final name configured in `pom.xml`:
+
+```text
+target/studypal.war
+```
+
+Deploy the WAR to Tomcat 10.1+ and visit:
+
+```text
+http://localhost:8080/studypal/
+```
+
+The default JDBC connection is configured in `DBUtil`:
+
+```text
+jdbc:mysql://localhost:3306/studypal?useSSL=false&serverTimezone=UTC
+username: root
+password: password
+```
+
+Update these values locally if your MySQL setup uses different credentials.
 
 ## Development Notes
 
@@ -160,4 +193,5 @@ queries.sql
 - Keep model classes as simple POJOs.
 - Keep SQL out of JSP pages.
 - Keep calculated priority scores dynamic.
+- Keep user-facing validation errors separate from system exception logging.
 - Do not add unsupported tables, ORM frameworks, or unnecessary inheritance.
