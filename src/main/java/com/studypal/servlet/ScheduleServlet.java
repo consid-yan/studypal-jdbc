@@ -3,6 +3,7 @@ package com.studypal.servlet;
 import com.studypal.model.ScheduleSlot;
 import com.studypal.model.SlotType;
 import com.studypal.service.ScheduleService;
+import com.studypal.util.ServletLogUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -54,6 +55,8 @@ public class ScheduleServlet extends HttpServlet {
                 handleDelete(request);
             }
         } catch (Exception e) {
+            ServletLogUtil.logSystemException(getServletContext(),
+                    "Failed to handle ScheduleServlet POST action: " + action, e);
             request.setAttribute("error", e.getMessage());
             if (filterDate == null) {
                 filterDate = parseOptionalDate(request.getParameter("slotDate"));

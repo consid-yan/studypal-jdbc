@@ -6,6 +6,7 @@ import com.studypal.model.StudySession;
 import com.studypal.model.SubTask;
 import com.studypal.service.StudySessionService;
 import com.studypal.service.TaskService;
+import com.studypal.util.ServletLogUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -55,6 +56,8 @@ public class StudySessionServlet extends HttpServlet {
                 handleDelete(request);
             }
         } catch (Exception e) {
+            ServletLogUtil.logSystemException(getServletContext(),
+                    "Failed to handle StudySessionServlet POST action: " + action, e);
             request.setAttribute("error", e.getMessage());
             loadPageData(request);
             request.getRequestDispatcher("/WEB-INF/jsp/study-statistics.jsp").forward(request, response);

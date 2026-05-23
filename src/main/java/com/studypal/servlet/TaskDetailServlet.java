@@ -1,10 +1,12 @@
 package com.studypal.servlet;
 
+import com.studypal.model.Course;
 import com.studypal.model.MainTask;
 import com.studypal.model.SubTask;
 import com.studypal.model.TaskStatus;
 import com.studypal.service.CourseService;
 import com.studypal.service.TaskService;
+import com.studypal.util.ServletLogUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,7 +46,7 @@ public class TaskDetailServlet extends HttpServlet {
         request.setAttribute("mainTask", mainTask);
         request.setAttribute("subTasks", subTasks);
         request.setAttribute("courseName", courseService.findCourse(mainTask.getCourseId())
-                .map(course -> course.getCourseName())
+                .map(Course::getCourseName)
                 .orElse("-"));
         request.getRequestDispatcher("/WEB-INF/jsp/task-detail.jsp").forward(request, response);
     }
@@ -69,6 +71,8 @@ public class TaskDetailServlet extends HttpServlet {
                 handleDeleteSubTask(request);
             }
         } catch (Exception e) {
+            ServletLogUtil.logSystemException(getServletContext(),
+                    "Failed to handle TaskDetailServlet POST action: " + action, e);
             request.setAttribute("error", e.getMessage());
             doGet(request, response);
             return;
