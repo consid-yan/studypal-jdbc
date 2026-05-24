@@ -1,8 +1,57 @@
 # StudyPal
 
-StudyPal is a database-focused Java Web coursework project for university students who need to manage courses, coursework tasks, schedules, and study sessions.
+StudyPal is a database-focused Java Web coursework project for academic support scenarios where advisors, tutors, teaching assistants, and students need to track coursework pressure, study plans, schedules, and actual study effort across multiple students.
 
 The application uses Java Servlet/JSP, pure JDBC, and MySQL. It does not use Spring, Spring MVC, Hibernate, JPA, MyBatis, or any ORM framework.
+
+## Project Positioning
+
+StudyPal is not positioned as a single-user personal todo list. A pure single-student todo tool would not strongly justify tables such as `student`, `enrollment`, `schedule_slot`, and `study_session`.
+
+The project is positioned as a student coursework planning and study tracking system for university academic support scenarios. It helps advisors, tutors, teaching assistants, learning support staff, and students understand coursework load, break large assignments into manageable steps, schedule study time, record actual learning effort, and identify procrastination or academic risk early.
+
+In this positioning, the `student` table is not just a login account table. It is the central entity being tracked by the system. Each student can enroll in different courses, have different coursework tasks, maintain a personal schedule, record study sessions, and show different workload or delay patterns.
+
+### Target Users
+
+Primary users:
+
+- Academic advisors, tutors, teaching assistants, and learning support center staff who need to monitor multiple students and provide study guidance.
+- University instructors or course support staff who want to understand whether students are overloaded, falling behind, or spending enough time on course tasks.
+
+Secondary users:
+
+- University students who need to organize coursework, decompose assignments, plan study sessions, and reflect on actual study time.
+
+### Value to Users
+
+- Make each student's coursework pressure visible across all enrolled courses.
+- Help students and advisors decide which tasks should be handled first based on deadline, importance, task progress, and actual study effort.
+- Turn large coursework items into executable sub-tasks with planned time ranges and dependency relationships.
+- Compare estimated study effort with actual study sessions, so students can understand whether they are underestimating work.
+- Support early intervention by identifying overdue tasks, insufficient study time, overloaded schedules, or repeated procrastination patterns.
+
+## Database Design Rationale
+
+The current database design is built around a multi-student academic support model:
+
+- `student` represents each learner being tracked. It supports advisor-facing views such as a student's courses, workload, task progress, schedule, study records, and risk indicators.
+- `course` represents university courses. It allows the system to analyze which courses create the most tasks, deadlines, or study effort.
+- `enrollment` connects students and courses. It is necessary because one student can take many courses, and one course can include many students.
+- `main_task` stores course-level coursework items such as assignments, exams, projects, and readings for a specific student.
+- `sub_task` decomposes a large task into smaller executable steps, making progress easier to plan and monitor.
+- `task_dependency` models prerequisite relationships between sub-tasks, so the system can explain why a task is blocked.
+- `schedule_slot` stores each student's class time, free time, and unavailable time, which allows the system to reason about whether a student has enough available time to complete planned work.
+- `study_session` records actual study effort. It allows comparison between planned work and real learning behavior.
+
+This design gives the project a stronger database purpose than a simple task list. The system can answer questions such as:
+
+- Which students are overloaded this week?
+- Which courses create the most workload?
+- Which tasks are blocked by unfinished prerequisites?
+- Which students spend less time than expected on high-priority coursework?
+- Which students repeatedly complete tasks late?
+- How different is a student's estimated workload from actual study time?
 
 ## Project Structure
 
