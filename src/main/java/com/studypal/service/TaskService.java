@@ -2,11 +2,8 @@ package com.studypal.service;
 
 import com.studypal.dao.MainTaskDao;
 import com.studypal.dao.SubTaskDao;
-import com.studypal.dao.TaskDependencyDao;
-import com.studypal.exception.TaskDependencyException;
 import com.studypal.model.MainTask;
 import com.studypal.model.SubTask;
-import com.studypal.model.TaskDependency;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,17 +11,14 @@ import java.util.Optional;
 public class TaskService {
     private final MainTaskDao mainTaskDao;
     private final SubTaskDao subTaskDao;
-    private final TaskDependencyDao taskDependencyDao;
 
     public TaskService() {
-        this(new MainTaskDao(), new SubTaskDao(), new TaskDependencyDao());
+        this(new MainTaskDao(), new SubTaskDao());
     }
 
-    public TaskService(MainTaskDao mainTaskDao, SubTaskDao subTaskDao,
-                       TaskDependencyDao taskDependencyDao) {
+    public TaskService(MainTaskDao mainTaskDao, SubTaskDao subTaskDao) {
         this.mainTaskDao = mainTaskDao;
         this.subTaskDao = subTaskDao;
-        this.taskDependencyDao = taskDependencyDao;
     }
 
     public Optional<MainTask> findMainTask(Integer mainTaskId) {
@@ -35,8 +29,16 @@ public class TaskService {
         return mainTaskDao.findByStudentId(studentId);
     }
 
-    public List<SubTask> listSubTasks(Integer mainTaskId) {
-        return subTaskDao.findByMainTaskId(mainTaskId);
+    public List<SubTask> listSubTasksForStudent(Integer studentId) {
+        return subTaskDao.findByStudentId(studentId);
+    }
+
+    public List<SubTask> listSubTasks(Integer studentId, Integer mainTaskId) {
+        return subTaskDao.findByStudentIdAndMainTaskId(studentId, mainTaskId);
+    }
+
+    public int countPlannedSubTasksForDate(Integer studentId, java.time.LocalDate date) {
+        return subTaskDao.countPlannedForDate(studentId, date);
     }
 
     public Optional<SubTask> findSubTask(Integer subTaskId) {
@@ -67,17 +69,7 @@ public class TaskService {
         subTaskDao.delete(subTaskId);
     }
 
-    public void addDependency(TaskDependency dependency) {
-        if (dependency != null && dependency.isSelfDependency()) {
-            throw new TaskDependencyException("A sub-task cannot depend on itself.");
-        }
-        taskDependencyDao.insert(dependency);
-    }
-
     public boolean canStartSubTask(Integer subTaskId) {
-        return taskDependencyDao.findBySubTaskId(subTaskId).stream()
-                .map(TaskDependency::getDependsOnSubTaskId)
-                .map(subTaskDao::findById)
-                .allMatch(dependency -> dependency.isPresent() && dependency.get().isCompleted());
+        return true;
     }
 }

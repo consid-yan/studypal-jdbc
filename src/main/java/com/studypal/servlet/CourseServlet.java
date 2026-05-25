@@ -22,6 +22,7 @@ public class CourseServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Course> courses = courseService.listCourses();
         request.setAttribute("courses", courses);
+        request.setAttribute("lecturers", courseService.listLecturers());
         request.getRequestDispatcher("/WEB-INF/jsp/course-list.jsp").forward(request, response);
     }
 
@@ -54,8 +55,9 @@ public class CourseServlet extends HttpServlet {
         Course course = new Course();
         course.setCourseCode(request.getParameter("courseCode"));
         course.setCourseName(request.getParameter("courseName"));
-        course.setLecturer(request.getParameter("lecturer"));
+        course.setLecturerId(Integer.valueOf(request.getParameter("lecturerId")));
         course.setSemester(request.getParameter("semester"));
+        course.setDescription(emptyToNull(request.getParameter("description")));
         courseService.createCourse(course);
     }
 
@@ -64,13 +66,21 @@ public class CourseServlet extends HttpServlet {
         course.setCourseId(Integer.valueOf(request.getParameter("courseId")));
         course.setCourseCode(request.getParameter("courseCode"));
         course.setCourseName(request.getParameter("courseName"));
-        course.setLecturer(request.getParameter("lecturer"));
+        course.setLecturerId(Integer.valueOf(request.getParameter("lecturerId")));
         course.setSemester(request.getParameter("semester"));
+        course.setDescription(emptyToNull(request.getParameter("description")));
         courseService.updateCourse(course);
     }
 
     private void handleDelete(HttpServletRequest request) {
         int courseId = Integer.parseInt(request.getParameter("courseId"));
         courseService.deleteCourse(courseId);
+    }
+
+    private String emptyToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value;
     }
 }

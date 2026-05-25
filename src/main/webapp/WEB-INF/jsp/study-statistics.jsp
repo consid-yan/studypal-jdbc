@@ -64,8 +64,8 @@
                         </td>
                         <td>
                             <c:choose>
-                                <c:when test="${not empty session.subTaskId}">
-                                    <c:out value="${subTaskTitleMap[session.subTaskId]}"/>
+                                <c:when test="${not empty session.studentSubTaskId}">
+                                    <c:out value="${subTaskTitleMap[session.studentSubTaskId]}"/>
                                 </c:when>
                                 <c:otherwise>-</c:otherwise>
                             </c:choose>
@@ -84,7 +84,7 @@
                                     data-start="<c:out value='${session.startTime}'/>"
                                     data-end="<c:out value='${session.endTime}'/>"
                                     data-type="${session.sessionType}"
-                                    data-sub-task-id="${session.subTaskId}"
+                                    data-student-sub-task-id="${session.studentSubTaskId}"
                                     data-notes="<c:out value='${session.notes}'/>">
                                 Edit
                             </button>
@@ -129,8 +129,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="subTaskId">Sub Task (optional)</label>
-                    <select id="subTaskId" name="subTaskId">
+                    <label for="studentSubTaskId">Sub Task (optional)</label>
+                    <select id="studentSubTaskId" name="studentSubTaskId">
                         <option value="">None (no task)</option>
                         <c:forEach var="subTask" items="${subTasks}">
                             <option value="${subTask.subTaskId}">
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("startTime").value = toDatetimeLocal(this.dataset.start);
             document.getElementById("endTime").value = toDatetimeLocal(this.dataset.end);
             document.getElementById("sessionType").value = this.dataset.type || "ACTUAL";
-            document.getElementById("subTaskId").value = this.dataset.subTaskId || "";
+            document.getElementById("studentSubTaskId").value = this.dataset.studentSubTaskId || "";
             document.getElementById("notes").value = this.dataset.notes || "";
             document.getElementById("form-submit").textContent = "Save Changes";
             document.getElementById("form-cancel").style.display = "inline-block";
@@ -191,7 +191,7 @@ function resetForm() {
     document.getElementById("startTime").value = "";
     document.getElementById("endTime").value = "";
     document.getElementById("sessionType").value = "ACTUAL";
-    document.getElementById("subTaskId").value = "";
+    document.getElementById("studentSubTaskId").value = "";
     document.getElementById("notes").value = "";
     document.getElementById("form-submit").textContent = "Record Session";
     document.getElementById("form-cancel").style.display = "none";

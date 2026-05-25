@@ -5,7 +5,6 @@
         <a href="${pageContext.request.contextPath}/courses">Courses</a>
         <a href="${pageContext.request.contextPath}/main-tasks">Main Tasks</a>
         <a href="${pageContext.request.contextPath}/sub-tasks">Sub Tasks</a>
-        <a href="${pageContext.request.contextPath}/schedule">Schedule</a>
         <a href="${pageContext.request.contextPath}/study-sessions">Study Sessions</a>
     </nav>
 </header>

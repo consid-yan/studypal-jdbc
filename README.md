@@ -158,7 +158,18 @@ study_session
 
 Task priority, progress, study efficiency, and course workload summaries are calculated dynamically through SQL views and are not stored as persistent model fields.
 
-After the database refactor, any remaining Java classes or DAOs tied to legacy tables such as `student`, `sub_task`, `task_dependency`, or `schedule_slot` should be treated as migration targets before running the web application against the current schema.
+After the database refactor, the core Java web flows should use the current SQL schema instead of pre-refactor table-backed queries. Legacy schedule and dependency classes may remain as compatibility shells until those features are redesigned.
+
+## Java Schema Migration Plan
+
+This implementation round aligns the Java web layer with the current SQL schema:
+
+- Course, main-task, student sub-task, and study-session pages keep create, read, update, and delete flows.
+- Course records use `lecturer_id` and display lecturer names from `user` rows with role `LECTURER`.
+- Main tasks are course-level records. Student progress is tracked through `student_sub_task`, not through `main_task.status`.
+- Sub-task screens display student-specific sub-tasks backed by `student_sub_task` joined with `sub_task_template`.
+- Study sessions link to `study_session.student_sub_task_id`.
+- The schedule page is not exposed in navigation because the refactored schema does not include schedule slots.
 
 ## Current Table Structure
 
@@ -248,7 +259,7 @@ ScheduleServlet       /schedule
 StudySessionServlet   /study-sessions
 ```
 
-Routes backed by legacy tables, especially `/schedule` and older sub-task flows, need DAO/model updates before they are fully compatible with the refactored SQL schema.
+The `/schedule` route is left as a compatibility shell and is not exposed in navigation because the refactored SQL schema no longer stores standalone schedule slots.
 
 `src/main/webapp/index.jsp` forwards to `/dashboard`. JSP files are stored under `src/main/webapp/WEB-INF/jsp/` so they are reached through servlets rather than direct browser URLs.
 
@@ -262,7 +273,7 @@ Database scripts are stored in the `sql/` folder. Run `schema.sql` first, then l
 schema.sql            Creates the database, tables, constraints, and indexes
 views.sql             Creates reporting views for priority, progress, efficiency, study stats, and workload
 procedures.sql        Creates stored procedures for template creation, student copies, and reports
-triggers.sql          Creates triggers for immutable main tasks and automatic duration calculation
+triggers.sql          Removes legacy main-task immutability triggers and creates duration calculation triggers
 insert_test_data.sql  Inserts sample users, courses, tasks, sub-task templates, student copies, and sessions
 queries.sql           Stores useful test and report queries
 ```

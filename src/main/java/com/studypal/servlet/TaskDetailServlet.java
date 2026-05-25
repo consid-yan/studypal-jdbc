@@ -22,6 +22,8 @@ import java.util.Optional;
 
 @WebServlet(name = "TaskDetailServlet", urlPatterns = "/task-detail")
 public class TaskDetailServlet extends HttpServlet {
+    private static final int DEFAULT_STUDENT_ID = 6;
+
     private final TaskService taskService = new TaskService();
     private final CourseService courseService = new CourseService();
 
@@ -41,7 +43,7 @@ public class TaskDetailServlet extends HttpServlet {
         }
 
         MainTask mainTask = mainTaskOptional.get();
-        List<SubTask> subTasks = taskService.listSubTasks(mainTaskId);
+        List<SubTask> subTasks = taskService.listSubTasks(DEFAULT_STUDENT_ID, mainTaskId);
 
         request.setAttribute("mainTask", mainTask);
         request.setAttribute("subTasks", subTasks);
@@ -83,6 +85,7 @@ public class TaskDetailServlet extends HttpServlet {
 
     private void handleCreateSubTask(HttpServletRequest request, Integer mainTaskId) {
         SubTask subTask = new SubTask();
+        subTask.setStudentId(DEFAULT_STUDENT_ID);
         subTask.setMainTaskId(mainTaskId);
         populateSubTaskFromRequest(subTask, request, false);
         taskService.createSubTask(subTask);
@@ -91,6 +94,7 @@ public class TaskDetailServlet extends HttpServlet {
     private void handleUpdateSubTask(HttpServletRequest request, Integer mainTaskId) {
         SubTask subTask = new SubTask();
         subTask.setSubTaskId(Integer.valueOf(request.getParameter("subTaskId")));
+        subTask.setStudentId(DEFAULT_STUDENT_ID);
         subTask.setMainTaskId(mainTaskId);
         populateSubTaskFromRequest(subTask, request, true);
         taskService.updateSubTask(subTask);

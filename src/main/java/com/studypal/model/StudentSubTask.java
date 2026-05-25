@@ -1,54 +1,31 @@
 package com.studypal.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class SubTask {
-    private Integer subTaskId;
+public class StudentSubTask {
+    private Integer studentSubTaskId;
     private Integer studentId;
     private Integer templateId;
-    private Integer mainTaskId;
     private String title;
     private String description;
-    private BigDecimal estimatedHours;
     private LocalDateTime plannedStartTime;
     private LocalDateTime plannedEndTime;
     private LocalDateTime completedTime;
     private TaskStatus status;
+    private String notes;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public SubTask() {
+    public StudentSubTask() {
         this.status = TaskStatus.TODO;
     }
 
-    public SubTask(Integer subTaskId, Integer mainTaskId, String title, String description,
-                   BigDecimal estimatedHours, LocalDateTime plannedStartTime,
-                   LocalDateTime plannedEndTime, LocalDateTime completedTime,
-                   TaskStatus status) {
-        this.subTaskId = subTaskId;
-        this.mainTaskId = mainTaskId;
-        this.title = title;
-        this.description = description;
-        this.estimatedHours = estimatedHours;
-        this.plannedStartTime = plannedStartTime;
-        this.plannedEndTime = plannedEndTime;
-        this.completedTime = completedTime;
-        this.status = status;
-    }
-
-    public Integer getSubTaskId() {
-        return subTaskId;
-    }
-
-    public void setSubTaskId(Integer subTaskId) {
-        this.subTaskId = subTaskId;
-    }
-
     public Integer getStudentSubTaskId() {
-        return subTaskId;
+        return studentSubTaskId;
     }
 
     public void setStudentSubTaskId(Integer studentSubTaskId) {
-        this.subTaskId = studentSubTaskId;
+        this.studentSubTaskId = studentSubTaskId;
     }
 
     public Integer getStudentId() {
@@ -67,14 +44,6 @@ public class SubTask {
         this.templateId = templateId;
     }
 
-    public Integer getMainTaskId() {
-        return mainTaskId;
-    }
-
-    public void setMainTaskId(Integer mainTaskId) {
-        this.mainTaskId = mainTaskId;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -89,14 +58,6 @@ public class SubTask {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public BigDecimal getEstimatedHours() {
-        return estimatedHours;
-    }
-
-    public void setEstimatedHours(BigDecimal estimatedHours) {
-        this.estimatedHours = estimatedHours;
     }
 
     public LocalDateTime getPlannedStartTime() {
@@ -131,11 +92,27 @@ public class SubTask {
         this.status = status;
     }
 
-    public boolean isPersisted() {
-        return subTaskId != null;
+    public String getNotes() {
+        return notes;
     }
 
-    public boolean isCompleted() {
-        return status == TaskStatus.COMPLETED;
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

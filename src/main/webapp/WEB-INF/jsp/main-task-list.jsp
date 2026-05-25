@@ -35,7 +35,6 @@
                     <th>Course</th>
                     <th>Deadline</th>
                     <th>Importance</th>
-                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -61,11 +60,6 @@
                                 <c:out value="${task.importanceLevel}"/>
                             </span>
                         </td>
-                        <td>
-                            <span class="badge badge-status-${fn:toLowerCase(task.status)}">
-                                <c:out value="${task.status}"/>
-                            </span>
-                        </td>
                         <td class="action-cell">
                             <button type="button" class="btn btn-sm edit-btn"
                                     data-id="${task.mainTaskId}"
@@ -73,8 +67,7 @@
                                     data-description="<c:out value='${task.description}'/>"
                                     data-course-id="${task.courseId}"
                                     data-deadline="<c:out value='${task.deadline}'/>"
-                                    data-importance="${task.importanceLevel}"
-                                    data-status="${task.status}">
+                                    data-importance="${task.importanceLevel}">
                                 Edit
                             </button>
                             <form method="post" class="inline-form"
@@ -140,15 +133,6 @@
                         <option value="VERY_HIGH">Very High</option>
                     </select>
                 </div>
-                <div class="form-group" id="status-group" style="display:none">
-                    <label for="status">Status</label>
-                    <select id="status" name="status">
-                        <option value="TODO">To Do</option>
-                        <option value="IN_PROGRESS">In Progress</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="CANCELLED">Cancelled</option>
-                    </select>
-                </div>
             </div>
             <div class="form-actions">
                 <button type="submit" id="form-submit" class="btn btn-primary">Add Task</button>
@@ -173,8 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("courseId").value = this.dataset.courseId || "";
             document.getElementById("deadline").value = this.dataset.deadline || "";
             document.getElementById("importanceLevel").value = this.dataset.importance || "MEDIUM";
-            document.getElementById("status").value = this.dataset.status || "TODO";
-            document.getElementById("status-group").style.display = "flex";
             document.getElementById("form-submit").textContent = "Save Changes";
             document.getElementById("form-cancel").style.display = "inline-block";
             document.getElementById("form-title").scrollIntoView({behavior: "smooth"});
@@ -191,8 +173,6 @@ function resetForm() {
     document.getElementById("courseId").value = "";
     document.getElementById("deadline").value = "";
     document.getElementById("importanceLevel").value = "MEDIUM";
-    document.getElementById("status").value = "TODO";
-    document.getElementById("status-group").style.display = "none";
     document.getElementById("form-submit").textContent = "Add Task";
     document.getElementById("form-cancel").style.display = "none";
 }

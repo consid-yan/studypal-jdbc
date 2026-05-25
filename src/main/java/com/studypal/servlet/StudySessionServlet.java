@@ -23,7 +23,7 @@ import java.util.Map;
 
 @WebServlet(name = "StudySessionServlet", urlPatterns = "/study-sessions")
 public class StudySessionServlet extends HttpServlet {
-    private static final int DEFAULT_STUDENT_ID = 1;
+    private static final int DEFAULT_STUDENT_ID = 6;
 
     private final StudySessionService studySessionService = new StudySessionService();
     private final TaskService taskService = new TaskService();
@@ -90,7 +90,7 @@ public class StudySessionServlet extends HttpServlet {
     private void populateSessionFromRequest(StudySession session, HttpServletRequest request) {
         session.setStartTime(LocalDateTime.parse(request.getParameter("startTime")));
         session.setEndTime(parseOptionalDateTime(request.getParameter("endTime")));
-        session.setSubTaskId(parseOptionalInteger(request.getParameter("subTaskId")));
+        session.setStudentSubTaskId(parseOptionalInteger(request.getParameter("studentSubTaskId")));
 
         String sessionType = request.getParameter("sessionType");
         if (sessionType != null && !sessionType.isBlank()) {
@@ -112,10 +112,7 @@ public class StudySessionServlet extends HttpServlet {
 
     private List<SubTask> loadSubTasksForStudent() {
         List<SubTask> subTasks = new ArrayList<>();
-        List<MainTask> mainTasks = taskService.listMainTasksForStudent(DEFAULT_STUDENT_ID);
-        for (MainTask mainTask : mainTasks) {
-            subTasks.addAll(taskService.listSubTasks(mainTask.getMainTaskId()));
-        }
+        subTasks.addAll(taskService.listSubTasksForStudent(DEFAULT_STUDENT_ID));
         return subTasks;
     }
 

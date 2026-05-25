@@ -4,41 +4,31 @@ import java.time.LocalDateTime;
 
 public class MainTask {
     private Integer mainTaskId;
-    private Integer studentId;
     private Integer courseId;
     private String title;
     private String description;
     private LocalDateTime deadline;
     private ImportanceLevel importanceLevel;
-    private TaskStatus status;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     public MainTask() {
         this.importanceLevel = ImportanceLevel.MEDIUM;
-        this.status = TaskStatus.TODO;
     }
 
     public MainTask(Integer mainTaskId,
-                    Integer studentId,
                     Integer courseId,
                     String title,
                     String description,
                     LocalDateTime deadline,
                     ImportanceLevel importanceLevel,
-                    TaskStatus status,
-                    LocalDateTime createdAt,
-                    LocalDateTime updatedAt) {
+                    LocalDateTime createdAt) {
         this.mainTaskId = mainTaskId;
-        this.studentId = studentId;
         this.courseId = courseId;
         this.title = title;
         this.description = description;
         this.deadline = deadline;
         this.importanceLevel = importanceLevel;
-        this.status = status;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     public Integer getMainTaskId() {
@@ -47,14 +37,6 @@ public class MainTask {
 
     public void setMainTaskId(Integer mainTaskId) {
         this.mainTaskId = mainTaskId;
-    }
-
-    public Integer getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(Integer studentId) {
-        this.studentId = studentId;
     }
 
     public Integer getCourseId() {
@@ -97,14 +79,6 @@ public class MainTask {
         this.importanceLevel = importanceLevel;
     }
 
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -113,27 +87,19 @@ public class MainTask {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public boolean isPersisted() {
         return mainTaskId != null;
     }
 
     public boolean isCompleted() {
-        return status == TaskStatus.COMPLETED;
+        return false;
     }
 
     public boolean isCancelled() {
-        return status == TaskStatus.CANCELLED;
+        return false;
     }
 
     public boolean isActive() {
-        return status == TaskStatus.TODO || status == TaskStatus.IN_PROGRESS;
+        return true;
     }
 }

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class StudySession {
     private Integer studySessionId;
     private Integer studentId;
-    private Integer subTaskId;
+    private Integer studentSubTaskId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private BigDecimal durationHours;
@@ -19,12 +19,12 @@ public class StudySession {
         this.sessionType = SessionType.ACTUAL;
     }
 
-    public StudySession(Integer studySessionId, Integer studentId, Integer subTaskId,
+    public StudySession(Integer studySessionId, Integer studentId, Integer studentSubTaskId,
                         LocalDateTime startTime, LocalDateTime endTime,
                         BigDecimal durationHours, SessionType sessionType, String notes) {
         this.studySessionId = studySessionId;
         this.studentId = studentId;
-        this.subTaskId = subTaskId;
+        this.studentSubTaskId = studentSubTaskId;
         this.startTime = startTime;
         this.endTime = endTime;
         this.durationHours = durationHours;
@@ -49,11 +49,19 @@ public class StudySession {
     }
 
     public Integer getSubTaskId() {
-        return subTaskId;
+        return studentSubTaskId;
     }
 
     public void setSubTaskId(Integer subTaskId) {
-        this.subTaskId = subTaskId;
+        this.studentSubTaskId = subTaskId;
+    }
+
+    public Integer getStudentSubTaskId() {
+        return studentSubTaskId;
+    }
+
+    public void setStudentSubTaskId(Integer studentSubTaskId) {
+        this.studentSubTaskId = studentSubTaskId;
     }
 
     public LocalDateTime getStartTime() {

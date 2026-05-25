@@ -42,15 +42,16 @@
                     <tr>
                         <td><c:out value="${course.courseCode}"/></td>
                         <td><c:out value="${course.courseName}"/></td>
-                        <td><c:out value="${course.lecturer}"/></td>
+                        <td><c:out value="${course.lecturerName}"/></td>
                         <td><c:out value="${course.semester}"/></td>
                         <td class="action-cell">
                             <button type="button" class="btn btn-sm edit-btn"
                                     data-id="${course.courseId}"
                                     data-code="<c:out value='${course.courseCode}'/>"
                                     data-name="<c:out value='${course.courseName}'/>"
-                                    data-lecturer="<c:out value='${course.lecturer}'/>"
-                                    data-semester="<c:out value='${course.semester}'/>">
+                                    data-lecturer-id="${course.lecturerId}"
+                                    data-semester="<c:out value='${course.semester}'/>"
+                                    data-description="<c:out value='${course.description}'/>">
                                 Edit
                             </button>
                             <form method="post" class="inline-form"
@@ -90,14 +91,27 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="lecturer">Lecturer</label>
-                    <input type="text" id="lecturer" name="lecturer"
-                           placeholder="e.g. Dr. Smith">
+                    <label for="lecturerId">Lecturer</label>
+                    <select id="lecturerId" name="lecturerId" required>
+                        <option value="">Select a lecturer</option>
+                        <c:forEach var="lecturer" items="${lecturers}">
+                            <option value="${lecturer.userId}">
+                                <c:out value="${lecturer.fullName}"/>
+                            </option>
+                        </c:forEach>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="semester">Semester</label>
                     <input type="text" id="semester" name="semester"
                            placeholder="e.g. 2025-2026-2">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description"
+                              placeholder="Optional course description"></textarea>
                 </div>
             </div>
             <div class="form-actions">
@@ -120,8 +134,9 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("form-courseId").value = this.dataset.id;
             document.getElementById("courseCode").value = this.dataset.code;
             document.getElementById("courseName").value = this.dataset.name;
-            document.getElementById("lecturer").value = this.dataset.lecturer;
+            document.getElementById("lecturerId").value = this.dataset.lecturerId || "";
             document.getElementById("semester").value = this.dataset.semester;
+            document.getElementById("description").value = this.dataset.description || "";
             document.getElementById("form-submit").textContent = "Save Changes";
             document.getElementById("form-cancel").style.display = "inline-block";
             document.getElementById("form-title").scrollIntoView({behavior: "smooth"});
@@ -135,8 +150,9 @@ function resetForm() {
     document.getElementById("form-courseId").value = "";
     document.getElementById("courseCode").value = "";
     document.getElementById("courseName").value = "";
-    document.getElementById("lecturer").value = "";
+    document.getElementById("lecturerId").value = "";
     document.getElementById("semester").value = "";
+    document.getElementById("description").value = "";
     document.getElementById("form-submit").textContent = "Add Course";
     document.getElementById("form-cancel").style.display = "none";
 }

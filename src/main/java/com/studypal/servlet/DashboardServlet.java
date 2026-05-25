@@ -6,7 +6,6 @@ import com.studypal.model.SessionType;
 import com.studypal.model.StudySession;
 import com.studypal.service.CourseService;
 import com.studypal.service.PriorityService;
-import com.studypal.service.ScheduleService;
 import com.studypal.service.StudySessionService;
 import com.studypal.service.TaskService;
 
@@ -29,11 +28,10 @@ import java.util.stream.Collectors;
 
 @WebServlet(name = "DashboardServlet", urlPatterns = "/dashboard")
 public class DashboardServlet extends HttpServlet {
-    private static final int DEFAULT_STUDENT_ID = 1;
+    private static final int DEFAULT_STUDENT_ID = 6;
     private static final int TOP_TASK_LIMIT = 5;
 
     private final TaskService taskService = new TaskService();
-    private final ScheduleService scheduleService = new ScheduleService();
     private final StudySessionService studySessionService = new StudySessionService();
     private final CourseService courseService = new CourseService();
     private final PriorityService priorityService = new PriorityService();
@@ -46,7 +44,7 @@ public class DashboardServlet extends HttpServlet {
 
         int totalTaskCount = mainTasks.size();
         int activeTaskCount = (int) mainTasks.stream().filter(MainTask::isActive).count();
-        int todaySlotCount = scheduleService.listSlotsForDate(DEFAULT_STUDENT_ID, LocalDate.now()).size();
+        int todaySlotCount = taskService.countPlannedSubTasksForDate(DEFAULT_STUDENT_ID, LocalDate.now());
         int courseCount = courses.size();
         BigDecimal weeklyStudyHours = calculateWeeklyStudyHours();
 

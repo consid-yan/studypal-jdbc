@@ -15,14 +15,16 @@ import java.util.Optional;
 
 public class CourseDao {
     private static final String SELECT_COLUMNS =
-            "course_id, course_code, course_name, lecturer, semester";
+            "c.course_id, c.course_code, c.course_name, c.lecturer_id, "
+                    + "lecturer.full_name AS lecturer_name, c.semester, c.description";
 
     public Optional<Course> findById(Integer courseId) {
-        String sql = "SELECT " + SELECT_COLUMNS + " FROM course WHERE course_id = ?";
+        String sql = "SELECT " + SELECT_COLUMNS + " FROM course c "
+                + "JOIN user lecturer ON c.lecturer_id = lecturer.user_id "
+                + "WHERE c.course_id = ?";
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, courseId);
-
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return Optional.of(mapCourse(resultSet));
@@ -35,9 +37,10 @@ public class CourseDao {
     }
 
     public List<Course> findAll() {
-        String sql = "SELECT " + SELECT_COLUMNS + " FROM course";
+        String sql = "SELECT " + SELECT_COLUMNS + " FROM course c "
+                + "JOIN user lecturer ON c.lecturer_id = lecturer.user_id "
+                + "ORDER BY c.course_code";
         List<Course> courses = new ArrayList<>();
-
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
@@ -51,16 +54,15 @@ public class CourseDao {
     }
 
     public List<Course> findByStudentId(Integer studentId) {
-        String sql = "SELECT c.course_id, c.course_code, c.course_name, c.lecturer, c.semester "
-                + "FROM course c "
+        String sql = "SELECT " + SELECT_COLUMNS + " FROM course c "
+                + "JOIN user lecturer ON c.lecturer_id = lecturer.user_id "
                 + "JOIN enrollment e ON c.course_id = e.course_id "
-                + "WHERE e.student_id = ?";
+                + "WHERE e.student_id = ? "
+                + "ORDER BY c.course_code";
         List<Course> courses = new ArrayList<>();
-
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, studentId);
-
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     courses.add(mapCourse(resultSet));
@@ -73,24 +75,22 @@ public class CourseDao {
     }
 
     public void insert(Course course) {
-        String sql = "INSERT INTO course (course_code, course_name, lecturer, semester) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO course "
+                + "(course_code, course_name, lecturer_id, semester, description) "
+                + "VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, course.getCourseCode());
             statement.setString(2, course.getCourseName());
-            statement.setString(3, course.getLecturer());
+            statement.setInt(3, course.getLecturerId());
             statement.setString(4, course.getSemester());
-
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) {
+            statement.setString(5, course.getDescription());
+            if (statement.executeUpdate() == 0) {
                 throw new SQLException("Inserting course failed, no rows affected.");
             }
-
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     course.setCourseId(generatedKeys.getInt(1));
-                } else {
-                    throw new SQLException("Inserting course failed, no ID obtained.");
                 }
             }
         } catch (SQLException e) {
@@ -99,16 +99,16 @@ public class CourseDao {
     }
 
     public boolean update(Course course) {
-        String sql = "UPDATE course SET course_code = ?, course_name = ?, lecturer = ?, semester = ? "
-                + "WHERE course_id = ?";
+        String sql = "UPDATE course SET course_code = ?, course_name = ?, lecturer_id = ?, "
+                + "semester = ?, description = ? WHERE course_id = ?";
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, course.getCourseCode());
             statement.setString(2, course.getCourseName());
-            statement.setString(3, course.getLecturer());
+            statement.setInt(3, course.getLecturerId());
             statement.setString(4, course.getSemester());
-            statement.setInt(5, course.getCourseId());
-
+            statement.setString(5, course.getDescription());
+            statement.setInt(6, course.getCourseId());
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update course.", e);
@@ -116,13 +116,64 @@ public class CourseDao {
     }
 
     public boolean delete(Integer courseId) {
-        String sql = "DELETE FROM course WHERE course_id = ?";
-        try (Connection connection = DBUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, courseId);
-            return statement.executeUpdate() > 0;
+        try (Connection connection = DBUtil.getConnection()) {
+            boolean previousAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                deleteCourseChildren(connection, courseId);
+                boolean deleted;
+                try (PreparedStatement statement =
+                             connection.prepareStatement("DELETE FROM course WHERE course_id = ?")) {
+                    statement.setInt(1, courseId);
+                    deleted = statement.executeUpdate() > 0;
+                }
+                connection.commit();
+                return deleted;
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(previousAutoCommit);
+            }
         } catch (SQLException e) {
             throw new DatabaseException("Failed to delete course.", e);
+        }
+    }
+
+    private void deleteCourseChildren(Connection connection, Integer courseId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE ss FROM study_session ss "
+                        + "JOIN student_sub_task sst ON ss.student_sub_task_id = sst.student_sub_task_id "
+                        + "JOIN sub_task_template st ON sst.template_id = st.template_id "
+                        + "JOIN main_task mt ON st.main_task_id = mt.main_task_id "
+                        + "WHERE mt.course_id = ?")) {
+            statement.setInt(1, courseId);
+            statement.executeUpdate();
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE sst FROM student_sub_task sst "
+                        + "JOIN sub_task_template st ON sst.template_id = st.template_id "
+                        + "JOIN main_task mt ON st.main_task_id = mt.main_task_id "
+                        + "WHERE mt.course_id = ?")) {
+            statement.setInt(1, courseId);
+            statement.executeUpdate();
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE st FROM sub_task_template st "
+                        + "JOIN main_task mt ON st.main_task_id = mt.main_task_id "
+                        + "WHERE mt.course_id = ?")) {
+            statement.setInt(1, courseId);
+            statement.executeUpdate();
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM main_task WHERE course_id = ?")) {
+            statement.setInt(1, courseId);
+            statement.executeUpdate();
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM enrollment WHERE course_id = ?")) {
+            statement.setInt(1, courseId);
+            statement.executeUpdate();
         }
     }
 
@@ -131,8 +182,10 @@ public class CourseDao {
         course.setCourseId(resultSet.getInt("course_id"));
         course.setCourseCode(resultSet.getString("course_code"));
         course.setCourseName(resultSet.getString("course_name"));
-        course.setLecturer(resultSet.getString("lecturer"));
+        course.setLecturerId(resultSet.getInt("lecturer_id"));
+        course.setLecturerName(resultSet.getString("lecturer_name"));
         course.setSemester(resultSet.getString("semester"));
+        course.setDescription(resultSet.getString("description"));
         return course;
     }
 }

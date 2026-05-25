@@ -18,7 +18,7 @@ import java.util.Map;
 
 @WebServlet(name = "SubTaskServlet", urlPatterns = "/sub-tasks")
 public class SubTaskServlet extends HttpServlet {
-    private static final int DEFAULT_STUDENT_ID = 1;
+    private static final int DEFAULT_STUDENT_ID = 6;
 
     private final TaskService taskService = new TaskService();
 
@@ -36,11 +36,9 @@ public class SubTaskServlet extends HttpServlet {
         List<SubTask> subTasks = new ArrayList<>();
 
         if (selectedMainTaskId != null) {
-            subTasks.addAll(taskService.listSubTasks(selectedMainTaskId));
+            subTasks.addAll(taskService.listSubTasks(DEFAULT_STUDENT_ID, selectedMainTaskId));
         } else {
-            for (MainTask mainTask : mainTasks) {
-                subTasks.addAll(taskService.listSubTasks(mainTask.getMainTaskId()));
-            }
+            subTasks.addAll(taskService.listSubTasksForStudent(DEFAULT_STUDENT_ID));
         }
 
         request.setAttribute("mainTasks", mainTasks);

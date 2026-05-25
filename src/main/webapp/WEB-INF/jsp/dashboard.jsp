@@ -22,8 +22,8 @@
             <div class="stat-value"><c:out value="${activeTaskCount}"/> / <c:out value="${totalTaskCount}"/></div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Today's Schedule</div>
-            <div class="stat-value"><c:out value="${todaySlotCount}"/> slots</div>
+            <div class="stat-label">Today's Planned Sub Tasks</div>
+            <div class="stat-value"><c:out value="${todaySlotCount}"/> tasks</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Study Hours (last 7 days)</div>

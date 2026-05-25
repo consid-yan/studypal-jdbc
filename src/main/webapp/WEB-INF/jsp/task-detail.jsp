@@ -23,9 +23,6 @@
     <div class="form-card info-card">
         <div class="page-header">
             <h2><c:out value="${mainTask.title}"/></h2>
-            <span class="badge badge-status-${fn:toLowerCase(mainTask.status)}">
-                <c:out value="${mainTask.status}"/>
-            </span>
         </div>
         <div class="info-grid">
             <div>

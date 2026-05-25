@@ -3,7 +3,6 @@ package com.studypal.servlet;
 import com.studypal.model.Course;
 import com.studypal.model.ImportanceLevel;
 import com.studypal.model.MainTask;
-import com.studypal.model.TaskStatus;
 import com.studypal.service.CourseService;
 import com.studypal.service.TaskService;
 import com.studypal.util.ServletLogUtil;
@@ -22,7 +21,7 @@ import java.util.Map;
 
 @WebServlet(name = "MainTaskServlet", urlPatterns = "/main-tasks")
 public class MainTaskServlet extends HttpServlet {
-    private static final int DEFAULT_STUDENT_ID = 1;
+    private static final int DEFAULT_STUDENT_ID = 6;
 
     private final TaskService taskService = new TaskService();
     private final CourseService courseService = new CourseService();
@@ -51,7 +50,7 @@ public class MainTaskServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         try {
-            if ("create".equals(action)) {
+        if ("create".equals(action)) {
                 handleCreate(request);
             } else if ("update".equals(action)) {
                 handleUpdate(request);
@@ -71,16 +70,14 @@ public class MainTaskServlet extends HttpServlet {
 
     private void handleCreate(HttpServletRequest request) {
         MainTask mainTask = new MainTask();
-        mainTask.setStudentId(DEFAULT_STUDENT_ID);
-        populateMainTaskFromRequest(mainTask, request, false);
+        populateMainTaskFromRequest(mainTask, request);
         taskService.createMainTask(mainTask);
     }
 
     private void handleUpdate(HttpServletRequest request) {
         MainTask mainTask = new MainTask();
         mainTask.setMainTaskId(Integer.valueOf(request.getParameter("mainTaskId")));
-        mainTask.setStudentId(DEFAULT_STUDENT_ID);
-        populateMainTaskFromRequest(mainTask, request, true);
+        populateMainTaskFromRequest(mainTask, request);
         taskService.updateMainTask(mainTask);
     }
 
@@ -89,8 +86,7 @@ public class MainTaskServlet extends HttpServlet {
         taskService.deleteMainTask(mainTaskId);
     }
 
-    private void populateMainTaskFromRequest(MainTask mainTask, HttpServletRequest request,
-                                           boolean includeStatus) {
+    private void populateMainTaskFromRequest(MainTask mainTask, HttpServletRequest request) {
         mainTask.setTitle(request.getParameter("title"));
         mainTask.setDescription(emptyToNull(request.getParameter("description")));
         mainTask.setCourseId(Integer.valueOf(request.getParameter("courseId")));
@@ -99,13 +95,6 @@ public class MainTaskServlet extends HttpServlet {
         String importanceLevel = request.getParameter("importanceLevel");
         if (importanceLevel != null && !importanceLevel.isBlank()) {
             mainTask.setImportanceLevel(ImportanceLevel.valueOf(importanceLevel));
-        }
-
-        if (includeStatus) {
-            String status = request.getParameter("status");
-            if (status != null && !status.isBlank()) {
-                mainTask.setStatus(TaskStatus.valueOf(status));
-            }
         }
     }
 

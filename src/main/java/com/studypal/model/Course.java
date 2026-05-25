@@ -4,19 +4,23 @@ public class Course {
     private Integer courseId;
     private String courseCode;
     private String courseName;
-    private String lecturer;
+    private Integer lecturerId;
+    private String lecturerName;
     private String semester;
+    private String description;
 
     public Course() {
     }
 
     public Course(Integer courseId, String courseCode, String courseName,
-                  String lecturer, String semester) {
+                  Integer lecturerId, String lecturerName, String semester, String description) {
         this.courseId = courseId;
         this.courseCode = courseCode;
         this.courseName = courseName;
-        this.lecturer = lecturer;
+        this.lecturerId = lecturerId;
+        this.lecturerName = lecturerName;
         this.semester = semester;
+        this.description = description;
     }
 
     public Integer getCourseId() {
@@ -43,12 +47,28 @@ public class Course {
         this.courseName = courseName;
     }
 
+    public Integer getLecturerId() {
+        return lecturerId;
+    }
+
+    public void setLecturerId(Integer lecturerId) {
+        this.lecturerId = lecturerId;
+    }
+
+    public String getLecturerName() {
+        return lecturerName;
+    }
+
+    public void setLecturerName(String lecturerName) {
+        this.lecturerName = lecturerName;
+    }
+
     public String getLecturer() {
-        return lecturer;
+        return lecturerName;
     }
 
     public void setLecturer(String lecturer) {
-        this.lecturer = lecturer;
+        this.lecturerName = lecturer;
     }
 
     public String getSemester() {
@@ -57,6 +77,14 @@ public class Course {
 
     public void setSemester(String semester) {
         this.semester = semester;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public boolean isPersisted() {
