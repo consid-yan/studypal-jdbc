@@ -6,11 +6,11 @@ The application uses Java Servlet/JSP, pure JDBC, and MySQL. It does not use Spr
 
 ## Project Positioning
 
-StudyPal is not positioned as a single-user personal todo list. A pure single-student todo tool would not strongly justify tables such as `student`, `enrollment`, `schedule_slot`, and `study_session`.
+StudyPal is not positioned as a single-user personal todo list. A pure single-student todo tool would not strongly justify shared course tasks, `enrollment`, role-based `user` records, copied student sub-tasks, reporting views, and study-session analytics.
 
-The project is positioned as a student coursework planning and study tracking system for university academic support scenarios. It helps advisors, tutors, teaching assistants, learning support staff, and students understand coursework load, break large assignments into manageable steps, schedule study time, record actual learning effort, and identify procrastination or academic risk early.
+The project is positioned as a student coursework planning and study tracking system for university academic support scenarios. It helps advisors, tutors, teaching assistants, learning support staff, and students understand coursework load, break large assignments into manageable steps, plan study time, record actual learning effort, and identify procrastination or academic risk early.
 
-In this positioning, the `student` table is not just a login account table. It is the central entity being tracked by the system. Each student can enroll in different courses, have different coursework tasks, maintain a personal schedule, record study sessions, and show different workload or delay patterns.
+In this positioning, students are represented by rows in the shared `user` table with role `STUDENT`. A student can enroll in different courses, receive personal copies of course-level sub-task templates, update individual progress, record study sessions, and show different workload or delay patterns.
 
 ### Target Users
 
@@ -27,28 +27,29 @@ Secondary users:
 
 - Make each student's coursework pressure visible across all enrolled courses.
 - Help students and advisors decide which tasks should be handled first based on deadline, importance, task progress, and actual study effort.
-- Turn large coursework items into executable sub-tasks with planned time ranges and dependency relationships.
+- Turn large coursework items into reusable sub-task templates and student-specific progress records.
 - Compare estimated study effort with actual study sessions, so students can understand whether they are underestimating work.
-- Support early intervention by identifying overdue tasks, insufficient study time, overloaded schedules, or repeated procrastination patterns.
+- Support early intervention by identifying urgent tasks, insufficient study time, low progress, or repeated procrastination patterns.
 
 ## Database Design Rationale
 
-The current database design is built around a multi-student academic support model:
+The current database design is built around a multi-role, multi-student academic support model:
 
-- `student` represents each learner being tracked. It supports advisor-facing views such as a student's courses, workload, task progress, schedule, study records, and risk indicators.
-- `course` represents university courses. It allows the system to analyze which courses create the most tasks, deadlines, or study effort.
+- `user` stores administrators, lecturers, and students in one account table. The `role` column identifies whether a row is an `ADMIN`, `LECTURER`, or `STUDENT`.
+- `course` represents university courses and links each course to a lecturer through `lecturer_id`.
 - `enrollment` connects students and courses. It is necessary because one student can take many courses, and one course can include many students.
-- `main_task` stores course-level coursework items such as assignments, exams, projects, and readings for a specific student.
-- `sub_task` decomposes a large task into smaller executable steps, making progress easier to plan and monitor.
-- `task_dependency` models prerequisite relationships between sub-tasks, so the system can explain why a task is blocked.
-- `schedule_slot` stores each student's class time, free time, and unavailable time, which allows the system to reason about whether a student has enough available time to complete planned work.
-- `study_session` records actual study effort. It allows comparison between planned work and real learning behavior.
+- `main_task` stores course-level coursework items such as assignments, exams, projects, and readings.
+- `sub_task_template` decomposes a course-level task into reusable steps with estimated hours, sequence order, and planned time ranges.
+- `student_sub_task` copies templates to individual students, so each student can maintain personal status, completion time, notes, and adjusted planning.
+- `study_session` records planned or actual study effort for a student, optionally linked to a student-specific sub-task. It allows comparison between estimated work and real learning behavior.
+- Reporting views calculate task priority, main-task progress, study efficiency, daily study totals, and course workload summaries.
+- Stored procedures batch-create templates, copy templates to students, and generate procrastination reports.
+- Triggers protect course-level main tasks after creation and calculate study-session duration automatically.
 
 This design gives the project a stronger database purpose than a simple task list. The system can answer questions such as:
 
 - Which students are overloaded this week?
 - Which courses create the most workload?
-- Which tasks are blocked by unfinished prerequisites?
 - Which students spend less time than expected on high-priority coursework?
 - Which students repeatedly complete tasks late?
 - How different is a student's estimated workload from actual study time?
@@ -123,7 +124,9 @@ StudyPal follows a simple coursework-friendly layered structure:
 JSP pages -> Servlets -> Services -> DAOs -> MySQL
 ```
 
-Models are plain Java objects that map closely to database tables. DAOs contain direct JDBC database access. Services coordinate DAOs and hold application rules. Servlets receive browser requests and forward to JSP pages.
+Models are intended to map closely to database tables. DAOs contain direct JDBC database access. Services coordinate DAOs and hold application rules. Servlets receive browser requests and forward to JSP pages.
+
+The SQL scripts are the current source of truth for the refactored database design. Some Java model, DAO, service, servlet, and JSP files still reflect the pre-refactor table names and should be migrated before the full web application is run against the current schema.
 
 This is a traditional WAR-based Servlet/JSP application. It does not have a `public static void main` startup class. The application is started by a Jakarta Servlet container such as Tomcat 10.1+.
 
@@ -139,43 +142,101 @@ com.studypal.util       Shared utility classes
 com.studypal.exception  Custom runtime exceptions
 ```
 
-## Core Model Classes
+## Core Database Entities
 
-The model package contains these core classes and enums:
-
-```text
-Student
-Course
-Enrollment
-MainTask
-SubTask
-TaskDependency
-ScheduleSlot
-StudySession
-TaskStatus
-ImportanceLevel
-SlotType
-SessionType
-```
-
-The core database tables are:
+The current SQL schema centers on these core entities:
 
 ```text
-student
+user
 course
 enrollment
-schedule_slot
 main_task
-sub_task
-task_dependency
+sub_task_template
+student_sub_task
 study_session
 ```
 
-`ScheduleSlot` supports timetable blocks and conflict detection. Task priority is calculated dynamically and is not stored as a persistent model field.
+Task priority, progress, study efficiency, and course workload summaries are calculated dynamically through SQL views and are not stored as persistent model fields.
+
+After the database refactor, any remaining Java classes or DAOs tied to legacy tables such as `student`, `sub_task`, `task_dependency`, or `schedule_slot` should be treated as migration targets before running the web application against the current schema.
+
+## Current Table Structure
+
+`schema.sql` creates the following current tables:
+
+```text
+user
+- user_id
+- username
+- email
+- password_hash
+- full_name
+- role
+- created_at
+
+course
+- course_id
+- course_code
+- course_name
+- lecturer_id
+- semester
+- description
+- created_at
+
+enrollment
+- enrollment_id
+- student_id
+- course_id
+- enrollment_date
+
+main_task
+- main_task_id
+- course_id
+- title
+- description
+- deadline
+- importance_level
+- created_at
+
+sub_task_template
+- template_id
+- main_task_id
+- title
+- description
+- estimated_hours
+- sequence_order
+- planned_start
+- planned_end
+- created_at
+
+student_sub_task
+- student_sub_task_id
+- student_id
+- template_id
+- title
+- description
+- planned_start_time
+- planned_end_time
+- completed_time
+- status
+- notes
+- created_at
+- updated_at
+
+study_session
+- study_session_id
+- student_id
+- student_sub_task_id
+- start_time
+- end_time
+- duration_hours
+- session_type
+- notes
+```
 
 ## Web Layer
 
-Servlets use Jakarta Servlet APIs and annotation-based routing:
+Servlets use Jakarta Servlet APIs and annotation-based routing. The current codebase includes these routes:
 
 ```text
 DashboardServlet      /dashboard
@@ -187,21 +248,23 @@ ScheduleServlet       /schedule
 StudySessionServlet   /study-sessions
 ```
 
+Routes backed by legacy tables, especially `/schedule` and older sub-task flows, need DAO/model updates before they are fully compatible with the refactored SQL schema.
+
 `src/main/webapp/index.jsp` forwards to `/dashboard`. JSP files are stored under `src/main/webapp/WEB-INF/jsp/` so they are reached through servlets rather than direct browser URLs.
 
 `AppStartupListener` listens for application startup and shutdown events. `ServletLogUtil` records system exceptions through the Servlet container log while leaving expected business validation errors as page-level messages.
 
 ## SQL Scripts
 
-Database scripts are stored in the `sql/` folder:
+Database scripts are stored in the `sql/` folder. Run `schema.sql` first, then load optional views, procedures, triggers, and sample data as needed:
 
 ```text
-schema.sql            Creates the database tables
-insert_test_data.sql  Inserts sample data
+schema.sql            Creates the database, tables, constraints, and indexes
+views.sql             Creates reporting views for priority, progress, efficiency, study stats, and workload
+procedures.sql        Creates stored procedures for template creation, student copies, and reports
+triggers.sql          Creates triggers for immutable main tasks and automatic duration calculation
+insert_test_data.sql  Inserts sample users, courses, tasks, sub-task templates, student copies, and sessions
 queries.sql           Stores useful test and report queries
-procedures.sql        Stores stored procedures
-triggers.sql          Stores database triggers
-views.sql             Stores database views
 ```
 
 ## Build and Deployment
