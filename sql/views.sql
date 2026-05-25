@@ -3,31 +3,33 @@
 
 USE studypal;
 
-CREATE OR REPLACE VIEW task_priority_view AS
+CREATE OR REPLACE VIEW student_task_priority_view AS
 SELECT
-    st.sub_task_id,
+    sst.student_sub_task_id,
+    sst.student_id,
+    u.full_name AS student_name,
+    st.template_id,
     mt.main_task_id,
-    mt.student_id,
     c.course_code,
     c.course_name,
     mt.title AS main_task_title,
-    st.title AS sub_task_title,
-    st.status,
+    sst.title AS sub_task_title,
+    sst.status,
     mt.importance_level,
-    COALESCE(st.planned_end_time, mt.deadline) AS due_time,
+    COALESCE(sst.planned_end_time, mt.deadline) AS due_time,
     st.estimated_hours,
-    DATEDIFF(COALESCE(st.planned_end_time, mt.deadline), NOW()) AS days_remaining,
+    DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()) AS days_remaining,
     CASE
-        WHEN st.status = 'COMPLETED' THEN 'DONE'
-        WHEN st.status = 'CANCELLED' THEN 'CANCELLED'
-        WHEN COALESCE(st.planned_end_time, mt.deadline) IS NULL THEN 'UNSCHEDULED'
-        WHEN DATEDIFF(COALESCE(st.planned_end_time, mt.deadline), NOW()) <= 1 THEN 'URGENT'
-        WHEN DATEDIFF(COALESCE(st.planned_end_time, mt.deadline), NOW()) <= 3 THEN 'SOON'
+        WHEN sst.status = 'COMPLETED' THEN 'DONE'
+        WHEN sst.status = 'CANCELLED' THEN 'CANCELLED'
+        WHEN COALESCE(sst.planned_end_time, mt.deadline) IS NULL THEN 'UNSCHEDULED'
+        WHEN DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()) <= 1 THEN 'URGENT'
+        WHEN DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()) <= 3 THEN 'SOON'
         ELSE 'NORMAL'
     END AS urgency_level,
     CASE
-        WHEN st.status = 'COMPLETED' THEN 1000
-        WHEN st.status = 'CANCELLED' THEN 999
+        WHEN sst.status = 'COMPLETED' THEN 1000
+        WHEN sst.status = 'CANCELLED' THEN 999
         ELSE
             (CASE mt.importance_level
                 WHEN 'VERY_HIGH' THEN 1
@@ -38,52 +40,65 @@ SELECT
             END) * 10
             + GREATEST(
                 0,
-                COALESCE(DATEDIFF(COALESCE(st.planned_end_time, mt.deadline), NOW()), 90)
+                COALESCE(DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()), 90)
             )
     END AS priority_score
-FROM sub_task st
+FROM student_sub_task sst
+JOIN sub_task_template st ON sst.template_id = st.template_id
 JOIN main_task mt ON st.main_task_id = mt.main_task_id
-JOIN course c ON mt.course_id = c.course_id;
+JOIN course c ON mt.course_id = c.course_id
+JOIN user u ON sst.student_id = u.user_id;
 
 CREATE OR REPLACE VIEW main_task_progress_view AS
 SELECT
     mt.main_task_id,
-    mt.student_id,
+    sst.student_id,
+    u.full_name AS student_name,
     c.course_code,
+    c.course_name,
     mt.title,
-    mt.status,
     mt.deadline,
-    COUNT(st.sub_task_id) AS total_sub_tasks,
-    SUM(CASE WHEN st.status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_sub_tasks,
+    mt.importance_level,
+    COUNT(sst.student_sub_task_id) AS total_student_sub_tasks,
+    SUM(CASE WHEN sst.status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_student_sub_tasks,
     ROUND(
         CASE
-            WHEN COUNT(st.sub_task_id) = 0 THEN 0
-            ELSE SUM(CASE WHEN st.status = 'COMPLETED' THEN 1 ELSE 0 END)
-                / COUNT(st.sub_task_id) * 100
+            WHEN COUNT(sst.student_sub_task_id) = 0 THEN NULL
+            ELSE SUM(CASE WHEN sst.status = 'COMPLETED' THEN 1 ELSE 0 END)
+                / COUNT(sst.student_sub_task_id) * 100
         END,
         2
     ) AS completion_percentage,
+    CASE
+        WHEN COUNT(sst.student_sub_task_id) = 0 THEN 'Not generated'
+        ELSE 'Calculated'
+    END AS progress_status,
     COALESCE(SUM(st.estimated_hours), 0) AS total_estimated_hours,
-    COALESCE(SUM(CASE WHEN st.status = 'COMPLETED' THEN st.estimated_hours ELSE 0 END), 0)
+    COALESCE(SUM(CASE WHEN sst.status = 'COMPLETED' THEN st.estimated_hours ELSE 0 END), 0)
         AS completed_estimated_hours
 FROM main_task mt
 JOIN course c ON mt.course_id = c.course_id
-LEFT JOIN sub_task st ON mt.main_task_id = st.main_task_id
+JOIN sub_task_template st ON mt.main_task_id = st.main_task_id
+JOIN student_sub_task sst ON st.template_id = sst.template_id
+JOIN user u ON sst.student_id = u.user_id
 GROUP BY
     mt.main_task_id,
-    mt.student_id,
+    sst.student_id,
+    u.full_name,
     c.course_code,
+    c.course_name,
     mt.title,
-    mt.status,
-    mt.deadline;
+    mt.deadline,
+    mt.importance_level;
 
 CREATE OR REPLACE VIEW study_efficiency_view AS
 SELECT
-    st.sub_task_id,
+    sst.student_sub_task_id,
+    sst.student_id,
+    u.full_name AS student_name,
     mt.main_task_id,
-    mt.student_id,
     mt.title AS main_task_title,
-    st.title AS sub_task_title,
+    sst.title AS sub_task_title,
     st.estimated_hours,
     COALESCE(SUM(ss.duration_hours), 0) AS actual_hours,
     COALESCE(SUM(ss.duration_hours), 0) - COALESCE(st.estimated_hours, 0) AS time_overrun,
@@ -94,15 +109,18 @@ SELECT
         WHEN COALESCE(SUM(ss.duration_hours), 0) <= st.estimated_hours * 1.2 THEN 'ON_TRACK'
         ELSE 'OVERRUN'
     END AS efficiency_status
-FROM sub_task st
+FROM student_sub_task sst
+JOIN sub_task_template st ON sst.template_id = st.template_id
 JOIN main_task mt ON st.main_task_id = mt.main_task_id
-LEFT JOIN study_session ss ON st.sub_task_id = ss.sub_task_id
+JOIN user u ON sst.student_id = u.user_id
+LEFT JOIN study_session ss ON sst.student_sub_task_id = ss.student_sub_task_id
 GROUP BY
-    st.sub_task_id,
+    sst.student_sub_task_id,
+    sst.student_id,
+    u.full_name,
     mt.main_task_id,
-    mt.student_id,
     mt.title,
-    st.title,
+    sst.title,
     st.estimated_hours;
 
 CREATE OR REPLACE VIEW daily_study_stats_view AS
@@ -117,13 +135,24 @@ WHERE session_type = 'ACTUAL'
   AND duration_hours IS NOT NULL
 GROUP BY student_id, DATE(start_time);
 
-CREATE OR REPLACE VIEW task_dependency_chain_view AS
+CREATE OR REPLACE VIEW course_workload_view AS
 SELECT
-    td.sub_task_id,
-    st.title AS sub_task_title,
-    td.depends_on_sub_task_id,
-    dependency.title AS depends_on_title,
-    dependency.status AS depends_on_status
-FROM task_dependency td
-JOIN sub_task st ON td.sub_task_id = st.sub_task_id
-JOIN sub_task dependency ON td.depends_on_sub_task_id = dependency.sub_task_id;
+    c.course_id,
+    c.course_code,
+    c.course_name,
+    u.full_name AS lecturer_name,
+    COUNT(DISTINCT e.student_id) AS enrolled_student_count,
+    COUNT(DISTINCT mt.main_task_id) AS main_task_count,
+    COUNT(DISTINCT st.template_id) AS template_count,
+    COUNT(DISTINCT sst.student_sub_task_id) AS student_sub_task_count
+FROM course c
+JOIN user u ON c.lecturer_id = u.user_id
+LEFT JOIN enrollment e ON c.course_id = e.course_id
+LEFT JOIN main_task mt ON c.course_id = mt.course_id
+LEFT JOIN sub_task_template st ON mt.main_task_id = st.main_task_id
+LEFT JOIN student_sub_task sst ON st.template_id = sst.template_id
+GROUP BY
+    c.course_id,
+    c.course_code,
+    c.course_name,
+    u.full_name;

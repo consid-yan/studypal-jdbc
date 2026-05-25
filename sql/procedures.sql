@@ -3,14 +3,14 @@
 
 USE studypal;
 
-DROP PROCEDURE IF EXISTS batch_create_sub_tasks;
-DROP PROCEDURE IF EXISTS get_full_dependency_chain;
-DROP PROCEDURE IF EXISTS can_start_task;
+DROP PROCEDURE IF EXISTS batch_create_sub_task_templates;
+DROP PROCEDURE IF EXISTS copy_student_sub_tasks_for_main_task;
+DROP PROCEDURE IF EXISTS copy_student_sub_tasks_for_enrollment;
 DROP PROCEDURE IF EXISTS generate_procrastination_report;
 
 DELIMITER //
 
-CREATE PROCEDURE batch_create_sub_tasks(
+CREATE PROCEDURE batch_create_sub_task_templates(
     IN p_main_task_id INT,
     IN p_task_titles JSON,
     IN p_default_estimated_hours DECIMAL(5,2),
@@ -40,99 +40,96 @@ BEGIN
         SET planned_start = DATE_ADD(CAST(p_start_date AS DATETIME), INTERVAL i * p_days_between_tasks DAY);
         SET planned_end = DATE_ADD(planned_start, INTERVAL 1 DAY);
 
-        INSERT INTO sub_task (
+        INSERT INTO sub_task_template (
             main_task_id,
             title,
             estimated_hours,
-            planned_start_time,
-            planned_end_time,
-            status
+            sequence_order,
+            planned_start,
+            planned_end
         ) VALUES (
             p_main_task_id,
             current_title,
             p_default_estimated_hours,
+            i + 1,
             planned_start,
-            planned_end,
-            'TODO'
+            planned_end
         );
 
         SET i = i + 1;
     END WHILE;
 
-    SELECT task_count AS created_sub_task_count;
+    SELECT task_count AS created_template_count;
 END//
 
-CREATE PROCEDURE get_full_dependency_chain(
-    IN p_sub_task_id INT,
-    OUT p_dependency_chain JSON
+CREATE PROCEDURE copy_student_sub_tasks_for_main_task(
+    IN p_main_task_id INT
 )
 BEGIN
-    WITH RECURSIVE dependency_chain AS (
-        SELECT
-            td.depends_on_sub_task_id AS task_id,
-            st.title AS task_title,
-            st.status AS task_status,
-            1 AS dependency_level
-        FROM task_dependency td
-        JOIN sub_task st ON td.depends_on_sub_task_id = st.sub_task_id
-        WHERE td.sub_task_id = p_sub_task_id
-        UNION ALL
-        SELECT
-            td.depends_on_sub_task_id,
-            st.title,
-            st.status,
-            dc.dependency_level + 1
-        FROM task_dependency td
-        JOIN dependency_chain dc ON td.sub_task_id = dc.task_id
-        JOIN sub_task st ON td.depends_on_sub_task_id = st.sub_task_id
+    INSERT INTO student_sub_task (
+        student_id,
+        template_id,
+        title,
+        description,
+        planned_start_time,
+        planned_end_time,
+        status
     )
-    SELECT COALESCE(
-        JSON_ARRAYAGG(
-            JSON_OBJECT(
-                'task_id', task_id,
-                'task_title', task_title,
-                'task_status', task_status,
-                'level', dependency_level
-            )
-        ),
-        JSON_ARRAY()
-    )
-    INTO p_dependency_chain
-    FROM dependency_chain;
+    SELECT
+        e.student_id,
+        st.template_id,
+        st.title,
+        st.description,
+        st.planned_start,
+        st.planned_end,
+        'TODO'
+    FROM sub_task_template st
+    JOIN main_task mt ON st.main_task_id = mt.main_task_id
+    JOIN enrollment e ON mt.course_id = e.course_id
+    WHERE mt.main_task_id = p_main_task_id
+      AND NOT EXISTS (
+          SELECT 1
+          FROM student_sub_task existing
+          WHERE existing.student_id = e.student_id
+            AND existing.template_id = st.template_id
+      );
+
+    SELECT ROW_COUNT() AS created_student_sub_task_count;
 END//
 
-CREATE PROCEDURE can_start_task(
-    IN p_sub_task_id INT,
-    OUT p_can_start BOOLEAN,
-    OUT p_blocking_tasks JSON
+CREATE PROCEDURE copy_student_sub_tasks_for_enrollment(
+    IN p_student_id INT,
+    IN p_course_id INT
 )
 BEGIN
-    DECLARE incomplete_count INT DEFAULT 0;
-
-    SELECT COUNT(*)
-    INTO incomplete_count
-    FROM task_dependency td
-    JOIN sub_task st ON td.depends_on_sub_task_id = st.sub_task_id
-    WHERE td.sub_task_id = p_sub_task_id
-      AND st.status <> 'COMPLETED';
-
-    SELECT COALESCE(
-        JSON_ARRAYAGG(
-            JSON_OBJECT(
-                'task_id', st.sub_task_id,
-                'task_title', st.title,
-                'task_status', st.status
-            )
-        ),
-        JSON_ARRAY()
+    INSERT INTO student_sub_task (
+        student_id,
+        template_id,
+        title,
+        description,
+        planned_start_time,
+        planned_end_time,
+        status
     )
-    INTO p_blocking_tasks
-    FROM task_dependency td
-    JOIN sub_task st ON td.depends_on_sub_task_id = st.sub_task_id
-    WHERE td.sub_task_id = p_sub_task_id
-      AND st.status <> 'COMPLETED';
+    SELECT
+        p_student_id,
+        st.template_id,
+        st.title,
+        st.description,
+        st.planned_start,
+        st.planned_end,
+        'TODO'
+    FROM main_task mt
+    JOIN sub_task_template st ON mt.main_task_id = st.main_task_id
+    WHERE mt.course_id = p_course_id
+      AND NOT EXISTS (
+          SELECT 1
+          FROM student_sub_task existing
+          WHERE existing.student_id = p_student_id
+            AND existing.template_id = st.template_id
+      );
 
-    SET p_can_start = (incomplete_count = 0);
+    SELECT ROW_COUNT() AS created_student_sub_task_count;
 END//
 
 CREATE PROCEDURE generate_procrastination_report(
@@ -141,36 +138,37 @@ CREATE PROCEDURE generate_procrastination_report(
 )
 BEGIN
     SELECT
-        st.sub_task_id,
+        sst.student_sub_task_id,
         mt.title AS main_task_title,
-        st.title AS sub_task_title,
+        sst.title AS sub_task_title,
         st.estimated_hours,
         COALESCE(SUM(ss.duration_hours), 0) AS actual_hours,
         COALESCE(SUM(ss.duration_hours), 0) - COALESCE(st.estimated_hours, 0) AS time_overrun,
-        DATEDIFF(st.completed_time, st.planned_end_time) AS days_late,
+        DATEDIFF(sst.completed_time, sst.planned_end_time) AS days_late,
         CASE
-            WHEN st.completed_time IS NULL AND st.planned_end_time < NOW() THEN 'OVERDUE'
-            WHEN DATEDIFF(st.completed_time, st.planned_end_time) > 2 THEN 'SEVERELY_LATE'
-            WHEN DATEDIFF(st.completed_time, st.planned_end_time) > 0 THEN 'LATE'
-            WHEN DATEDIFF(st.completed_time, st.planned_end_time) <= 0 THEN 'ON_TIME'
+            WHEN sst.completed_time IS NULL AND sst.planned_end_time < NOW() THEN 'OVERDUE'
+            WHEN DATEDIFF(sst.completed_time, sst.planned_end_time) > 2 THEN 'SEVERELY_LATE'
+            WHEN DATEDIFF(sst.completed_time, sst.planned_end_time) > 0 THEN 'LATE'
+            WHEN DATEDIFF(sst.completed_time, sst.planned_end_time) <= 0 THEN 'ON_TIME'
             ELSE 'NOT_COMPLETED'
         END AS completion_status
-    FROM sub_task st
+    FROM student_sub_task sst
+    JOIN sub_task_template st ON sst.template_id = st.template_id
     JOIN main_task mt ON st.main_task_id = mt.main_task_id
-    LEFT JOIN study_session ss ON st.sub_task_id = ss.sub_task_id
-    WHERE mt.student_id = p_student_id
+    LEFT JOIN study_session ss ON sst.student_sub_task_id = ss.student_sub_task_id
+    WHERE sst.student_id = p_student_id
       AND (
-          st.planned_end_time >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
-          OR st.completed_time >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
-          OR st.completed_time IS NULL
+          sst.planned_end_time >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
+          OR sst.completed_time >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
+          OR sst.completed_time IS NULL
       )
     GROUP BY
-        st.sub_task_id,
+        sst.student_sub_task_id,
         mt.title,
-        st.title,
+        sst.title,
         st.estimated_hours,
-        st.completed_time,
-        st.planned_end_time
+        sst.completed_time,
+        sst.planned_end_time
     ORDER BY days_late DESC;
 END//
 
