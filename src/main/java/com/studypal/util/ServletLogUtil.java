@@ -1,7 +1,5 @@
 package com.studypal.util;
 
-import com.studypal.exception.ScheduleConflictException;
-import com.studypal.exception.TaskDependencyException;
 import com.studypal.exception.ValidationException;
 
 import jakarta.servlet.ServletContext;
@@ -19,8 +17,6 @@ public final class ServletLogUtil {
     }
 
     private static boolean isBusinessException(Exception exception) {
-        return exception instanceof ValidationException
-                || exception instanceof ScheduleConflictException
-                || exception instanceof TaskDependencyException;
+        return exception instanceof ValidationException;
     }
 }
