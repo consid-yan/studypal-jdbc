@@ -13,18 +13,18 @@ SELECT
     c.course_code,
     c.course_name,
     mt.title AS main_task_title,
-    sst.title AS sub_task_title,
+    COALESCE(sst.custom_title, st.title) AS sub_task_title,
     sst.status,
     mt.importance_level,
-    COALESCE(sst.planned_end_time, mt.deadline) AS due_time,
+    COALESCE(sst.custom_planned_end_time, st.planned_end, mt.deadline) AS due_time,
     st.estimated_hours,
-    DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()) AS days_remaining,
+    DATEDIFF(COALESCE(sst.custom_planned_end_time, st.planned_end, mt.deadline), NOW()) AS days_remaining,
     CASE
         WHEN sst.status = 'COMPLETED' THEN 'DONE'
         WHEN sst.status = 'CANCELLED' THEN 'CANCELLED'
-        WHEN COALESCE(sst.planned_end_time, mt.deadline) IS NULL THEN 'UNSCHEDULED'
-        WHEN DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()) <= 1 THEN 'URGENT'
-        WHEN DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()) <= 3 THEN 'SOON'
+        WHEN COALESCE(sst.custom_planned_end_time, st.planned_end, mt.deadline) IS NULL THEN 'UNSCHEDULED'
+        WHEN DATEDIFF(COALESCE(sst.custom_planned_end_time, st.planned_end, mt.deadline), NOW()) <= 1 THEN 'URGENT'
+        WHEN DATEDIFF(COALESCE(sst.custom_planned_end_time, st.planned_end, mt.deadline), NOW()) <= 3 THEN 'SOON'
         ELSE 'NORMAL'
     END AS urgency_level,
     CASE
@@ -40,7 +40,7 @@ SELECT
             END) * 10
             + GREATEST(
                 0,
-                COALESCE(DATEDIFF(COALESCE(sst.planned_end_time, mt.deadline), NOW()), 90)
+                COALESCE(DATEDIFF(COALESCE(sst.custom_planned_end_time, st.planned_end, mt.deadline), NOW()), 90)
             )
     END AS priority_score
 FROM student_sub_task sst
@@ -52,7 +52,7 @@ JOIN user u ON sst.student_id = u.user_id;
 CREATE OR REPLACE VIEW main_task_progress_view AS
 SELECT
     mt.main_task_id,
-    sst.student_id,
+    e.student_id,
     u.full_name AS student_name,
     c.course_code,
     c.course_name,
@@ -78,12 +78,15 @@ SELECT
         AS completed_estimated_hours
 FROM main_task mt
 JOIN course c ON mt.course_id = c.course_id
-JOIN sub_task_template st ON mt.main_task_id = st.main_task_id
-JOIN student_sub_task sst ON st.template_id = sst.template_id
-JOIN user u ON sst.student_id = u.user_id
+JOIN enrollment e ON mt.course_id = e.course_id
+JOIN user u ON e.student_id = u.user_id
+LEFT JOIN sub_task_template st ON mt.main_task_id = st.main_task_id
+LEFT JOIN student_sub_task sst
+    ON st.template_id = sst.template_id
+   AND e.student_id = sst.student_id
 GROUP BY
     mt.main_task_id,
-    sst.student_id,
+    e.student_id,
     u.full_name,
     c.course_code,
     c.course_name,
@@ -98,15 +101,40 @@ SELECT
     u.full_name AS student_name,
     mt.main_task_id,
     mt.title AS main_task_title,
-    sst.title AS sub_task_title,
+    COALESCE(sst.custom_title, st.title) AS sub_task_title,
     st.estimated_hours,
-    COALESCE(SUM(ss.duration_hours), 0) AS actual_hours,
-    COALESCE(SUM(ss.duration_hours), 0) - COALESCE(st.estimated_hours, 0) AS time_overrun,
+    COALESCE(SUM(
+        CASE
+            WHEN ss.end_time IS NULL THEN NULL
+            ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+        END
+    ), 0) AS actual_hours,
+    COALESCE(SUM(
+        CASE
+            WHEN ss.end_time IS NULL THEN NULL
+            ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+        END
+    ), 0) - COALESCE(st.estimated_hours, 0) AS time_overrun,
     CASE
         WHEN st.estimated_hours IS NULL THEN 'NO_ESTIMATE'
-        WHEN COALESCE(SUM(ss.duration_hours), 0) = 0 THEN 'NOT_STARTED'
-        WHEN COALESCE(SUM(ss.duration_hours), 0) <= st.estimated_hours * 0.8 THEN 'AHEAD'
-        WHEN COALESCE(SUM(ss.duration_hours), 0) <= st.estimated_hours * 1.2 THEN 'ON_TRACK'
+        WHEN COALESCE(SUM(
+            CASE
+                WHEN ss.end_time IS NULL THEN NULL
+                ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+            END
+        ), 0) = 0 THEN 'NOT_STARTED'
+        WHEN COALESCE(SUM(
+            CASE
+                WHEN ss.end_time IS NULL THEN NULL
+                ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+            END
+        ), 0) <= st.estimated_hours * 0.8 THEN 'AHEAD'
+        WHEN COALESCE(SUM(
+            CASE
+                WHEN ss.end_time IS NULL THEN NULL
+                ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+            END
+        ), 0) <= st.estimated_hours * 1.2 THEN 'ON_TRACK'
         ELSE 'OVERRUN'
     END AS efficiency_status
 FROM student_sub_task sst
@@ -120,7 +148,7 @@ GROUP BY
     u.full_name,
     mt.main_task_id,
     mt.title,
-    sst.title,
+    COALESCE(sst.custom_title, st.title),
     st.estimated_hours;
 
 CREATE OR REPLACE VIEW daily_study_stats_view AS
@@ -128,11 +156,11 @@ SELECT
     student_id,
     DATE(start_time) AS study_date,
     COUNT(study_session_id) AS session_count,
-    SUM(duration_hours) AS total_study_hours,
-    AVG(duration_hours) AS average_session_hours
+    SUM(ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2)) AS total_study_hours,
+    AVG(ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2)) AS average_session_hours
 FROM study_session
 WHERE session_type = 'ACTUAL'
-  AND duration_hours IS NOT NULL
+  AND end_time IS NOT NULL
 GROUP BY student_id, DATE(start_time);
 
 CREATE OR REPLACE VIEW course_workload_view AS

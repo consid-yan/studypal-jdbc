@@ -76,10 +76,10 @@ CREATE TABLE student_sub_task (
     student_sub_task_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id          INT          NOT NULL,
     template_id         INT          NOT NULL,
-    title               VARCHAR(150) NOT NULL,
-    description         TEXT,
-    planned_start_time  DATETIME,
-    planned_end_time    DATETIME,
+    custom_title        VARCHAR(150),
+    custom_description  TEXT,
+    custom_planned_start_time DATETIME,
+    custom_planned_end_time   DATETIME,
     completed_time      DATETIME,
     status              ENUM('TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')
         NOT NULL DEFAULT 'TODO',
@@ -92,8 +92,8 @@ CREATE TABLE student_sub_task (
     CONSTRAINT fk_student_sub_task_template
         FOREIGN KEY (template_id) REFERENCES sub_task_template (template_id),
     CONSTRAINT chk_student_sub_task_time
-        CHECK (planned_start_time IS NULL OR planned_end_time IS NULL
-               OR planned_start_time < planned_end_time)
+        CHECK (custom_planned_start_time IS NULL OR custom_planned_end_time IS NULL
+               OR custom_planned_start_time < custom_planned_end_time)
 );
 
 CREATE TABLE study_session (
@@ -102,7 +102,6 @@ CREATE TABLE study_session (
     student_sub_task_id INT,
     start_time          DATETIME NOT NULL,
     end_time            DATETIME,
-    duration_hours      DECIMAL(5,2),
     session_type        ENUM('PLANNED', 'ACTUAL') NOT NULL DEFAULT 'ACTUAL',
     notes               TEXT,
     CONSTRAINT fk_study_session_student
@@ -110,9 +109,7 @@ CREATE TABLE study_session (
     CONSTRAINT fk_study_session_student_sub_task
         FOREIGN KEY (student_sub_task_id) REFERENCES student_sub_task (student_sub_task_id),
     CONSTRAINT chk_study_session_time
-        CHECK (end_time IS NULL OR start_time < end_time),
-    CONSTRAINT chk_study_session_duration
-        CHECK (duration_hours IS NULL OR duration_hours >= 0)
+        CHECK (end_time IS NULL OR start_time < end_time)
 );
 
 CREATE INDEX idx_main_task_course ON main_task (course_id);

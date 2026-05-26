@@ -17,8 +17,12 @@ import java.util.Optional;
 public class SubTaskDao {
     private static final String SELECT_COLUMNS =
             "sst.student_sub_task_id, sst.student_id, sst.template_id, st.main_task_id, "
-                    + "sst.title, sst.description, st.estimated_hours, "
-                    + "sst.planned_start_time, sst.planned_end_time, sst.completed_time, sst.status";
+                    + "COALESCE(sst.custom_title, st.title) AS title, "
+                    + "COALESCE(sst.custom_description, st.description) AS description, "
+                    + "st.estimated_hours, "
+                    + "COALESCE(sst.custom_planned_start_time, st.planned_start) AS planned_start_time, "
+                    + "COALESCE(sst.custom_planned_end_time, st.planned_end) AS planned_end_time, "
+                    + "sst.completed_time, sst.status";
 
     public Optional<SubTask> findById(Integer studentSubTaskId) {
         String sql = "SELECT " + SELECT_COLUMNS + " FROM student_sub_task sst "
@@ -42,7 +46,7 @@ public class SubTaskDao {
         String sql = "SELECT " + SELECT_COLUMNS + " FROM student_sub_task sst "
                 + "JOIN sub_task_template st ON sst.template_id = st.template_id "
                 + "WHERE sst.student_id = ? "
-                + "ORDER BY COALESCE(sst.planned_end_time, st.planned_end), st.sequence_order";
+                + "ORDER BY COALESCE(sst.custom_planned_end_time, st.planned_end), st.sequence_order";
         List<SubTask> subTasks = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -62,7 +66,7 @@ public class SubTaskDao {
         String sql = "SELECT " + SELECT_COLUMNS + " FROM student_sub_task sst "
                 + "JOIN sub_task_template st ON sst.template_id = st.template_id "
                 + "WHERE sst.student_id = ? AND st.main_task_id = ? "
-                + "ORDER BY st.sequence_order, sst.planned_end_time";
+                + "ORDER BY st.sequence_order, COALESCE(sst.custom_planned_end_time, st.planned_end)";
         List<SubTask> subTasks = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -80,9 +84,11 @@ public class SubTaskDao {
     }
 
     public int countPlannedForDate(Integer studentId, java.time.LocalDate date) {
-        String sql = "SELECT COUNT(*) FROM student_sub_task "
-                + "WHERE student_id = ? "
-                + "AND (DATE(planned_start_time) = ? OR DATE(planned_end_time) = ?)";
+        String sql = "SELECT COUNT(*) FROM student_sub_task sst "
+                + "JOIN sub_task_template st ON sst.template_id = st.template_id "
+                + "WHERE sst.student_id = ? "
+                + "AND (DATE(COALESCE(sst.custom_planned_start_time, st.planned_start)) = ? "
+                + "OR DATE(COALESCE(sst.custom_planned_end_time, st.planned_end)) = ?)";
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, studentId);
@@ -198,18 +204,13 @@ public class SubTaskDao {
     private int insertStudentCopy(Connection connection, SubTask subTask, Integer templateId)
             throws SQLException {
         String sql = "INSERT INTO student_sub_task "
-                + "(student_id, template_id, title, description, planned_start_time, "
-                + "planned_end_time, completed_time, status) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                + "(student_id, template_id, completed_time, status) "
+                + "VALUES (?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, subTask.getStudentId());
             statement.setInt(2, templateId);
-            statement.setString(3, subTask.getTitle());
-            statement.setString(4, subTask.getDescription());
-            statement.setObject(5, subTask.getPlannedStartTime());
-            statement.setObject(6, subTask.getPlannedEndTime());
-            statement.setObject(7, subTask.getCompletedTime());
-            statement.setString(8, getStatus(subTask).name());
+            statement.setObject(3, subTask.getCompletedTime());
+            statement.setString(4, getStatus(subTask).name());
             if (statement.executeUpdate() == 0) {
                 throw new SQLException("Inserting student sub-task failed, no rows affected.");
             }
@@ -224,23 +225,18 @@ public class SubTaskDao {
 
     private void updateTemplate(Connection connection, SubTask subTask, Integer templateId)
             throws SQLException {
-        String sql = "UPDATE sub_task_template SET main_task_id = ?, title = ?, description = ?, "
-                + "estimated_hours = ?, planned_start = ?, planned_end = ? WHERE template_id = ?";
+        String sql = "UPDATE sub_task_template SET estimated_hours = ? WHERE template_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, subTask.getMainTaskId());
-            statement.setString(2, subTask.getTitle());
-            statement.setString(3, subTask.getDescription());
-            statement.setBigDecimal(4, subTask.getEstimatedHours());
-            statement.setObject(5, subTask.getPlannedStartTime());
-            statement.setObject(6, subTask.getPlannedEndTime());
-            statement.setInt(7, templateId);
+            statement.setBigDecimal(1, subTask.getEstimatedHours());
+            statement.setInt(2, templateId);
             statement.executeUpdate();
         }
     }
 
     private boolean updateStudentCopy(Connection connection, SubTask subTask) throws SQLException {
-        String sql = "UPDATE student_sub_task SET title = ?, description = ?, planned_start_time = ?, "
-                + "planned_end_time = ?, completed_time = ?, status = ? WHERE student_sub_task_id = ?";
+        String sql = "UPDATE student_sub_task SET custom_title = ?, custom_description = ?, "
+                + "custom_planned_start_time = ?, custom_planned_end_time = ?, "
+                + "completed_time = ?, status = ? WHERE student_sub_task_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, subTask.getTitle());
             statement.setString(2, subTask.getDescription());

@@ -69,19 +69,11 @@ BEGIN
     INSERT INTO student_sub_task (
         student_id,
         template_id,
-        title,
-        description,
-        planned_start_time,
-        planned_end_time,
         status
     )
     SELECT
         e.student_id,
         st.template_id,
-        st.title,
-        st.description,
-        st.planned_start,
-        st.planned_end,
         'TODO'
     FROM sub_task_template st
     JOIN main_task mt ON st.main_task_id = mt.main_task_id
@@ -105,19 +97,11 @@ BEGIN
     INSERT INTO student_sub_task (
         student_id,
         template_id,
-        title,
-        description,
-        planned_start_time,
-        planned_end_time,
         status
     )
     SELECT
         p_student_id,
         st.template_id,
-        st.title,
-        st.description,
-        st.planned_start,
-        st.planned_end,
         'TODO'
     FROM main_task mt
     JOIN sub_task_template st ON mt.main_task_id = st.main_task_id
@@ -140,16 +124,30 @@ BEGIN
     SELECT
         sst.student_sub_task_id,
         mt.title AS main_task_title,
-        sst.title AS sub_task_title,
+        COALESCE(sst.custom_title, st.title) AS sub_task_title,
         st.estimated_hours,
-        COALESCE(SUM(ss.duration_hours), 0) AS actual_hours,
-        COALESCE(SUM(ss.duration_hours), 0) - COALESCE(st.estimated_hours, 0) AS time_overrun,
-        DATEDIFF(sst.completed_time, sst.planned_end_time) AS days_late,
+        COALESCE(SUM(
+            CASE
+                WHEN ss.end_time IS NULL THEN NULL
+                ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+            END
+        ), 0) AS actual_hours,
+        COALESCE(SUM(
+            CASE
+                WHEN ss.end_time IS NULL THEN NULL
+                ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+            END
+        ), 0) - COALESCE(st.estimated_hours, 0) AS time_overrun,
+        DATEDIFF(sst.completed_time, COALESCE(sst.custom_planned_end_time, st.planned_end)) AS days_late,
         CASE
-            WHEN sst.completed_time IS NULL AND sst.planned_end_time < NOW() THEN 'OVERDUE'
-            WHEN DATEDIFF(sst.completed_time, sst.planned_end_time) > 2 THEN 'SEVERELY_LATE'
-            WHEN DATEDIFF(sst.completed_time, sst.planned_end_time) > 0 THEN 'LATE'
-            WHEN DATEDIFF(sst.completed_time, sst.planned_end_time) <= 0 THEN 'ON_TIME'
+            WHEN sst.completed_time IS NULL
+                 AND COALESCE(sst.custom_planned_end_time, st.planned_end) < NOW() THEN 'OVERDUE'
+            WHEN DATEDIFF(sst.completed_time, COALESCE(sst.custom_planned_end_time, st.planned_end)) > 2
+                THEN 'SEVERELY_LATE'
+            WHEN DATEDIFF(sst.completed_time, COALESCE(sst.custom_planned_end_time, st.planned_end)) > 0
+                THEN 'LATE'
+            WHEN DATEDIFF(sst.completed_time, COALESCE(sst.custom_planned_end_time, st.planned_end)) <= 0
+                THEN 'ON_TIME'
             ELSE 'NOT_COMPLETED'
         END AS completion_status
     FROM student_sub_task sst
@@ -158,17 +156,17 @@ BEGIN
     LEFT JOIN study_session ss ON sst.student_sub_task_id = ss.student_sub_task_id
     WHERE sst.student_id = p_student_id
       AND (
-          sst.planned_end_time >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
+          COALESCE(sst.custom_planned_end_time, st.planned_end) >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
           OR sst.completed_time >= DATE_SUB(NOW(), INTERVAL p_days_back DAY)
           OR sst.completed_time IS NULL
       )
     GROUP BY
         sst.student_sub_task_id,
         mt.title,
-        sst.title,
+        COALESCE(sst.custom_title, st.title),
         st.estimated_hours,
         sst.completed_time,
-        sst.planned_end_time
+        COALESCE(sst.custom_planned_end_time, st.planned_end)
     ORDER BY days_late DESC;
 END//
 

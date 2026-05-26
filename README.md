@@ -6,11 +6,11 @@ The application uses Java Servlet/JSP, pure JDBC, and MySQL. It does not use Spr
 
 ## Project Positioning
 
-StudyPal is not positioned as a single-user personal todo list. A pure single-student todo tool would not strongly justify shared course tasks, `enrollment`, role-based `user` records, copied student sub-tasks, reporting views, and study-session analytics.
+StudyPal is not positioned as a single-user personal todo list. A pure single-student todo tool would not strongly justify shared course tasks, `enrollment`, role-based `user` records, student-template progress records, reporting views, and study-session analytics.
 
 The project is positioned as a student coursework planning and study tracking system for university academic support scenarios. It helps advisors, tutors, teaching assistants, learning support staff, and students understand coursework load, break large assignments into manageable steps, plan study time, record actual learning effort, and identify procrastination or academic risk early.
 
-In this positioning, students are represented by rows in the shared `user` table with role `STUDENT`. A student can enroll in different courses, receive personal copies of course-level sub-task templates, update individual progress, record study sessions, and show different workload or delay patterns.
+In this positioning, students are represented by rows in the shared `user` table with role `STUDENT`. A student can enroll in different courses, receive student-specific progress records linked to course-level sub-task templates, update individual progress, record study sessions, and show different workload or delay patterns.
 
 ### Target Users
 
@@ -40,11 +40,21 @@ The current database design is built around a multi-role, multi-student academic
 - `enrollment` connects students and courses. It is necessary because one student can take many courses, and one course can include many students.
 - `main_task` stores course-level coursework items such as assignments, exams, projects, and readings.
 - `sub_task_template` decomposes a course-level task into reusable steps with estimated hours, sequence order, and planned time ranges.
-- `student_sub_task` copies templates to individual students, so each student can maintain personal status, completion time, notes, and adjusted planning.
-- `study_session` records planned or actual study effort for a student, optionally linked to a student-specific sub-task. It allows comparison between estimated work and real learning behavior.
+- `student_sub_task` links students to shared templates and stores only student-specific progress or override fields, such as status, completion time, notes, and optional personal title/description/planned-time adjustments.
+- `study_session` records planned or actual study effort for a student, optionally linked to a student-specific sub-task. Duration is calculated from `start_time` and `end_time` in queries and views rather than stored as a base-table column.
 - Reporting views calculate task priority, main-task progress, study efficiency, daily study totals, and course workload summaries.
-- Stored procedures batch-create templates, copy templates to students, and generate procrastination reports.
-- Triggers protect course-level main tasks after creation and calculate study-session duration automatically.
+- Stored procedures batch-create templates, create student-template progress records, and generate procrastination reports.
+- The schema avoids storing derived duration values in base tables, keeping reporting calculations in views and queries.
+
+The schema is designed to align with Third Normal Form (3NF):
+
+- Course, lecturer, enrollment, task template, student progress, and study-session facts are stored in separate relations.
+- `course` stores `lecturer_id` rather than duplicating lecturer names.
+- `enrollment` represents the many-to-many relationship between students and courses.
+- `student_sub_task` stores student-specific facts and optional overrides; default title, description, estimates, and planned time remain in `sub_task_template`.
+- `study_session.duration_hours` is not stored because it is derived from `start_time` and `end_time`.
+
+The project intentionally keeps administrators, lecturers, and students in one `user` table with a `role` column. This still satisfies the current 3NF design because the current version has no role-specific profile attributes. If future requirements add student numbers, majors, lecturer offices, or academic titles, those fields should be moved into `student_profile` and `lecturer_profile` tables keyed by `user_id`.
 
 This design gives the project a stronger database purpose than a simple task list. The system can answer questions such as:
 
@@ -167,8 +177,8 @@ This implementation round aligns the Java web layer with the current SQL schema:
 - Course, main-task, student sub-task, and study-session pages keep create, read, update, and delete flows.
 - Course records use `lecturer_id` and display lecturer names from `user` rows with role `LECTURER`.
 - Main tasks are course-level records. Student progress is tracked through `student_sub_task`, not through `main_task.status`.
-- Sub-task screens display student-specific sub-tasks backed by `student_sub_task` joined with `sub_task_template`.
-- Study sessions link to `study_session.student_sub_task_id`.
+- Sub-task screens display student-specific sub-tasks by joining `student_sub_task` with `sub_task_template` and applying personal overrides with `COALESCE`.
+- Study sessions link to `study_session.student_sub_task_id`; displayed duration is calculated dynamically.
 - The schedule page is not exposed in navigation because the refactored schema does not include schedule slots.
 
 ## Current Table Structure
@@ -224,10 +234,10 @@ student_sub_task
 - student_sub_task_id
 - student_id
 - template_id
-- title
-- description
-- planned_start_time
-- planned_end_time
+- custom_title
+- custom_description
+- custom_planned_start_time
+- custom_planned_end_time
 - completed_time
 - status
 - notes
@@ -240,9 +250,14 @@ study_session
 - student_sub_task_id
 - start_time
 - end_time
-- duration_hours
 - session_type
 - notes
+```
+
+`duration_hours` appears in some DAO result objects and reporting views as a calculated value:
+
+```text
+ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2)
 ```
 
 ## Web Layer
@@ -272,9 +287,9 @@ Database scripts are stored in the `sql/` folder. Run `schema.sql` first, then l
 ```text
 schema.sql            Creates the database, tables, constraints, and indexes
 views.sql             Creates reporting views for priority, progress, efficiency, study stats, and workload
-procedures.sql        Creates stored procedures for template creation, student copies, and reports
-triggers.sql          Removes legacy main-task immutability triggers and creates duration calculation triggers
-insert_test_data.sql  Inserts sample users, courses, tasks, sub-task templates, student copies, and sessions
+procedures.sql        Creates stored procedures for template creation, student-template records, and reports
+triggers.sql          Removes legacy triggers; no duration trigger is required in the 3NF schema
+insert_test_data.sql  Inserts sample users, courses, tasks, sub-task templates, student progress records, and sessions
 queries.sql           Stores useful test and report queries
 ```
 

@@ -34,11 +34,11 @@ ORDER BY mt.deadline ASC;
 -- Student sub-tasks for one main task.
 SELECT
     sst.student_sub_task_id,
-    sst.title,
-    sst.description,
+    COALESCE(sst.custom_title, st.title) AS title,
+    COALESCE(sst.custom_description, st.description) AS description,
     st.estimated_hours,
-    sst.planned_start_time,
-    sst.planned_end_time,
+    COALESCE(sst.custom_planned_start_time, st.planned_start) AS planned_start_time,
+    COALESCE(sst.custom_planned_end_time, st.planned_end) AS planned_end_time,
     sst.status,
     sst.completed_time,
     sst.notes
@@ -61,16 +61,17 @@ LIMIT 10;
 SELECT
     sst.student_sub_task_id,
     mt.title AS main_task_title,
-    sst.title AS sub_task_title,
-    sst.planned_end_time AS due_time,
-    DATEDIFF(sst.planned_end_time, NOW()) AS days_remaining
+    COALESCE(sst.custom_title, st.title) AS sub_task_title,
+    COALESCE(sst.custom_planned_end_time, st.planned_end) AS due_time,
+    DATEDIFF(COALESCE(sst.custom_planned_end_time, st.planned_end), NOW()) AS days_remaining
 FROM student_sub_task sst
 JOIN sub_task_template st ON sst.template_id = st.template_id
 JOIN main_task mt ON st.main_task_id = mt.main_task_id
 WHERE sst.student_id = 6
   AND sst.status IN ('TODO', 'IN_PROGRESS')
-  AND sst.planned_end_time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 DAY)
-ORDER BY sst.planned_end_time ASC;
+  AND COALESCE(sst.custom_planned_end_time, st.planned_end)
+      BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 DAY)
+ORDER BY COALESCE(sst.custom_planned_end_time, st.planned_end) ASC;
 
 -- Main task progress for one student. Requires views.sql.
 SELECT
@@ -100,11 +101,14 @@ ORDER BY mtp.completion_percentage ASC;
 -- Study sessions for one student.
 SELECT
     ss.study_session_id,
-    sst.title AS sub_task_title,
+    COALESCE(sst.custom_title, st.title) AS sub_task_title,
     mt.title AS main_task_title,
     ss.start_time,
     ss.end_time,
-    ss.duration_hours,
+    CASE
+        WHEN ss.end_time IS NULL THEN NULL
+        ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+    END AS duration_hours,
     ss.session_type,
     ss.notes
 FROM study_session ss
@@ -116,12 +120,13 @@ ORDER BY ss.start_time DESC;
 
 -- Study statistics for the last seven days.
 SELECT
-    SUM(duration_hours) AS total_study_hours,
+    SUM(ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2)) AS total_study_hours,
     COUNT(study_session_id) AS session_count,
-    AVG(duration_hours) AS average_session_hours
+    AVG(ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2)) AS average_session_hours
 FROM study_session
 WHERE student_id = 6
   AND session_type = 'ACTUAL'
+  AND end_time IS NOT NULL
   AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY);
 
 -- Study hours grouped by course.
@@ -129,7 +134,7 @@ SELECT
     c.course_code,
     c.course_name,
     COUNT(ss.study_session_id) AS session_count,
-    SUM(ss.duration_hours) AS total_study_hours
+    SUM(ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)) AS total_study_hours
 FROM study_session ss
 JOIN student_sub_task sst ON ss.student_sub_task_id = sst.student_sub_task_id
 JOIN sub_task_template st ON sst.template_id = st.template_id
@@ -137,6 +142,7 @@ JOIN main_task mt ON st.main_task_id = mt.main_task_id
 JOIN course c ON mt.course_id = c.course_id
 WHERE ss.student_id = 6
   AND ss.session_type = 'ACTUAL'
+  AND ss.end_time IS NOT NULL
 GROUP BY c.course_code, c.course_name
 ORDER BY total_study_hours DESC;
 
@@ -155,10 +161,20 @@ ORDER BY time_overrun DESC;
 -- Find completed student sub-tasks where actual study hours exceeded the estimate.
 SELECT
     mt.title AS main_task_title,
-    sst.title AS sub_task_title,
+    COALESCE(sst.custom_title, st.title) AS sub_task_title,
     st.estimated_hours,
-    COALESCE(SUM(ss.duration_hours), 0) AS actual_hours,
-    COALESCE(SUM(ss.duration_hours), 0) / st.estimated_hours AS overrun_ratio
+    COALESCE(SUM(
+        CASE
+            WHEN ss.end_time IS NULL THEN NULL
+            ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+        END
+    ), 0) AS actual_hours,
+    COALESCE(SUM(
+        CASE
+            WHEN ss.end_time IS NULL THEN NULL
+            ELSE ROUND(TIMESTAMPDIFF(MINUTE, ss.start_time, ss.end_time) / 60, 2)
+        END
+    ), 0) / st.estimated_hours AS overrun_ratio
 FROM student_sub_task sst
 JOIN sub_task_template st ON sst.template_id = st.template_id
 JOIN main_task mt ON st.main_task_id = mt.main_task_id
@@ -166,7 +182,7 @@ LEFT JOIN study_session ss ON sst.student_sub_task_id = ss.student_sub_task_id
 WHERE sst.student_id = 6
   AND sst.status = 'COMPLETED'
   AND st.estimated_hours > 0
-GROUP BY sst.student_sub_task_id, mt.title, sst.title, st.estimated_hours
+GROUP BY sst.student_sub_task_id, mt.title, COALESCE(sst.custom_title, st.title), st.estimated_hours
 HAVING overrun_ratio > 1.2
 ORDER BY overrun_ratio DESC;
 
@@ -174,11 +190,12 @@ ORDER BY overrun_ratio DESC;
 SELECT
     HOUR(start_time) AS hour_of_day,
     COUNT(*) AS session_count,
-    AVG(duration_hours) AS average_duration
+    AVG(ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2)) AS average_duration
 FROM study_session
 WHERE student_id = 6
   AND session_type = 'ACTUAL'
-  AND duration_hours > 0.5
+  AND end_time IS NOT NULL
+  AND ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2) > 0.5
 GROUP BY HOUR(start_time)
 ORDER BY average_duration DESC;
 

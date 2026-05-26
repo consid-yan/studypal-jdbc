@@ -6,10 +6,10 @@ public class StudentSubTask {
     private Integer studentSubTaskId;
     private Integer studentId;
     private Integer templateId;
-    private String title;
-    private String description;
-    private LocalDateTime plannedStartTime;
-    private LocalDateTime plannedEndTime;
+    private String customTitle;
+    private String customDescription;
+    private LocalDateTime customPlannedStartTime;
+    private LocalDateTime customPlannedEndTime;
     private LocalDateTime completedTime;
     private TaskStatus status;
     private String notes;
@@ -45,35 +45,67 @@ public class StudentSubTask {
     }
 
     public String getTitle() {
-        return title;
+        return customTitle;
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        this.customTitle = title;
     }
 
     public String getDescription() {
-        return description;
+        return customDescription;
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.customDescription = description;
     }
 
     public LocalDateTime getPlannedStartTime() {
-        return plannedStartTime;
+        return customPlannedStartTime;
     }
 
     public void setPlannedStartTime(LocalDateTime plannedStartTime) {
-        this.plannedStartTime = plannedStartTime;
+        this.customPlannedStartTime = plannedStartTime;
     }
 
     public LocalDateTime getPlannedEndTime() {
-        return plannedEndTime;
+        return customPlannedEndTime;
     }
 
     public void setPlannedEndTime(LocalDateTime plannedEndTime) {
-        this.plannedEndTime = plannedEndTime;
+        this.customPlannedEndTime = plannedEndTime;
+    }
+
+    public String getCustomTitle() {
+        return customTitle;
+    }
+
+    public void setCustomTitle(String customTitle) {
+        this.customTitle = customTitle;
+    }
+
+    public String getCustomDescription() {
+        return customDescription;
+    }
+
+    public void setCustomDescription(String customDescription) {
+        this.customDescription = customDescription;
+    }
+
+    public LocalDateTime getCustomPlannedStartTime() {
+        return customPlannedStartTime;
+    }
+
+    public void setCustomPlannedStartTime(LocalDateTime customPlannedStartTime) {
+        this.customPlannedStartTime = customPlannedStartTime;
+    }
+
+    public LocalDateTime getCustomPlannedEndTime() {
+        return customPlannedEndTime;
+    }
+
+    public void setCustomPlannedEndTime(LocalDateTime customPlannedEndTime) {
+        this.customPlannedEndTime = customPlannedEndTime;
     }
 
     public LocalDateTime getCompletedTime() {

@@ -26,16 +26,10 @@ public class StudySessionService {
     }
 
     public void recordStudySession(StudySession studySession) {
-        if (studySession.getDurationHours() == null) {
-            studySession.setDurationHours(studySession.calculateDurationHours());
-        }
         studySessionDao.insert(studySession);
     }
 
     public void updateStudySession(StudySession studySession) {
-        if (studySession.getDurationHours() == null) {
-            studySession.setDurationHours(studySession.calculateDurationHours());
-        }
         studySessionDao.update(studySession);
     }
 

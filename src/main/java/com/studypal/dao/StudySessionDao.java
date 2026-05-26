@@ -18,7 +18,10 @@ import java.util.Optional;
 public class StudySessionDao {
     private static final String SELECT_COLUMNS =
             "study_session_id, student_id, student_sub_task_id, start_time, end_time, "
-                    + "duration_hours, session_type, notes";
+                    + "CASE "
+                    + "WHEN end_time IS NULL THEN NULL "
+                    + "ELSE ROUND(TIMESTAMPDIFF(MINUTE, start_time, end_time) / 60, 2) "
+                    + "END AS duration_hours, session_type, notes";
 
     public Optional<StudySession> findById(Integer studySessionId) {
         String sql = "SELECT " + SELECT_COLUMNS + " FROM study_session WHERE study_session_id = ?";
@@ -73,19 +76,17 @@ public class StudySessionDao {
     }
 
     public void insert(StudySession studySession) {
-        updateDurationIfEnded(studySession);
         String sql = "INSERT INTO study_session "
-                + "(student_id, student_sub_task_id, start_time, end_time, duration_hours, session_type, notes) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                + "(student_id, student_sub_task_id, start_time, end_time, session_type, notes) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, studySession.getStudentId());
             setNullableInteger(statement, 2, studySession.getStudentSubTaskId());
             statement.setObject(3, studySession.getStartTime());
             statement.setObject(4, studySession.getEndTime());
-            statement.setBigDecimal(5, studySession.getDurationHours());
-            statement.setString(6, getSessionType(studySession).name());
-            statement.setString(7, studySession.getNotes());
+            statement.setString(5, getSessionType(studySession).name());
+            statement.setString(6, studySession.getNotes());
             if (statement.executeUpdate() == 0) {
                 throw new SQLException("Inserting study session failed, no rows affected.");
             }
@@ -100,9 +101,8 @@ public class StudySessionDao {
     }
 
     public boolean update(StudySession studySession) {
-        updateDurationIfEnded(studySession);
         String sql = "UPDATE study_session SET student_id = ?, student_sub_task_id = ?, "
-                + "start_time = ?, end_time = ?, duration_hours = ?, session_type = ?, notes = ? "
+                + "start_time = ?, end_time = ?, session_type = ?, notes = ? "
                 + "WHERE study_session_id = ?";
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -110,10 +110,9 @@ public class StudySessionDao {
             setNullableInteger(statement, 2, studySession.getStudentSubTaskId());
             statement.setObject(3, studySession.getStartTime());
             statement.setObject(4, studySession.getEndTime());
-            statement.setBigDecimal(5, studySession.getDurationHours());
-            statement.setString(6, getSessionType(studySession).name());
-            statement.setString(7, studySession.getNotes());
-            statement.setInt(8, studySession.getStudySessionId());
+            statement.setString(5, getSessionType(studySession).name());
+            statement.setString(6, studySession.getNotes());
+            statement.setInt(7, studySession.getStudySessionId());
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update study session.", e);
@@ -142,12 +141,6 @@ public class StudySessionDao {
         session.setSessionType(SessionType.valueOf(resultSet.getString("session_type")));
         session.setNotes(resultSet.getString("notes"));
         return session;
-    }
-
-    private void updateDurationIfEnded(StudySession studySession) {
-        if (studySession.getDurationHours() == null && studySession.hasEnded()) {
-            studySession.setDurationHours(studySession.calculateDurationHours());
-        }
     }
 
     private SessionType getSessionType(StudySession studySession) {

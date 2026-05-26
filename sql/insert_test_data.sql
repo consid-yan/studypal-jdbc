@@ -126,69 +126,53 @@ INSERT INTO sub_task_template (
 INSERT INTO student_sub_task (
     student_id,
     template_id,
-    title,
-    description,
-    planned_start_time,
-    planned_end_time,
     completed_time,
     status,
     notes
 ) VALUES
-    (6, 1, 'Analyze requirements and design ER diagram', 'Identify StudyPal entities and relationships.', '2026-05-15 09:00:00', '2026-05-16 18:00:00', '2026-05-16 17:30:00', 'COMPLETED', 'Finished ER draft early.'),
-    (6, 2, 'Convert ER diagram to relational model', 'Define tables, primary keys, and foreign keys.', '2026-05-17 09:00:00', '2026-05-17 18:00:00', '2026-05-17 17:00:00', 'COMPLETED', NULL),
-    (6, 3, 'Write schema.sql', 'Create database tables, constraints, and indexes.', '2026-05-18 09:00:00', '2026-05-18 12:00:00', '2026-05-18 11:30:00', 'COMPLETED', NULL),
-    (6, 4, 'Implement DAO layer', 'Implement direct JDBC access for all core tables.', '2026-05-19 09:00:00', '2026-05-21 18:00:00', NULL, 'IN_PROGRESS', 'Working on MainTaskDao refactor.'),
-    (6, 5, 'Write test data script', 'Create realistic SQL data for local testing.', '2026-05-20 14:00:00', '2026-05-20 18:00:00', '2026-05-20 16:00:00', 'COMPLETED', NULL),
-    (6, 6, 'Create views and triggers', 'Add reporting views and consistency triggers.', '2026-05-22 09:00:00', '2026-05-22 18:00:00', NULL, 'TODO', NULL),
-    (6, 7, 'Create stored procedures', 'Add procedures for batch template creation and student copies.', '2026-05-23 09:00:00', '2026-05-23 12:00:00', NULL, 'TODO', NULL),
-    (6, 8, 'Write advanced SQL queries', 'Add examples for progress and study analysis.', '2026-05-23 14:00:00', '2026-05-24 12:00:00', NULL, 'TODO', NULL),
-    (6, 9, 'Run integration testing', 'Test all web flows and database operations together.', '2026-05-25 09:00:00', '2026-05-27 18:00:00', NULL, 'TODO', NULL),
-    (6, 10, 'Write project report', 'Document the database design and team contribution.', '2026-05-28 09:00:00', '2026-05-31 18:00:00', NULL, 'TODO', NULL),
-    (6, 11, 'Review AVL tree rotations', 'Study single and double rotations.', '2026-05-20 19:00:00', '2026-05-20 21:00:00', '2026-05-20 21:00:00', 'COMPLETED', NULL),
-    (6, 12, 'Implement base AVL tree', 'Code insert, delete, search, and height updates.', '2026-05-21 19:00:00', '2026-05-23 18:00:00', NULL, 'IN_PROGRESS', NULL),
-    (6, 13, 'Implement tri-node restructuring', 'Add restructuring logic for rebalancing.', '2026-05-24 09:00:00', '2026-05-24 18:00:00', NULL, 'TODO', NULL),
-    (6, 14, 'Write AVL tree tests', 'Verify rotations and ordering after updates.', '2026-05-25 09:00:00', '2026-05-25 18:00:00', NULL, 'TODO', NULL);
+    (6, 1, '2026-05-16 17:30:00', 'COMPLETED', 'Finished ER draft early.'),
+    (6, 2, '2026-05-17 17:00:00', 'COMPLETED', NULL),
+    (6, 3, '2026-05-18 11:30:00', 'COMPLETED', NULL),
+    (6, 4, NULL, 'IN_PROGRESS', 'Working on MainTaskDao refactor.'),
+    (6, 5, '2026-05-20 16:00:00', 'COMPLETED', NULL),
+    (6, 6, NULL, 'TODO', NULL),
+    (6, 7, NULL, 'TODO', NULL),
+    (6, 8, NULL, 'TODO', NULL),
+    (6, 9, NULL, 'TODO', NULL),
+    (6, 10, NULL, 'TODO', NULL),
+    (6, 11, '2026-05-20 21:00:00', 'COMPLETED', NULL),
+    (6, 12, NULL, 'IN_PROGRESS', NULL),
+    (6, 13, NULL, 'TODO', NULL),
+    (6, 14, NULL, 'TODO', NULL);
 
 -- Maya Liu (student_id = 7): partial progress on main task 1.
 INSERT INTO student_sub_task (
     student_id,
     template_id,
-    title,
-    description,
-    planned_start_time,
-    planned_end_time,
     completed_time,
     status,
     notes
 ) VALUES
-    (7, 1, 'Analyze requirements and design ER diagram', 'Identify StudyPal entities and relationships.', '2026-05-15 09:00:00', '2026-05-16 18:00:00', '2026-05-16 18:30:00', 'COMPLETED', NULL),
-    (7, 2, 'Convert ER diagram to relational model', 'Define tables, primary keys, and foreign keys.', '2026-05-17 09:00:00', '2026-05-17 18:00:00', NULL, 'IN_PROGRESS', NULL),
-    (7, 3, 'Write schema.sql', 'Create database tables, constraints, and indexes.', '2026-05-18 09:00:00', '2026-05-18 12:00:00', NULL, 'TODO', NULL),
-    (7, 4, 'Implement DAO layer', 'Implement direct JDBC access for all core tables.', '2026-05-19 09:00:00', '2026-05-21 18:00:00', NULL, 'TODO', NULL),
-    (7, 5, 'Write test data script', 'Create realistic SQL data for local testing.', '2026-05-20 14:00:00', '2026-05-20 18:00:00', NULL, 'TODO', NULL),
-    (7, 6, 'Create views and triggers', 'Add reporting views and consistency triggers.', '2026-05-22 09:00:00', '2026-05-22 18:00:00', NULL, 'TODO', NULL),
-    (7, 7, 'Create stored procedures', 'Add procedures for batch template creation and student copies.', '2026-05-23 09:00:00', '2026-05-23 12:00:00', NULL, 'TODO', NULL),
-    (7, 8, 'Write advanced SQL queries', 'Add examples for progress and study analysis.', '2026-05-23 14:00:00', '2026-05-24 12:00:00', NULL, 'TODO', NULL),
-    (7, 9, 'Run integration testing', 'Test all web flows and database operations together.', '2026-05-25 09:00:00', '2026-05-27 18:00:00', NULL, 'TODO', NULL),
-    (7, 10, 'Write project report', 'Document the database design and team contribution.', '2026-05-28 09:00:00', '2026-05-31 18:00:00', NULL, 'TODO', NULL);
+    (7, 1, '2026-05-16 18:30:00', 'COMPLETED', NULL),
+    (7, 2, NULL, 'IN_PROGRESS', NULL),
+    (7, 3, NULL, 'TODO', NULL),
+    (7, 4, NULL, 'TODO', NULL),
+    (7, 5, NULL, 'TODO', NULL),
+    (7, 6, NULL, 'TODO', NULL),
+    (7, 7, NULL, 'TODO', NULL),
+    (7, 8, NULL, 'TODO', NULL),
+    (7, 9, NULL, 'TODO', NULL),
+    (7, 10, NULL, 'TODO', NULL);
 
 -- Other enrolled students receive default TODO copies for main task 1 templates.
 INSERT INTO student_sub_task (
     student_id,
     template_id,
-    title,
-    description,
-    planned_start_time,
-    planned_end_time,
     status
 )
 SELECT
     e.student_id,
     st.template_id,
-    st.title,
-    st.description,
-    st.planned_start,
-    st.planned_end,
     'TODO'
 FROM enrollment e
 JOIN main_task mt ON e.course_id = mt.course_id
@@ -200,19 +184,11 @@ WHERE mt.main_task_id = 1
 INSERT INTO student_sub_task (
     student_id,
     template_id,
-    title,
-    description,
-    planned_start_time,
-    planned_end_time,
     status
 )
 SELECT
     e.student_id,
     st.template_id,
-    st.title,
-    st.description,
-    st.planned_start,
-    st.planned_end,
     'TODO'
 FROM enrollment e
 JOIN main_task mt ON e.course_id = mt.course_id
@@ -225,16 +201,15 @@ INSERT INTO study_session (
     student_sub_task_id,
     start_time,
     end_time,
-    duration_hours,
     session_type,
     notes
 ) VALUES
-    (6, 1, '2026-05-15 09:30:00', '2026-05-15 13:00:00', 3.50, 'ACTUAL', 'Drafted the first requirement list.'),
-    (6, 1, '2026-05-16 10:00:00', '2026-05-16 10:30:00', 0.50, 'ACTUAL', 'Refined the ER diagram.'),
-    (6, 2, '2026-05-17 09:00:00', '2026-05-17 12:00:00', 3.00, 'ACTUAL', 'Mapped entities into relational tables.'),
-    (6, 3, '2026-05-18 09:00:00', '2026-05-18 11:30:00', 2.50, 'ACTUAL', 'Created schema.sql with constraints and indexes.'),
-    (6, 5, '2026-05-20 14:00:00', '2026-05-20 16:00:00', 2.00, 'ACTUAL', 'Prepared the first test data script.'),
-    (6, 4, '2026-05-19 09:00:00', '2026-05-19 12:00:00', 3.00, 'ACTUAL', 'Implemented StudentDao and CourseDao.'),
-    (6, 4, '2026-05-20 19:00:00', '2026-05-20 22:00:00', 3.00, 'ACTUAL', 'Implemented task-related DAO methods.'),
-    (6, 11, '2026-05-20 19:00:00', '2026-05-20 21:00:00', 2.00, 'ACTUAL', 'Reviewed AVL tree balancing rules.'),
-    (6, 12, '2026-05-21 19:00:00', '2026-05-21 21:30:00', 2.50, 'ACTUAL', 'Started the AVL tree class structure.');
+    (6, 1, '2026-05-15 09:30:00', '2026-05-15 13:00:00', 'ACTUAL', 'Drafted the first requirement list.'),
+    (6, 1, '2026-05-16 10:00:00', '2026-05-16 10:30:00', 'ACTUAL', 'Refined the ER diagram.'),
+    (6, 2, '2026-05-17 09:00:00', '2026-05-17 12:00:00', 'ACTUAL', 'Mapped entities into relational tables.'),
+    (6, 3, '2026-05-18 09:00:00', '2026-05-18 11:30:00', 'ACTUAL', 'Created schema.sql with constraints and indexes.'),
+    (6, 5, '2026-05-20 14:00:00', '2026-05-20 16:00:00', 'ACTUAL', 'Prepared the first test data script.'),
+    (6, 4, '2026-05-19 09:00:00', '2026-05-19 12:00:00', 'ACTUAL', 'Implemented StudentDao and CourseDao.'),
+    (6, 4, '2026-05-20 19:00:00', '2026-05-20 22:00:00', 'ACTUAL', 'Implemented task-related DAO methods.'),
+    (6, 11, '2026-05-20 19:00:00', '2026-05-20 21:00:00', 'ACTUAL', 'Reviewed AVL tree balancing rules.'),
+    (6, 12, '2026-05-21 19:00:00', '2026-05-21 21:30:00', 'ACTUAL', 'Started the AVL tree class structure.');

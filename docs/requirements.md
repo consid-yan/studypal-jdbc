@@ -26,7 +26,7 @@ Lecturers cannot manage courses owned by other lecturers.
 
 ### 2.3 Student
 
-Students join courses by themselves. After joining a course, they can view the course's main tasks and manage their own personal sub-task copies.
+Students join courses by themselves. After joining a course, they can view the course's main tasks and manage their own personal sub-task records.
 
 Students cannot create, edit, or delete course-level main tasks.
 
@@ -58,9 +58,9 @@ Students do not directly edit the shared template.
 
 ### 3.4 Student SubTask
 
-A Student SubTask is a personal copy of a SubTask template for a specific student.
+A Student SubTask is a student-specific progress record linked to a SubTask template.
 
-Students can edit their own personal Student SubTasks, such as title, description, planned time, notes, and status. These edits do not affect other students or the original shared template.
+Students can edit their own personal override fields, such as custom title, custom description, custom planned time, notes, and status. These edits do not affect other students or the original shared template.
 
 Student progress is calculated from Student SubTasks rather than from the shared template.
 
@@ -68,7 +68,7 @@ Student progress is calculated from Student SubTasks rather than from the shared
 
 A Study Session records a student's actual study effort. It can be linked to a Student SubTask.
 
-Study Sessions allow the system to compare planned work against actual effort.
+Study Sessions allow the system to compare planned work against actual effort. Duration is calculated from start and end time rather than stored as a separate base-table fact.
 
 ## 4. Functional Requirements
 
@@ -106,7 +106,7 @@ FR-014: Student enrollment does not require approval.
 
 FR-015: Once a student joins a course, the enrollment cannot be withdrawn.
 
-FR-016: When a student joins a course, the system must create personal Student SubTask copies for all existing MainTasks in that course.
+FR-016: When a student joins a course, the system must create Student SubTask progress records for all existing MainTasks in that course.
 
 ## 4.3 MainTask Management
 
@@ -126,7 +126,7 @@ FR-023: After a MainTask is published, it must not be deletable.
 
 FR-024: When a new MainTask is published, the system must generate SubTask templates for that MainTask.
 
-FR-025: When a new MainTask is published, the system must create personal Student SubTask copies for all students currently enrolled in the course.
+FR-025: When a new MainTask is published, the system must create Student SubTask progress records for all students currently enrolled in the course.
 
 ## 4.4 AI SubTask Generation
 
@@ -157,7 +157,7 @@ FR-034: SubTask templates should include title, description, estimated effort, p
 
 FR-035: Students must not directly edit shared SubTask templates.
 
-FR-036: A shared SubTask template must be copied into Student SubTasks for each enrolled student.
+FR-036: A shared SubTask template must be linked from Student SubTasks for each enrolled student.
 
 ## 4.6 Student SubTask Management
 
@@ -165,7 +165,7 @@ FR-037: Student SubTasks must belong to one student and one SubTask template.
 
 FR-038: Student SubTasks must preserve a link to the original template.
 
-FR-039: Students must be able to edit their own Student SubTask details without changing the shared template.
+FR-039: Students must be able to edit their own Student SubTask override fields without changing the shared template.
 
 FR-040: Students must be able to update their own Student SubTask status.
 
@@ -201,9 +201,9 @@ FR-051: A Study Session may be linked to a Student SubTask.
 
 FR-052: A Study Session must include start time.
 
-FR-053: A Study Session may include end time, duration, session type, and notes.
+FR-053: A Study Session may include end time, session type, and notes; duration is a calculated display/reporting value.
 
-FR-054: If start time and end time are provided, the system should calculate duration automatically.
+FR-054: If start time and end time are provided, the system should calculate duration automatically in queries, views, or application display logic.
 
 FR-055: Students must only manage their own Study Sessions.
 
@@ -234,15 +234,10 @@ The target data model should separate course-level task definitions from student
 - Stores login and role information.
 - Supports Admin, Lecturer, and Student roles.
 
-`student`
+`student_profile` / `lecturer_profile` (future extension)
 
-- Stores student profile information.
-- Links to the corresponding user account.
-
-`lecturer`
-
-- Stores lecturer profile information.
-- Links to the corresponding user account.
+- Not required in the current schema because the current version has no role-specific profile attributes.
+- If future requirements add student numbers, majors, lecturer offices, or academic titles, these profile tables should link to the corresponding `user` account by `user_id`.
 
 `course`
 
@@ -268,15 +263,16 @@ The target data model should separate course-level task definitions from student
 
 `student_sub_task`
 
-- Stores each student's personal copy of a SubTask template.
-- Belongs to `student` and references `sub_task_template`.
-- Stores personal status, edited title, edited description, planned time, completed time, and notes.
+- Stores each student's progress record for a SubTask template.
+- Belongs to a student user and references `sub_task_template`.
+- Stores personal status, completed time, notes, and optional override fields for custom title, custom description, and custom planned time.
 
 `study_session`
 
 - Stores actual study effort.
-- Belongs to `student`.
+- Belongs to a student user.
 - May reference `student_sub_task`.
+- Does not store derived duration; duration is calculated from `start_time` and `end_time`.
 
 ### 5.2 Important Data Design Rules
 
@@ -290,11 +286,15 @@ DR-004: `course` should store `lecturer_id` because one course has exactly one l
 
 DR-005: `enrollment` should enforce one enrollment per student-course pair.
 
-DR-006: `student_sub_task` should enforce one personal copy per student-template pair.
+DR-006: `student_sub_task` should enforce one progress record per student-template pair.
 
 DR-007: `study_session` should reference `student_sub_task` rather than a shared template when the session is about a specific student's work.
 
 DR-008: Published MainTasks should be protected from update and delete operations.
+
+DR-009: `study_session` should not store `duration_hours` as a base-table column because duration is functionally determined by `start_time` and `end_time`.
+
+DR-010: `student_sub_task` should not duplicate template title, description, or planned time as default data. It should store only optional student-specific override values.
 
 ## 6. Non-Functional Requirements
 
@@ -310,7 +310,7 @@ NFR-005: Database constraints should protect critical ownership and uniqueness r
 
 NFR-006: AI API failure must not leave the database in a partially created state.
 
-NFR-007: MainTask creation, AI template generation, and Student SubTask copying should be handled as one consistent workflow.
+NFR-007: MainTask creation, AI template generation, and Student SubTask record creation should be handled as one consistent workflow.
 
 NFR-008: User-facing validation errors should be separated from system exception logs.
 
@@ -350,7 +350,7 @@ As a Lecturer, I want to view student progress for each MainTask so that I can u
 
 As a Student, I want to join a course by myself so that I can access its coursework tasks.
 
-As a Student, I want to receive personal copies of AI-generated SubTasks so that I can adjust my own study plan.
+As a Student, I want to receive personal progress records linked to AI-generated SubTasks so that I can adjust my own study plan.
 
 As a Student, I want to update my own SubTask statuses so that my progress is accurately reflected.
 
@@ -366,7 +366,7 @@ As a Student, I want to record study sessions so that I can compare planned work
 - MainTasks belong to courses, not students.
 - AI generates shared SubTask templates when a MainTask is created.
 - AI generation retries up to three times before using the default fallback template.
-- Students receive personal Student SubTask copies from shared templates.
+- Students receive personal Student SubTask progress records linked to shared templates.
 - Students may edit only their own Student SubTasks.
 - Student MainTask progress is calculated from completed Student SubTasks.
 - Admins can view all progress.
