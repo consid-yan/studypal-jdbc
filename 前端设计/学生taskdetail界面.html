@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyPal Task Detail</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        paper: '#F4EBDD',
+        card: '#FFF9EF',
+        bark: '#2E241B',
+        muted: '#766A5D',
+        forest: '#3F5F46',
+        terra: '#B76E45',
+        sand: '#E2D2BD',
+        cream: '#FAF5ED',
+      },
+      fontFamily: {
+        sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+        pixel: ['"Press Start 2P"', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+body { background: #F4EBDD; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F4EBDD; }
+::-webkit-scrollbar-thumb { background: #E2D2BD; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #766A5D; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.fade-in-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-in-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.fade-in-delay-3 { animation-delay: 0.3s; opacity: 0; }
+.fade-in-delay-4 { animation-delay: 0.4s; opacity: 0; }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+.warm-card {
+  background: #FFF9EF;
+  border: 1px solid #E2D2BD;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(46, 36, 27, 0.06);
+}
+.paper-texture {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='40' height='40' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #766A5D;
+  transition: all 0.2s;
+}
+.sidebar-link:hover {
+  background: #F4EBDD;
+  color: #2E241B;
+}
+.sidebar-link.active {
+  background: #3F5F46;
+  color: #fff;
+}
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn-primary {
+  background: #3F5F46;
+  color: #fff;
+}
+.action-btn-primary:hover { opacity: 0.9; }
+.action-btn-secondary {
+  background: transparent;
+  color: #3F5F46;
+  border: 1px solid #E2D2BD;
+}
+.action-btn-secondary:hover { background: #F4EBDD; }
+@keyframes progressGrow {
+  from { width: 0; }
+  to { width: var(--target-width); }
+}
+.progress-bar-inner {
+  animation: progressGrow 0.8s ease-out forwards;
+}
+</style>
+</head>
+<body class="font-sans text-bark min-h-screen paper-texture">
+
+<!-- Layout Container -->
+<div class="flex min-h-screen">
+
+  <!-- Left Sidebar -->
+  <aside class="fixed left-0 top-0 bottom-0 w-[240px] bg-card border-r border-sand p-4 flex flex-col overflow-y-auto z-40">
+    <!-- Brand -->
+    <div class="px-2 pt-2 pb-4 mb-2 border-b border-sand">
+      <div class="flex items-center gap-2 mb-3">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="4" width="10" height="10" rx="2" fill="#3F5F46"/>
+          <rect x="14" y="4" width="10" height="5" rx="1" fill="#B76E45"/>
+          <rect x="2" y="16" width="10" height="7" rx="1" fill="#E2D2BD"/>
+          <rect x="14" y="11" width="10" height="12" rx="2" fill="#3F5F46" opacity="0.6"/>
+        </svg>
+        <div>
+          <span class="font-pixel text-[10px] text-forest">StudyPal</span>
+          <span class="font-pixel text-[10px] text-terra ml-1">Campus</span>
+        </div>
+      </div>
+      <!-- Small pixel mascot -->
+      <div class="flex justify-center">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect x="12" y="4" width="8" height="4" fill="#2E241B"/>
+          <rect x="10" y="8" width="12" height="4" fill="#2E241B"/>
+          <rect x="10" y="8" width="4" height="4" fill="#FFF9EF"/>
+          <rect x="18" y="8" width="4" height="4" fill="#FFF9EF"/>
+          <rect x="11" y="9" width="2" height="2" fill="#2E241B"/>
+          <rect x="19" y="9" width="2" height="2" fill="#2E241B"/>
+          <rect x="8" y="12" width="16" height="8" fill="#3F5F46"/>
+          <rect x="12" y="14" width="8" height="2" fill="#FFF9EF"/>
+          <rect x="10" y="20" width="4" height="6" fill="#B76E45"/>
+          <rect x="18" y="20" width="4" height="6" fill="#B76E45"/>
+          <rect x="8" y="12" width="2" height="6" fill="#F4EBDD"/>
+          <rect x="22" y="12" width="2" height="6" fill="#F4EBDD"/>
+        </svg>
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-1 flex-1">
+      <a href="student-home.html" class="sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="student-courses.html" class="sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        My Courses
+      </a>
+      <a href="student-tasks.html" class="sidebar-link active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        My Tasks
+      </a>
+      <a href="study-sessions.html" class="sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Study Sessions
+      </a>
+      <a href="student-calendar.html" class="sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </a>
+      <a href="student-profile.html" class="sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+    </nav>
+
+    <!-- Log out -->
+    <div class="mt-auto pt-3 border-t border-sand">
+      <a href="auth.html" class="sidebar-link text-terra hover:text-terra">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-[240px] flex-1">
+
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-30 bg-paper/90 backdrop-blur-sm border-b border-sand px-8 py-5">
+      <div class="max-w-[1160px] mx-auto flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold text-bark">Task Detail</h1>
+          <p class="text-sm text-muted mt-0.5">Review subtask progress, planned time, notes, and study records for this assignment.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1.5 text-xs font-medium rounded-full bg-forest/10 text-forest">Active Student</span>
+          <span class="px-3 py-1.5 text-xs font-medium rounded-full bg-terra/10 text-terra">Spring 2026</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="p-8">
+      <div class="max-w-[1160px] mx-auto">
+
+        <!-- Top Action Row -->
+        <div class="flex items-center justify-between mb-6 fade-in">
+          <div class="flex items-center gap-2 text-sm text-muted">
+            <a href="student-tasks.html" class="hover:text-bark transition-colors">My Tasks</a>
+            <span>/</span>
+            <span class="text-bark font-medium">Database ER Diagram Review</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="student-tasks.html" class="action-btn action-btn-secondary text-sm">Back to Tasks</a>
+            <a href="study-sessions.html" class="action-btn action-btn-primary text-sm">Record Study Session</a>
+          </div>
+        </div>
+
+        <!-- Main Task Summary Card -->
+        <div class="warm-card p-6 fade-in fade-in-delay-1">
+          <span class="text-xs text-muted font-medium">Database Systems</span>
+          <h2 class="text-lg font-bold text-bark mt-1">Database ER Diagram Review</h2>
+          <p class="text-sm text-bark/80 leading-relaxed mt-2 mb-4">Review the entity relationship structure, confirm role separation, and prepare the final database design explanation.</p>
+          <div class="flex items-center gap-3 mb-4 flex-wrap">
+            <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-terra/15 text-terra">In Progress</span>
+            <span class="text-xs text-terra font-medium">Due Today</span>
+            <span class="w-1 h-1 rounded-full bg-sand"></span>
+            <span class="text-xs text-bark font-medium">High Priority</span>
+            <span class="w-1 h-1 rounded-full bg-sand"></span>
+            <span class="text-xs font-bold text-bark">82%</span>
+          </div>
+          <div class="w-full h-2 bg-sand/60 rounded-full overflow-hidden">
+            <div class="h-full bg-forest rounded-full progress-bar-inner" style="--target-width: 82%; width: 82%"></div>
+          </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-3 gap-6 mt-6">
+
+          <!-- Left Column (2 cols) -->
+          <div class="col-span-2 space-y-6">
+
+            <!-- Subtasks Card -->
+            <div class="warm-card p-6 fade-in fade-in-delay-1">
+              <h2 class="text-sm font-semibold text-bark mb-4">Subtasks</h2>
+              <div class="flex flex-col gap-3">
+                <!-- Subtask 1 -->
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2.5 h-2.5 rounded-full bg-forest flex-shrink-0"></div>
+                      <div>
+                        <p class="text-sm font-medium text-bark">Identify core entities</p>
+                        <span class="text-xs text-muted">Define all primary tables and their purpose</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-forest/10 text-forest">Complete</span>
+                  </div>
+                </div>
+                <!-- Subtask 2 -->
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2.5 h-2.5 rounded-full bg-forest flex-shrink-0"></div>
+                      <div>
+                        <p class="text-sm font-medium text-bark">Separate Student, Lecturer, and Admin roles</p>
+                        <span class="text-xs text-muted">Ensure clear data boundaries between user types</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-forest/10 text-forest">Complete</span>
+                  </div>
+                </div>
+                <!-- Subtask 3 -->
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2.5 h-2.5 rounded-full bg-terra flex-shrink-0 pulse-dot"></div>
+                      <div>
+                        <p class="text-sm font-medium text-bark">Check relationship cardinality</p>
+                        <span class="text-xs text-muted">Verify one-to-many and many-to-many links</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-terra/15 text-terra">In Progress</span>
+                  </div>
+                </div>
+                <!-- Subtask 4 -->
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2.5 h-2.5 rounded-full bg-terra flex-shrink-0 pulse-dot"></div>
+                      <div>
+                        <p class="text-sm font-medium text-bark">Prepare SQL field mapping</p>
+                        <span class="text-xs text-muted">Map ER attributes to SQL column definitions</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-terra/15 text-terra">In Progress</span>
+                  </div>
+                </div>
+                <!-- Subtask 5 -->
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2.5 h-2.5 rounded-full bg-sand flex-shrink-0"></div>
+                      <div>
+                        <p class="text-sm font-medium text-bark">Write final design notes</p>
+                        <span class="text-xs text-muted">Summarize decisions and rationale</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full border border-sand bg-cream text-muted">Not Started</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Update Progress Card -->
+            <div class="warm-card p-6 fade-in fade-in-delay-2">
+              <h2 class="text-sm font-semibold text-bark mb-4">Update Progress</h2>
+              <div class="space-y-4">
+                <div>
+                  <label class="text-xs font-medium text-muted mb-1.5 block">Status</label>
+                  <select class="w-full px-3 py-2 text-sm bg-card border border-sand rounded-lg focus:outline-none focus:border-forest focus:ring-1 focus:ring-forest/20 text-bark appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23766A5D%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22/></svg>'); background-repeat: no-repeat; background-position: right 10px center;">
+                    <option>Not Started</option>
+                    <option selected>In Progress</option>
+                    <option>Complete</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-muted mb-1.5 block">Planned Time</label>
+                  <input type="text" placeholder="e.g. 2 hours" class="w-full px-3 py-2 text-sm bg-card border border-sand rounded-lg focus:outline-none focus:border-forest focus:ring-1 focus:ring-forest/20 placeholder:text-muted/60">
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-muted mb-1.5 block">Student Note</label>
+                  <textarea rows="3" placeholder="Write a short note about what you completed or what still needs work." class="w-full px-3 py-2 text-sm bg-card border border-sand rounded-lg focus:outline-none focus:border-forest focus:ring-1 focus:ring-forest/20 placeholder:text-muted/60 resize-none"></textarea>
+                </div>
+                <div class="flex items-center gap-3 pt-2">
+                  <button class="action-btn action-btn-primary text-sm">Save Changes</button>
+                  <button class="action-btn action-btn-secondary text-sm">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Linked Study Sessions Card -->
+            <div class="warm-card p-6 fade-in fade-in-delay-3">
+              <h2 class="text-sm font-semibold text-bark mb-4">Linked Study Sessions</h2>
+              <div class="flex flex-col gap-3">
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60 flex items-center justify-between">
+                  <span class="text-sm font-medium text-bark">ER model revision</span>
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-bark">2.0h</span>
+                    <span class="text-xs text-muted">Today</span>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-cream/60 border border-sand/60 flex items-center justify-between">
+                  <span class="text-sm font-medium text-bark">Role table comparison</span>
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-bark">1.5h

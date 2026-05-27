@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyPal Admin User Management</title>
+<link rel="stylesheet" href="../src/main/webapp/assets/css/workspace.css">
+</head>
+<body>
+<div class="workspace-shell">
+  <aside class="workspace-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-line"><span class="pixel-word">StudyPal</span><span class="pixel-word accent">Campus</span></div>
+      <div class="mascot float-mascot"><svg width="28" height="28" viewBox="0 0 14 14" style="image-rendering:pixelated"><rect x="5" y="0" width="4" height="2" fill="#766A5D"/><rect x="4" y="2" width="6" height="4" fill="#766A5D"/><rect x="5" y="3" width="1" height="1" fill="#F4EBDD"/><rect x="8" y="3" width="1" height="1" fill="#F4EBDD"/><rect x="3" y="6" width="8" height="5" fill="#766A5D" opacity="0.5"/><rect x="5" y="11" width="2" height="2" fill="#766A5D" opacity="0.7"/><rect x="7" y="11" width="2" height="2" fill="#766A5D" opacity="0.7"/></svg></div>
+    </div>
+    <nav class="workspace-nav">
+      <a class="sidebar-link" href="admin-home.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
+      <a class="sidebar-link active" href="admin-users.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="5" r="3"/><path d="M3 14c.8-3 2.4-4 5-4s4.2 1 5 4"/></svg>User Management</a>
+      <a class="sidebar-link" href="admin-overview.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h12M3 8h10M4 4h8"/></svg>System Overview</a>
+      <a class="sidebar-link" href="admin-courses.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>Course Management</a>
+    </nav>
+    <div class="sidebar-footer"><a class="sidebar-link" href="auth.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
+  </aside>
+  <div class="workspace-main">
+    <header class="workspace-header"><div class="header-inner"><div><h1>User Management</h1></div><div class="header-badges"><span class="pill">Active Admin</span><span class="pill strong">Spring 2026</span></div></div></header>
+    <main class="workspace-content"><div class="content-inner">
+      <section class="hero-card fade-in"><p class="eyebrow">ACCOUNT CONTROL</p><h2>Manage registered StudyPal users.</h2></section>
+      <section class="stats-grid fade-in-d1">
+        <div class="warm-card stat-card"><p class="stat-label">Total Users</p><p class="stat-value">128</p><p class="stat-hint">All registered accounts</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent">112</p><p class="stat-hint">Public registration</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value">14</p><p class="stat-hint">Created by admins</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Suspended</p><p class="stat-value accent">3</p><p class="stat-hint">Restricted accounts</p></div>
+      </section>
+      <section class="management-grid">
+        <div class="warm-card fade-in-d2">
+          <div class="row-between">
+            <h2>Registered Users</h2>
+            <a class="action-btn action-btn-secondary" href="#create-account">Create Account</a>
+          </div>
+          <form class="filter-bar" data-ui-message="Filters applied.">
+            <div><label>Search</label><input name="keyword" placeholder="Name, username, or email"></div>
+            <div><label>Role</label><select name="role"><option>All Roles</option><option>STUDENT</option><option>LECTURER</option><option>ADMIN</option></select></div>
+            <div><label>Status</label><select name="status"><option>All Statuses</option><option>Active</option><option>Suspended</option><option>Pending Reset</option></select></div>
+            <button class="action-btn action-btn-primary" type="submit">Apply</button>
+          </form>
+          <div class="table-like">
+            <div class="soft-card user-row">
+              <div class="user-meta"><p class="strong-title">Alex Chen</p><span class="muted">alexchen</span></div>
+              <span class="badge">STUDENT</span>
+              <span class="muted">alexchen@studypal.test</span>
+              <span class="muted">Joined DB2026, SE2026</span>
+              <span class="badge">Active</span>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Send a password reset link to Alex Chen?">Reset Password</button><button class="action-btn action-btn-danger" type="button" data-confirm="Suspend Alex Chen's account?">Suspend</button></div>
+            </div>
+            <div class="soft-card user-row">
+              <div class="user-meta"><p class="strong-title">Dr. Sarah Johnson</p><span class="muted">sjohnson</span></div>
+              <span class="badge accent">LECTURER</span>
+              <span class="muted">sjohnson@studypal.test</span>
+              <span class="muted">Owns SE2026</span>
+              <span class="badge">Active</span>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Dr. Sarah Johnson?">Reset Password</button><button class="action-btn action-btn-danger" type="button" data-confirm="Suspend Dr. Sarah Johnson's account?">Suspend</button></div>
+            </div>
+            <div class="soft-card user-row">
+              <div class="user-meta"><p class="strong-title">Nina Roy</p><span class="muted">ninaroy</span></div>
+              <span class="badge">STUDENT</span>
+              <span class="muted">ninaroy@studypal.test</span>
+              <span class="muted">No active courses</span>
+              <span class="badge danger">Suspended</span>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Reset Nina Roy's password before restoring access?">Reset Password</button><button class="action-btn action-btn-primary" type="button" data-confirm="Restore Nina Roy's account access?">Restore</button></div>
+            </div>
+            <div class="soft-card user-row">
+              <div class="user-meta"><p class="strong-title">System Admin</p><span class="muted">admin</span></div>
+              <span class="badge muted">ADMIN</span>
+              <span class="muted">admin@studypal.test</span>
+              <span class="muted">System owner</span>
+              <span class="badge">Active</span>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for System Admin?">Reset Password</button><button class="action-btn action-btn-danger" type="button" disabled>Protected</button></div>
+            </div>
+          </div>
+        </div>
+        <aside class="warm-card fade-in-d3" id="create-account">
+          <h2>Create Managed Account</h2>
+          <form class="form-stack" data-ui-message="Account saved.">
+            <div><label>Full Name</label><input name="fullName" placeholder="Dr. Emily Carter"></div>
+            <div><label>Email</label><input name="email" type="email" placeholder="name@studypal.test"></div>
+            <div><label>Username</label><input name="username" placeholder="ecarter"></div>
+            <div><label>Role</label><select name="role"><option>LECTURER</option><option>ADMIN</option><option>STUDENT</option></select></div>
+            <div><label>Initial Password</label><input name="password" type="password" placeholder="Temporary password"></div>
+            <button class="action-btn action-btn-primary" type="submit">Create Account</button>
+          </form>
+        </aside>
+      </section>
+    </div></main>
+  </div>
+</div>
+<script src="../src/main/webapp/assets/js/app.js"></script>
+</body>
+</html>

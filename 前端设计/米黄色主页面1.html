@@ -1,4 +1,3 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -103,7 +102,7 @@ body {
     <a href="#roles" class="hover:text-primary transition-colors">Roles</a>
     <a href="#" class="hover:text-primary transition-colors">Dashboard Preview</a>
   </div>
-  <a href="${pageContext.request.contextPath}/auth.jsp" class="text-sm text-textMuted border border-border rounded-full px-4 py-1.5 hover:border-primary hover:text-primary transition-colors">登录 / 注册</a>
+  <a href="auth.html" class="text-sm text-textMuted border border-border rounded-full px-4 py-1.5 hover:border-primary hover:text-primary transition-colors">登录 / 注册</a>
 </nav>
 
 <!-- Single-screen Hero -->
@@ -135,7 +134,7 @@ body {
         </p>
 
         <!-- CTA Button -->
-        <a href="${pageContext.request.contextPath}/auth.jsp" class="inline-block px-10 py-4 rounded-full font-bold text-lg text-white bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 mt-2 shadow-lg shadow-primary/20" style="text-decoration: none;">
+        <a href="auth.html" class="inline-block px-10 py-4 rounded-full font-bold text-lg text-white bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 mt-2 shadow-lg shadow-primary/20" style="text-decoration: none;">
           进入系统 / Enter System
         </a>
         <a href="#roles" class="text-sm text-accent hover:text-accent/80 transition-colors underline underline-offset-4">了解角色 / View Roles</a>
@@ -199,15 +198,15 @@ body {
           <div class="space-y-3" id="roles">
             <div class="flex items-center gap-3 bg-primary/5 border border-primary/10 rounded-lg px-3 py-2">
               <span class="w-2 h-2 rounded-full bg-primary"></span>
-              <span class="text-xs text-textDark/80">Student — Learning progress and task completion</span>
+              <span class="text-xs text-textDark/80">Student — 学习进度与任务完成</span>
             </div>
             <div class="flex items-center gap-3 bg-accent/5 border border-accent/10 rounded-lg px-3 py-2">
               <span class="w-2 h-2 rounded-full bg-accent"></span>
-              <span class="text-xs text-textDark/80">Lecturer — Course and Task Release</span>
+              <span class="text-xs text-textDark/80">Lecturer — 课程与任务发布</span>
             </div>
             <div class="flex items-center gap-3 bg-textMuted/5 border border-textMuted/10 rounded-lg px-3 py-2">
               <span class="w-2 h-2 rounded-full bg-textMuted"></span>
-              <span class="text-xs text-textDark/80">Admin — System Overview and Data Status</span>
+              <span class="text-xs text-textDark/80">Admin — 系统总览与数据状态</span>
             </div>
           </div>
 

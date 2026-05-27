@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyPal Lecturer Home</title>
+<link rel="stylesheet" href="../src/main/webapp/assets/css/workspace.css">
+</head>
+<body>
+<div class="workspace-shell">
+  <aside class="workspace-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-line"><span class="pixel-word">StudyPal</span><span class="pixel-word accent">Campus</span></div>
+      <div class="mascot float-mascot"><svg width="28" height="28" viewBox="0 0 14 14" style="image-rendering:pixelated"><rect x="5" y="0" width="4" height="2" fill="#B76E45"/><rect x="4" y="2" width="6" height="4" fill="#B76E45"/><rect x="5" y="3" width="1" height="1" fill="#2E241B"/><rect x="8" y="3" width="1" height="1" fill="#2E241B"/><rect x="3" y="6" width="8" height="5" fill="#B76E45" opacity="0.6"/><rect x="5" y="11" width="2" height="2" fill="#B76E45"/><rect x="7" y="11" width="2" height="2" fill="#B76E45"/></svg></div>
+    </div>
+    <nav class="workspace-nav">
+      <a class="sidebar-link active" href="lecturer-home.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
+      <a class="sidebar-link" href="lecturer-courses.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
+      <a class="sidebar-link" href="lecturer-tasks.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
+      <a class="sidebar-link" href="lecturer-task-detail.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
+    </nav>
+    <div class="sidebar-footer"><a class="sidebar-link" href="auth.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
+  </aside>
+  <div class="workspace-main">
+    <header class="workspace-header">
+      <div class="header-inner">
+        <div><h1>Lecturer Home</h1></div>
+        <div class="header-badges"><span class="pill">Active Lecturer</span><span class="pill strong">Spring 2026</span></div>
+      </div>
+    </header>
+    <main class="workspace-content">
+      <div class="content-inner">
+        <section class="hero-card fade-in">
+          <p class="eyebrow">LECTURER WORKSPACE</p>
+          <h2>Teaching progress stays visible.</h2>
+        </section>
+        <section class="stats-grid fade-in-d1">
+          <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value">2</p><p class="stat-hint">Currently teaching</p></div>
+          <div class="warm-card stat-card"><p class="stat-label">Published Tasks</p><p class="stat-value accent">5</p><p class="stat-hint">Across active courses</p></div>
+          <div class="warm-card stat-card"><p class="stat-label">Average Completion</p><p class="stat-value">64%</p><p class="stat-hint">Student progress</p></div>
+          <div class="warm-card stat-card"><p class="stat-label">At Risk</p><p class="stat-value accent">4</p><p class="stat-hint">Students below target</p></div>
+        </section>
+        <section class="panel-grid">
+          <div class="warm-card fade-in-d2">
+            <div class="row-between"><h2>Active Tasks</h2><a class="action-btn action-btn-primary" href="lecturer-tasks.html">Publish Task</a></div>
+            <div class="table-like">
+              <div class="soft-card">
+                <div class="row-between"><div><p class="strong-title">StudyPal Database Project</p><p class="muted">Database Systems · 4 steps</p></div><span class="badge accent">68%</span></div>
+                <div class="progress-track" style="margin-top:12px"><div class="progress-fill" style="--target-width:68%"></div></div>
+              </div>
+              <div class="soft-card">
+                <div class="row-between"><div><p class="strong-title">SQL View Analysis</p><p class="muted">Database Systems · 3 steps</p></div><span class="badge accent">52%</span></div>
+                <div class="progress-track" style="margin-top:12px"><div class="progress-fill accent" style="--target-width:52%"></div></div>
+              </div>
+            </div>
+          </div>
+          <aside class="warm-card fade-in-d3">
+            <h2>Teaching Actions</h2>
+            <div class="table-like">
+              <a class="soft-card" href="lecturer-courses.html"><p class="strong-title">Review Courses</p><p class="muted">Check enrollment and course workload.</p></a>
+              <a class="soft-card" href="lecturer-tasks.html"><p class="strong-title">Create Task</p><p class="muted">Publish work for enrolled students.</p></a>
+              <a class="soft-card" href="lecturer-task-detail.html"><p class="strong-title">Open Task Detail</p><p class="muted">Inspect student completion and progress.</p></a>
+            </div>
+          </aside>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

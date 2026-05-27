@@ -30,6 +30,11 @@ public class TaskDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if ("LECTURER".equalsIgnoreCase(request.getParameter("role"))) {
+            request.getRequestDispatcher("/lecturer-task-detail.jsp").forward(request, response);
+            return;
+        }
+
         Integer mainTaskId = parseMainTaskId(request);
         if (mainTaskId == null) {
             response.sendRedirect(request.getContextPath() + "/main-tasks");
