@@ -194,10 +194,6 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="sidebar-link">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
-        Study Sessions
-      </a>
       <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
@@ -220,7 +216,7 @@ body {
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 class="text-xl font-bold text-textDark">My Tasks</h1>
-          <p class="text-sm text-textMuted mt-0.5">Track your MainTasks, StudentSubTasks, deadlines, notes, and study progress.</p>
+          <p class="text-sm text-textMuted mt-0.5">Track your MainTasks, SubTasks, deadlines, notes, and study progress.</p>
         </div>
         <div class="flex items-center gap-4">
           <span class="text-xs text-textMuted border border-border rounded-full px-3 py-1">Active Student</span>
@@ -284,8 +280,8 @@ body {
           <!-- Task List -->
           <section class="task-list-column col-span-2 warm-card p-5">
             <div class="flex items-center justify-between gap-3 mb-4">
-              <h2 class="text-sm font-semibold text-textDark">Current StudentSubTasks</h2>
-              <span class="text-xs text-textMuted">Generated from SubTaskTemplate</span>
+              <h2 class="text-sm font-semibold text-textDark">Current SubTasks</h2>
+              <span class="text-xs text-textMuted">Generated from MainTask</span>
             </div>
 
             <div class="flex flex-col gap-3">
@@ -307,9 +303,9 @@ body {
                   </div>
                   <span class="text-xs font-semibold text-textDark">70%</span>
                 </div>
-                <p class="text-xs text-textMuted mb-3 leading-relaxed">Check professor, student, and admin entity separation before submission.</p>
+                <p class="text-xs text-textMuted mb-3 leading-relaxed">Check lecturer, student, and admin entity separation before submission.</p>
                 <div class="flex items-center justify-end gap-2">
-                  <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">Log Session</a>
+                  <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">Update Progress</a>
                   <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
                 </div>
               </article>
@@ -334,7 +330,7 @@ body {
                 </div>
                 <p class="text-xs text-textMuted mb-3 leading-relaxed">Prepare show vlan brief and show interfaces trunk evidence.</p>
                 <div class="flex items-center justify-end gap-2">
-                  <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">Log Session</a>
+                  <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">Update Progress</a>
                   <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
                 </div>
               </article>
@@ -357,9 +353,8 @@ body {
                   </div>
                   <span class="text-xs font-semibold text-textDark">100%</span>
                 </div>
-                <p class="text-xs text-textMuted mb-3 leading-relaxed">Presentation delivered, StudySession record has been saved.</p>
+                <p class="text-xs text-textMuted mb-3 leading-relaxed">Presentation delivered and SubTask progress has been updated.</p>
                 <div class="flex items-center justify-end gap-2">
-                  <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">View Session</a>
                   <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
                 </div>
               </article>
@@ -369,11 +364,11 @@ body {
           <!-- Side Panel -->
           <aside class="space-y-6">
             <section class="warm-card p-5">
-              <h2 class="text-sm font-semibold text-textDark mb-4">Update StudentSubTask</h2>
+              <h2 class="text-sm font-semibold text-textDark mb-4">Update SubTask</h2>
               <form data-validate="time-range" class="space-y-3">
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Status</label>
-                  <select class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
+                  <select name="status" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
                     <option>TODO</option>
                     <option selected>IN_PROGRESS</option>
                     <option>COMPLETED</option>
@@ -382,15 +377,19 @@ body {
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Notes</label>
-                  <textarea rows="3" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary resize-none">Today I finished the ER relationship review.</textarea>
+                  <textarea name="note" rows="3" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary resize-none">Today I finished the ER relationship review.</textarea>
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Planned Start</label>
-                  <input type="datetime-local" data-start-time class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
+                  <input type="datetime-local" name="startTime" data-start-time class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Planned End</label>
-                  <input type="datetime-local" data-end-time class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
+                  <input type="datetime-local" name="endTime" data-end-time class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-textMuted mb-1">Complete Time</label>
+                  <input type="datetime-local" name="completeTime" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
                 </div>
                 <button type="submit" class="action-btn action-btn-primary w-full">Save Progress</button>
               </form>
@@ -414,7 +413,7 @@ body {
                   </div>
                 </div>
               </div>
-              <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="action-btn action-btn-secondary w-full mt-4">Record StudySession</a>
+              <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-secondary w-full mt-4">Edit Study Plan</a>
             </section>
           </aside>
         </div>
@@ -427,6 +426,6 @@ body {
   </div>
 </div>
 
-<script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
+<script src="assets/js/app.js"></script>
 </body>
 </html>

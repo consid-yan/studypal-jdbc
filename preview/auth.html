@@ -143,7 +143,7 @@ body {
 <div class="absolute inset-0 overflow-hidden pointer-events-none">
   <span class="absolute top-[18%] left-[5%] font-pixel text-[9px] text-primary/20 float-label" style="animation-delay: 0s;">Course</span>
   <span class="absolute top-[30%] right-[8%] font-pixel text-[9px] text-accent/20 float-label" style="animation-delay: 0.8s;">Task</span>
-  <span class="absolute bottom-[35%] left-[8%] font-pixel text-[9px] text-primary/15 float-label" style="animation-delay: 1.6s;">StudySession</span>
+  <span class="absolute bottom-[35%] left-[8%] font-pixel text-[9px] text-primary/15 float-label" style="animation-delay: 1.6s;">SubTask Progress</span>
   <span class="absolute top-[60%] right-[5%] font-pixel text-[9px] text-accent/15 float-label" style="animation-delay: 2.4s;">Dashboard</span>
   <span class="absolute bottom-[18%] left-[15%] font-pixel text-[9px] text-primary/20 float-label" style="animation-delay: 3.2s;">SubTask</span>
 </div>
@@ -172,7 +172,7 @@ body {
       </h1>
       <p class="text-base md:text-lg text-textMuted leading-[1.8] max-w-md">
         Sign in to continue to your role-based workspace.<br>
-        StudyPal connects courses, tasks, study sessions, and progress tracking in one structured campus console.
+        StudyPal connects courses, tasks, task progress, and progress tracking in one structured campus console.
       </p>
 
       <div class="warm-card p-4 max-w-md mt-2">
@@ -180,7 +180,7 @@ body {
         <ul class="text-sm text-textMuted leading-[1.8] space-y-1 list-none pl-0">
           <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>Course management</li>
           <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></span>Task progress tracking</li>
-          <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-textMuted mt-2 flex-shrink-0"></span>Study session records</li>
+          <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-textMuted mt-2 flex-shrink-0"></span>SubTask progress updates</li>
           <li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>Role-based dashboards</li>
         </ul>
         <p class="text-xs text-textMuted/70 mt-3 border-t border-border pt-3 leading-[1.7]">
@@ -195,7 +195,7 @@ body {
           <line x1="42" y1="10" x2="62" y2="10" stroke="#3F5F46" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite;"/>
           <text x="66" y="14" class="font-pixel" font-size="7" fill="#B76E45">Task</text>
           <line x1="92" y1="10" x2="112" y2="10" stroke="#B76E45" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite; animation-delay:0.3s;"/>
-          <text x="116" y="14" class="font-pixel" font-size="7" fill="#3F5F46">Session</text>
+          <text x="116" y="14" class="font-pixel" font-size="7" fill="#3F5F46">Progress</text>
           <line x1="160" y1="10" x2="180" y2="10" stroke="#3F5F46" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite; animation-delay:0.6s;"/>
           <text x="184" y="14" class="font-pixel" font-size="7" fill="#B76E45">Dashboard</text>
         </svg>
@@ -293,7 +293,7 @@ body {
 
 <!-- Footer -->
 <div class="fixed bottom-0 left-0 w-full py-3 text-center border-t border-border bg-cream/80 backdrop-blur">
-  <span class="text-xs text-textMuted/60">StudyPal Campus Console · Course · Task · StudySession · Dashboard</span>
+  <span class="text-xs text-textMuted/60">StudyPal Campus Console · Course · Task · SubTask Progress · Dashboard</span>
 </div>
 
 <script>
@@ -310,7 +310,7 @@ function switchTab(tab) {
   }
 }
 </script>
-<script src="../src/main/webapp/assets/js/app.js"></script>
+<script src="assets/js/app.js"></script>
 
 </body>
 </html>

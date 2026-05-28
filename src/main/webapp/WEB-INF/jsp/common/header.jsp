@@ -36,7 +36,6 @@
                 <a href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">学生主页</a>
                 <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT">我的课程 Course</a>
                 <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT">任务进度</a>
-                <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT">学习记录</a>
             </c:otherwise>
         </c:choose>
         <a href="${pageContext.request.contextPath}/auth.jsp">切换角色</a>
