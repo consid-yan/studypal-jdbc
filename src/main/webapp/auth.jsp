@@ -1,4 +1,76 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.AuthService" %>
+<%@ page import="com.studypal.model.*" %>
+<%
+    // 仅处理 POST 请求
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        String action = request.getParameter("action");
+        AuthService authService = new AuthService();
+
+        if ("login".equals(action)) {
+            String username = request.getParameter("username");
+            String password = request.getParameter("password");
+
+            try {
+                UserAccount user = authService.authenticate(username, password);
+                if (user != null) {
+                    session.setAttribute("user", user);
+                    session.setAttribute("currentRole", user.getRole());
+
+                    String role = user.getRole();
+                    if ("LECTURER".equals(role)) {
+                        Lecturer detail = authService.getLecturerDetail(user.getUserId());
+                        session.setAttribute("roleDetail", detail);
+                        response.sendRedirect(request.getContextPath() + "/lecturer-home.jsp?role=LECTURER");
+                        return;
+                    } else if ("STUDENT".equals(role)) {
+                        Student detail = authService.getStudentDetail(user.getUserId());
+                        session.setAttribute("roleDetail", detail);
+                        response.sendRedirect(request.getContextPath() + "/student-home.jsp?role=STUDENT");
+                        return;
+                    } else if ("ADMIN".equals(role)) {
+                        Admin detail = authService.getAdminDetail(user.getUserId());
+                        session.setAttribute("roleDetail", detail);
+                        response.sendRedirect(request.getContextPath() + "/admin-home.jsp?role=ADMIN");
+                        return;
+                    }
+                } else {
+                    request.setAttribute("error", "Invalid username or password.");
+                }
+            } catch (Exception e) {
+                request.setAttribute("error", "Login failed: " + e.getMessage());
+            }
+        } else if ("register".equals(action)) {
+            String username = request.getParameter("username");
+            String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String password = request.getParameter("password");
+            String passwordConfirm = request.getParameter("passwordConfirm");
+
+            if (password == null || !password.equals(passwordConfirm)) {
+                request.setAttribute("error", "Passwords do not match.");
+            } else {
+                try {
+                    String result = authService.registerStudent(username, email, password, fullName);
+                    if (result == null) {
+                        // 注册成功：result 为 null 表示无错误
+                        UserAccount user = authService.authenticate(username, password);
+                        session.setAttribute("user", user);
+                        session.setAttribute("currentRole", "STUDENT");
+                        Student detail = authService.getStudentDetail(user.getUserId());
+                        session.setAttribute("roleDetail", detail);
+                        response.sendRedirect(request.getContextPath() + "/student-home.jsp?role=STUDENT");
+                        return;
+                    } else {
+                        request.setAttribute("error", result);
+                    }
+                } catch (Exception e) {
+                    request.setAttribute("error", "Registration failed: " + e.getMessage());
+                }
+            }
+        }
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -231,16 +303,18 @@ body {
 
       <div class="warm-card p-6 md:p-8 w-full max-w-[460px] mx-auto fade-in">
 
+        <%-- Error Message --%>
+        <% String error = (String) request.getAttribute("error"); if (error != null) { %>
+          <div class="w-full max-w-[460px] mx-auto mb-4 p-3 rounded-lg text-sm font-semibold bg-red-50 text-red-700 border border-red-200"><%= error %></div>
+        <% } %>
+
         <!-- Login Form -->
         <form id="form-login"
               method="post"
-              action="${pageContext.request.contextPath}/auth"
-              data-auth-login
-              data-student-url="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT"
-              data-lecturer-url="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"
-              data-admin-url="${pageContext.request.contextPath}/admin-home.jsp?role=ADMIN">
+              action="${pageContext.request.contextPath}/auth.jsp">
           <h2 class="text-xl font-bold text-textDark mb-1">Welcome Back</h2>
           <p class="text-sm text-textMuted mb-6">Use your campus account to access StudyPal.</p>
+          <input type="hidden" name="action" value="login">
           <div class="space-y-4">
             <div>
               <label class="block text-sm text-textDark mb-1.5">Email or Student ID</label>
@@ -261,10 +335,8 @@ body {
         <!-- Register Form -->
         <form id="form-register"
               method="post"
-              action="${pageContext.request.contextPath}/auth/register"
-              class="hidden"
-              data-auth-register
-              data-student-url="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">
+              action="${pageContext.request.contextPath}/auth.jsp"
+              class="hidden">
           <h2 class="text-xl font-bold text-textDark mb-1">Create Student Account</h2>
           <p class="text-sm text-textMuted mb-6">Public registration creates a STUDENT account only.</p>
           <div class="space-y-4">
@@ -273,8 +345,12 @@ body {
               <input type="text" name="fullName" class="auth-input" placeholder="Enter your full name" required>
             </div>
             <div>
-              <label class="block text-sm text-textDark mb-1.5">Email or Student ID</label>
-              <input type="text" name="username" class="auth-input" placeholder="Enter your email or student ID" required>
+              <label class="block text-sm text-textDark mb-1.5">Username</label>
+              <input type="text" name="username" class="auth-input" placeholder="Choose a username" required>
+            </div>
+            <div>
+              <label class="block text-sm text-textDark mb-1.5">Email</label>
+              <input type="email" name="email" class="auth-input" placeholder="Enter your email address" required>
             </div>
             <div>
               <label class="block text-sm text-textDark mb-1.5">Password</label>
@@ -284,7 +360,7 @@ body {
               <label class="block text-sm text-textDark mb-1.5">Confirm Password</label>
               <input type="password" name="passwordConfirm" class="auth-input" placeholder="Re-enter your password" required>
             </div>
-            <input type="hidden" name="role" value="STUDENT">
+            <input type="hidden" name="action" value="register">
             <button type="submit" class="auth-btn mt-2">Create Student Account</button>
           </div>
           <p class="text-xs text-textMuted/70 mt-4 leading-[1.7] text-center border-t border-border pt-4">

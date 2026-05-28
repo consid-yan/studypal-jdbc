@@ -1,4 +1,27 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.CourseService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    Long lecturerId = currentUser.getUserId();
+    CourseService courseService = new CourseService();
+
+    List<Course> myCourses = null;
+    List<MainTask> activeTasks = null;
+    int courseCount = 0, publishedTaskCount = 0, totalStudents = 0;
+    try {
+        myCourses = courseService.getCoursesByLecturerId(lecturerId);
+        courseCount = courseService.getLecturerCourseCount(lecturerId);
+        publishedTaskCount = courseService.getPublishedTaskCount(lecturerId);
+        totalStudents = courseService.getLecturerEnrollmentCount(lecturerId);
+        activeTasks = taskService.getTasksByCreatorId(lecturerId);
+    } catch (Exception ignored) {}
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,8 +39,8 @@
     </div>
     <nav class="workspace-nav">
       <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
-      <a class="sidebar-link" href="${pageContext.request.contextPath}/courses?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
-      <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
+      <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
+      <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
       <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
@@ -36,30 +59,47 @@
           <h2>Teaching progress stays visible.</h2>
         </section>
         <section class="stats-grid fade-in-d1">
-          <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value">2</p><p class="stat-hint">Currently teaching</p></div>
-          <div class="warm-card stat-card"><p class="stat-label">Published Tasks</p><p class="stat-value accent">5</p><p class="stat-hint">Across active courses</p></div>
-          <div class="warm-card stat-card"><p class="stat-label">Average Completion</p><p class="stat-value">64%</p><p class="stat-hint">Student progress</p></div>
-          <div class="warm-card stat-card"><p class="stat-label">At Risk</p><p class="stat-value accent">4</p><p class="stat-hint">Students below target</p></div>
+          <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value"><%= courseCount %></p><p class="stat-hint">Currently teaching</p></div>
+          <div class="warm-card stat-card"><p class="stat-label">Published Tasks</p><p class="stat-value accent"><%= publishedTaskCount %></p><p class="stat-hint">Across active courses</p></div>
+          <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent"><%= totalStudents %></p><p class="stat-hint">Enrolled across courses</p></div>
         </section>
         <section class="panel-grid">
         <div class="warm-card fade-in-d2">
-            <div class="row-between"><h2>Active Tasks</h2><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/main-tasks?role=LECTURER">Publish Task</a></div>
+            <div class="row-between"><h2>Active Tasks</h2><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">Publish Task</a></div>
             <div class="table-like">
-              <div class="soft-card">
-                <div class="row-between"><div><p class="strong-title">StudyPal Database Project</p><p class="muted">Database Systems · 4 steps</p></div><span class="badge accent">68%</span></div>
-                <div class="progress-track" style="margin-top:12px"><div class="progress-fill" style="--target-width:68%"></div></div>
-              </div>
-              <div class="soft-card">
-                <div class="row-between"><div><p class="strong-title">SQL View Analysis</p><p class="muted">Database Systems · 3 steps</p></div><span class="badge accent">52%</span></div>
-                <div class="progress-track" style="margin-top:12px"><div class="progress-fill accent" style="--target-width:52%"></div></div>
-              </div>
+              <% if (activeTasks != null && !activeTasks.isEmpty()) {
+                   for (MainTask mt : activeTasks) {
+                     String dl = mt.getDeadline() != null ? mt.getDeadline().toString().substring(0, 10) : "N/A";
+                     int tc = mt.getTemplateCount();
+                     double avg = 0;
+                     try { avg = taskService.getTaskAvgCompletion(mt.getMainTaskId()); } catch (Exception ignored) {}
+              %>
+                   <div class="soft-card">
+                     <div class="row-between"><div><p class="strong-title"><%= mt.getTitle() %></p><p class="muted"><%= mt.getCourseName() != null ? mt.getCourseName() : "Personal" %> · <%= tc %> steps · <%= dl %></p></div><span class="badge accent"><%= (int)avg %>%</span></div>
+                     <div class="progress-track" style="margin-top:12px"><div class="progress-fill" style="--target-width:<%= (int)avg %>%"></div></div>
+                   </div>
+              <%   }
+                 } else { %><div class="soft-card"><p class="muted" style="text-align:center;padding:20px;">No tasks published yet.</p></div><% } %>
             </div>
           </div>
+          <% if (myCourses != null && !myCourses.isEmpty()) { %>
+          <div class="warm-card fade-in-d2">
+            <div class="row-between"><h2>My Courses</h2></div>
+            <div class="table-like">
+              <% for (Course c : myCourses) { %>
+                <div class="soft-card course-row">
+                  <div><p class="strong-title"><%= c.getCourseName() %></p><p class="muted"><%= c.getCourseCode() %> · <%= c.getSemester() %></p></div>
+                  <span class="badge"><%= c.getEnrollmentCount() %> students</span>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
           <aside class="warm-card fade-in-d3">
             <h2>Teaching Actions</h2>
             <div class="table-like">
-              <a class="soft-card" href="${pageContext.request.contextPath}/courses?role=LECTURER"><p class="strong-title">Review Courses</p><p class="muted">Check enrollment and course workload.</p></a>
-              <a class="soft-card" href="${pageContext.request.contextPath}/main-tasks?role=LECTURER"><p class="strong-title">Create Task</p><p class="muted">Publish work for enrolled students.</p></a>
+              <a class="soft-card" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><p class="strong-title">Review Courses</p><p class="muted">Check enrollment and course workload.</p></a>
+              <a class="soft-card" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER"><p class="strong-title">Create Task</p><p class="muted">Publish work for enrolled students.</p></a>
               <a class="soft-card" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1"><p class="strong-title">Open Task Detail</p><p class="muted">Inspect student completion and progress.</p></a>
             </div>
           </aside>

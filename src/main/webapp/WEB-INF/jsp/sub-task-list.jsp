@@ -1,4 +1,86 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.TaskService" %>
+<%@ page import="com.studypal.service.CourseService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.sql.Timestamp" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    Long studentId = currentUser.getUserId();
+    TaskService taskService = new TaskService();
+    CourseService courseService = new CourseService();
+    String error = null;
+    String success = null;
+
+    String keyword = request.getParameter("keyword");
+    String courseFilter = request.getParameter("course");
+    String statusFilter = request.getParameter("status");
+    Long courseIdFilter = null;
+    if (courseFilter != null && !courseFilter.isEmpty() && !"All Courses".equals(courseFilter)) {
+        try { courseIdFilter = Long.parseLong(courseFilter); } catch (Exception ignored) {}
+    }
+    if (statusFilter != null && ("All Status".equals(statusFilter) || statusFilter.isEmpty())) {
+        statusFilter = null;
+    } else if ("Not Started".equals(statusFilter)) {
+        statusFilter = "NOT_STARTED";
+    } else if ("In Progress".equals(statusFilter)) {
+        statusFilter = "IN_PROGRESS";
+    } else if ("Completed".equals(statusFilter)) {
+        statusFilter = "COMPLETED";
+    }
+
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        String action = request.getParameter("action");
+        if ("updateSubTask".equals(action)) {
+            String sstIdStr = request.getParameter("studentSubTaskId");
+            String newStatus = request.getParameter("newStatus");
+            String notes = request.getParameter("notes");
+            try {
+                Long sstId = Long.parseLong(sstIdStr);
+                Timestamp completedTime = null;
+                if ("COMPLETED".equals(newStatus)) {
+                    completedTime = new Timestamp(System.currentTimeMillis());
+                }
+                String result = taskService.updateStudentSubTaskStatus(sstId, newStatus, notes, completedTime);
+                if (result == null) {
+                    response.sendRedirect(request.getContextPath() + "/sub-tasks.jsp?role=STUDENT");
+                    return;
+                } else {
+                    error = result;
+                }
+            } catch (Exception e) {
+                error = "Failed to update: " + e.getMessage();
+            }
+        }
+    }
+
+    List<StudentSubTask> allTasks = null;
+    List<Course> enrolledCourses = null;
+    int totalCount = 0, inProgressCount = 0, completedCount = 0, dueThisWeek = 0;
+    try {
+        enrolledCourses = courseService.getEnrolledCourses(studentId);
+        allTasks = taskService.getTasksByStudentId(studentId, keyword, courseIdFilter, statusFilter);
+        if (allTasks != null) {
+            totalCount = allTasks.size();
+            long now = System.currentTimeMillis();
+            long weekLater = now + 7L * 24 * 60 * 60 * 1000;
+            for (StudentSubTask sst : allTasks) {
+                if ("IN_PROGRESS".equals(sst.getStatus())) inProgressCount++;
+                else if ("COMPLETED".equals(sst.getStatus())) completedCount++;
+                if (!"COMPLETED".equals(sst.getStatus()) && sst.getDeadline() != null) {
+                    long dl = sst.getDeadline().getTime();
+                    if (dl >= now && dl <= weekLater) dueThisWeek++;
+                }
+            }
+        }
+    } catch (Exception e) {
+        error = (error != null) ? error : "Failed to load: " + e.getMessage();
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -190,7 +272,7 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>
         My Courses
       </a>
-      <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="sidebar-link active">
+      <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link active">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
@@ -198,7 +280,7 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
         Study Sessions
       </a>
-      <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=1" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
       </a>
@@ -237,41 +319,43 @@ body {
         <div class="task-stats grid grid-cols-4 gap-4 mb-6 fade-in">
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">Total Tasks</span>
-            <p class="text-2xl font-bold text-primary mt-1">12</p>
+            <p class="text-2xl font-bold text-primary mt-1"><%= totalCount %></p>
           </div>
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">In Progress</span>
-            <p class="text-2xl font-bold text-primary mt-1">5</p>
+            <p class="text-2xl font-bold text-primary mt-1"><%= inProgressCount %></p>
           </div>
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">Due This Week</span>
-            <p class="text-2xl font-bold text-accent mt-1">3</p>
+            <p class="text-2xl font-bold text-accent mt-1"><%= dueThisWeek %></p>
           </div>
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">Completed</span>
-            <p class="text-2xl font-bold text-primary mt-1">7</p>
+            <p class="text-2xl font-bold text-primary mt-1"><%= completedCount %></p>
           </div>
         </div>
 
         <!-- Filters -->
         <div class="warm-card p-5 mb-6 fade-in-d1">
           <h3 class="text-sm font-semibold text-textDark mb-3">Task Controls</h3>
-          <form action="${pageContext.request.contextPath}/sub-tasks" method="GET" class="task-toolbar flex items-center gap-3 flex-wrap">
+          <form action="${pageContext.request.contextPath}/sub-tasks.jsp" method="GET" class="task-toolbar flex items-center gap-3 flex-wrap">
             <input type="hidden" name="role" value="STUDENT">
-            <input type="text" name="keyword" placeholder="Search by task, course, or lecturer" class="flex-1 min-w-[220px] px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-textMuted/60 transition-all">
+            <input type="text" name="keyword" value="<%= keyword != null ? keyword : "" %>" placeholder="Search by task, course, or lecturer" class="flex-1 min-w-[220px] px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 placeholder:text-textMuted/60 transition-all">
             <select name="course" class="px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary text-textDark cursor-pointer">
-              <option>All Courses</option>
-              <option>Database Systems</option>
-              <option>Computer Networks</option>
-              <option>Academic English</option>
-              <option>Discrete Mathematics</option>
+              <option value="">All Courses</option>
+              <% if (enrolledCourses != null) {
+                   for (Course c : enrolledCourses) {
+                     String sel = (courseIdFilter != null && courseIdFilter.equals(c.getCourseId())) ? "selected" : "";
+              %>
+                     <option value="<%= c.getCourseId() %>" <%= sel %>><%= c.getCourseName() %></option>
+              <%   }
+                 } %>
             </select>
             <select name="status" class="px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary text-textDark cursor-pointer">
-              <option>All Status</option>
-              <option>Not Started</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-              <option>Overdue</option>
+              <option value="">All Status</option>
+              <option value="Not Started" <%= "NOT_STARTED".equals(statusFilter) ? "selected" : "" %>>Not Started</option>
+              <option value="In Progress" <%= "IN_PROGRESS".equals(statusFilter) ? "selected" : "" %>>In Progress</option>
+              <option value="Completed" <%= "COMPLETED".equals(statusFilter) ? "selected" : "" %>>Completed</option>
             </select>
             <button type="submit" class="action-btn action-btn-primary text-sm">Apply Filters</button>
             <button type="reset" class="action-btn action-btn-secondary text-sm">Reset</button>
@@ -288,133 +372,71 @@ body {
               <span class="text-xs text-textMuted">Generated from SubTaskTemplate</span>
             </div>
 
+            <% if (error != null) { %><div class="mb-3 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200"><%= error %></div><% } %>
+            <% if (success != null) { %><div class="mb-3 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200"><%= success %></div><% } %>
             <div class="flex flex-col gap-3">
-              <article class="bg-cream rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
-                <div class="flex items-start justify-between gap-4 mb-2">
-                  <div>
-                    <span class="text-xs text-textMuted">Database Systems</span>
-                    <p class="text-sm font-semibold text-textDark mt-0.5">Database Design Project</p>
-                    <p class="text-xs text-textDark/80 mt-0.5">Review ER diagram relationships</p>
-                  </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-accent/15 text-accent">In Progress</span>
-                    <span class="text-xs text-accent font-medium">Today, 23:59</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
-                    <div class="h-full bg-accent rounded-full progress-bar-inner" style="--target-width: 70%; width: 70%"></div>
-                  </div>
-                  <span class="text-xs font-semibold text-textDark">70%</span>
-                </div>
-                <p class="text-xs text-textMuted mb-3 leading-relaxed">Check professor, student, and admin entity separation before submission.</p>
-                <div class="flex items-center justify-end gap-2">
-                  <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">Log Session</a>
-                  <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
-                </div>
-              </article>
-
-              <article class="bg-cream rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
-                <div class="flex items-start justify-between gap-4 mb-2">
-                  <div>
-                    <span class="text-xs text-textMuted">Computer Networks</span>
-                    <p class="text-sm font-semibold text-textDark mt-0.5">Packet Tracer Assignment</p>
-                    <p class="text-xs text-textDark/80 mt-0.5">Upload VLAN and trunk verification screenshots</p>
-                  </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="px-2 py-0.5 text-xs font-medium rounded-full border border-border bg-card text-textMuted">Not Started</span>
-                    <span class="text-xs text-textMuted font-medium">Tomorrow, 18:00</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
-                    <div class="h-full bg-accent rounded-full progress-bar-inner" style="--target-width: 20%; width: 20%"></div>
-                  </div>
-                  <span class="text-xs font-semibold text-textDark">20%</span>
-                </div>
-                <p class="text-xs text-textMuted mb-3 leading-relaxed">Prepare show vlan brief and show interfaces trunk evidence.</p>
-                <div class="flex items-center justify-end gap-2">
-                  <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">Log Session</a>
-                  <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
-                </div>
-              </article>
-
-              <article class="bg-cream rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
-                <div class="flex items-start justify-between gap-4 mb-2">
-                  <div>
-                    <span class="text-xs text-textMuted">Academic English</span>
-                    <p class="text-sm font-semibold text-textDark mt-0.5">Research Presentation</p>
-                    <p class="text-xs text-textDark/80 mt-0.5">Finalize slides and speaking notes</p>
-                  </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">Completed</span>
-                    <span class="text-xs text-primary font-medium">Submitted</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full progress-bar-inner" style="--target-width: 100%; width: 100%"></div>
-                  </div>
-                  <span class="text-xs font-semibold text-textDark">100%</span>
-                </div>
-                <p class="text-xs text-textMuted mb-3 leading-relaxed">Presentation delivered, StudySession record has been saved.</p>
-                <div class="flex items-center justify-end gap-2">
-                  <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="px-3 py-1.5 text-xs text-textMuted border border-border rounded-lg hover:bg-card transition-all font-medium">View Session</a>
-                  <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
-                </div>
-              </article>
+              <% if (allTasks != null && !allTasks.isEmpty()) {
+                   for (StudentSubTask sst : allTasks) {
+                     String sstStatus = sst.getStatus();
+                     String statusClass = "COMPLETED".equals(sstStatus) ? "bg-primary/10 text-primary" : ("IN_PROGRESS".equals(sstStatus) ? "bg-accent/15 text-accent" : "border border-border bg-card text-textMuted");
+                     String deadlineText = sst.getDeadline() != null ? sst.getDeadline().toString().substring(0, 16) : "No deadline";
+                     int pct = sst.getProgressPercentage();
+                     String barColor = "COMPLETED".equals(sstStatus) ? "bg-primary" : "bg-accent";
+              %>
+                     <article class="bg-cream rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
+                       <div class="flex items-start justify-between gap-4 mb-2">
+                         <div>
+                           <span class="text-xs text-textMuted"><%= sst.getCourseName() != null ? sst.getCourseName() : "N/A" %></span>
+                           <p class="text-sm font-semibold text-textDark mt-0.5"><%= sst.getMainTaskTitle() %></p>
+                           <p class="text-xs text-textDark/80 mt-0.5"><%= sst.getTemplateTitle() %></p>
+                         </div>
+                         <div class="flex items-center gap-2 flex-shrink-0">
+                           <span class="px-2 py-0.5 text-xs font-medium rounded-full <%= statusClass %>"><%= sstStatus %></span>
+                           <span class="text-xs text-accent font-medium"><%= deadlineText %></span>
+                         </div>
+                       </div>
+                       <div class="flex items-center gap-3 mb-2">
+                         <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
+                           <div class="h-full <%= barColor %> rounded-full" style="width: <%= pct %>%;"></div>
+                         </div>
+                         <span class="text-xs font-semibold text-textDark"><%= pct %>%</span>
+                       </div>
+                       <p class="text-xs text-textMuted mb-3 leading-relaxed"><%= sst.getNotes() != null ? sst.getNotes() : "" %></p>
+                       <div class="flex items-center justify-end gap-2">
+                         <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= sst.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
+                       </div>
+                     </article>
+              <%   }
+                 } else { %>
+                   <p class="text-xs text-textMuted text-center py-8">No sub-tasks found.</p>
+              <% } %>
             </div>
           </section>
 
           <!-- Side Panel -->
           <aside class="space-y-6">
             <section class="warm-card p-5">
-              <h2 class="text-sm font-semibold text-textDark mb-4">Update StudentSubTask</h2>
-              <form data-validate="time-range" class="space-y-3">
+              <h2 class="text-sm font-semibold text-textDark mb-4">Update Progress</h2>
+              <form method="post" action="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="space-y-3">
+                <input type="hidden" name="action" value="updateSubTask">
+                <div>
+                  <label class="block text-xs font-medium text-textMuted mb-1">SubTask ID</label>
+                  <input type="number" name="studentSubTaskId" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary" placeholder="Enter sub-task ID to update" required>
+                </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Status</label>
-                  <select class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
-                    <option>TODO</option>
-                    <option selected>IN_PROGRESS</option>
-                    <option>COMPLETED</option>
-                    <option>CANCELLED</option>
+                  <select name="newStatus" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
+                    <option value="NOT_STARTED">NOT_STARTED</option>
+                    <option value="IN_PROGRESS" selected>IN_PROGRESS</option>
+                    <option value="COMPLETED">COMPLETED</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Notes</label>
-                  <textarea rows="3" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary resize-none">Today I finished the ER relationship review.</textarea>
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-textMuted mb-1">Planned Start</label>
-                  <input type="datetime-local" data-start-time class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-textMuted mb-1">Planned End</label>
-                  <input type="datetime-local" data-end-time class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary">
+                  <textarea name="notes" rows="3" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary resize-none" placeholder="Update your notes..."></textarea>
                 </div>
                 <button type="submit" class="action-btn action-btn-primary w-full">Save Progress</button>
               </form>
-            </section>
-
-            <section class="warm-card p-5">
-              <h2 class="text-sm font-semibold text-textDark mb-4">Today Study Plan</h2>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <span class="mt-1 w-2 h-2 rounded-full bg-accent"></span>
-                  <div>
-                    <p class="text-sm font-semibold text-textDark">19:00 - 21:00</p>
-                    <p class="text-xs text-textMuted">Database Systems review</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <span class="mt-1 w-2 h-2 rounded-full bg-primary"></span>
-                  <div>
-                    <p class="text-sm font-semibold text-textDark">21:30 - 22:10</p>
-                    <p class="text-xs text-textMuted">Write progress notes</p>
-                  </div>
-                </div>
-              </div>
-              <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="action-btn action-btn-secondary w-full mt-4">Record StudySession</a>
             </section>
           </aside>
         </div>

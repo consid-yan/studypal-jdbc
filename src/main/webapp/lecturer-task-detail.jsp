@@ -1,4 +1,35 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.TaskService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    String taskIdStr = request.getParameter("id");
+    Long taskId = null;
+    try { taskId = Long.parseLong(taskIdStr); } catch (Exception ignored) {}
+
+    TaskService taskService = new TaskService();
+    MainTask task = null;
+    int enrolledCount = 0, completedCount = 0, atRiskCount = 0;
+    double avgCompletion = 0.0;
+    List<StudentSubTask> studentProgress = null;
+    List<SubTaskTemplate> stepProgress = null;
+
+    if (taskId != null) {
+        try {
+            task = taskService.getTaskById(taskId);
+            enrolledCount = taskService.getTaskEnrollmentCount(taskId);
+            avgCompletion = taskService.getTaskAvgCompletion(taskId);
+            completedCount = taskService.getTaskCompletedStudentCount(taskId);
+            atRiskCount = taskService.getTaskAtRiskStudentCount(taskId);
+            studentProgress = taskService.getStudentProgressByTask(taskId);
+            stepProgress = taskService.getStepAggregateProgress(taskId);
+        } catch (Exception ignored) {}
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,8 +47,8 @@
     </div>
     <nav class="workspace-nav">
       <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
-      <a class="sidebar-link" href="${pageContext.request.contextPath}/courses?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
-      <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
+      <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
+      <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
       <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
@@ -26,14 +57,14 @@
     <header class="workspace-header"><div class="header-inner"><div><h1>Task Detail</h1></div><div class="header-badges"><span class="pill">Active Lecturer</span><span class="pill strong">Spring 2026</span></div></div></header>
     <main class="workspace-content"><div class="content-inner">
       <section class="hero-card fade-in">
-        <p class="eyebrow">DATABASE SYSTEMS · DB2026</p>
-        <h2>Database Design Project</h2>
+        <p class="eyebrow"><%= task != null && task.getCourseName() != null ? (task.getCourseName() + " · " + task.getCourseCode()) : "Personal Task" %></p>
+        <h2><%= task != null ? task.getTitle() : "N/A" %></h2>
       </section>
       <section class="stats-grid fade-in-d1">
-        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value">42</p><p class="stat-hint">Enrolled</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Average Completion</p><p class="stat-value accent">68%</p><p class="stat-hint">Across all students</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Completed</p><p class="stat-value">18</p><p class="stat-hint">Submitted all steps</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">At Risk</p><p class="stat-value accent">4</p><p class="stat-hint">Below 40%</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value"><%= enrolledCount %></p><p class="stat-hint">Enrolled</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Average Completion</p><p class="stat-value accent"><%= (int)avgCompletion %>%</p><p class="stat-hint">Across all students</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Completed</p><p class="stat-value"><%= completedCount %></p><p class="stat-hint">Submitted all steps</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">At Risk</p><p class="stat-value accent"><%= atRiskCount %></p><p class="stat-hint">Below 40%</p></div>
       </section>
       <section class="management-grid">
         <div class="warm-card fade-in-d2">
@@ -42,18 +73,46 @@
             <button class="action-btn action-btn-secondary" type="button" data-confirm="Export this task progress report?">Export</button>
           </div>
           <div class="table-like">
-            <div class="soft-card student-progress-row"><div class="user-meta"><p class="strong-title">Alex Chen</p><span class="muted">alexchen@studypal.test</span></div><span class="badge">COMPLETED</span><div><div class="progress-track"><div class="progress-fill" style="--target-width:100%"></div></div></div><span class="muted">100%</span><span class="muted">5.5h logged</span><a class="action-btn action-btn-secondary" href="#student-alex">View</a></div>
-            <div class="soft-card student-progress-row"><div class="user-meta"><p class="strong-title">Maya Liu</p><span class="muted">mayaliu@studypal.test</span></div><span class="badge accent">IN_PROGRESS</span><div><div class="progress-track"><div class="progress-fill accent" style="--target-width:72%"></div></div></div><span class="muted">72%</span><span class="muted">3.0h logged</span><a class="action-btn action-btn-secondary" href="#student-maya">View</a></div>
-            <div class="soft-card student-progress-row"><div class="user-meta"><p class="strong-title">Ben Zhou</p><span class="muted">benzhou@studypal.test</span></div><span class="badge accent">IN_PROGRESS</span><div><div class="progress-track"><div class="progress-fill accent" style="--target-width:38%"></div></div></div><span class="muted">38%</span><span class="muted">1.5h logged</span><a class="action-btn action-btn-primary" href="#student-ben">Follow Up</a></div>
-            <div class="soft-card student-progress-row"><div class="user-meta"><p class="strong-title">Nina Roy</p><span class="muted">ninaroy@studypal.test</span></div><span class="badge muted">TODO</span><div><div class="progress-track"><div class="progress-fill" style="--target-width:0%"></div></div></div><span class="muted">0%</span><span class="muted">No session</span><a class="action-btn action-btn-primary" href="#student-nina">Follow Up</a></div>
+            <% if (studentProgress != null && !studentProgress.isEmpty()) {
+                 for (StudentSubTask sp : studentProgress) {
+                   int pct = sp.getProgressPercentage();
+                   String badgeLabel = pct >= 100 ? "COMPLETED" : (pct == 0 ? "TODO" : "IN_PROGRESS");
+                   String badgeClass = pct >= 100 ? "badge" : (pct < 40 ? "badge muted" : "badge accent");
+                   String btnLabel = pct < 40 ? "Follow Up" : "View";
+                   String btnClass = pct < 40 ? "action-btn action-btn-primary" : "action-btn action-btn-secondary";
+            %>
+                   <div class="soft-card student-progress-row">
+                     <div class="user-meta"><p class="strong-title"><%= sp.getStudentName() %></p><span class="muted"><%= sp.getStudentEmail() %></span></div>
+                     <span class="<%= badgeClass %>"><%= badgeLabel %></span>
+                     <div><div class="progress-track"><div class="progress-fill <%= badgeClass.contains("accent") ? "accent" : "" %>" style="--target-width:<%= pct %>%"></div></div></div>
+                     <span class="muted"><%= pct %>%</span>
+                     <span class="muted">--</span>
+                     <a class="<%= btnClass %>" href="#"><%= btnLabel %></a>
+                   </div>
+            <%   }
+               } else { %>
+                 <div class="soft-card"><p class="muted" style="text-align:center;padding:20px;">No students enrolled yet.</p></div>
+            <% } %>
           </div>
         </div>
         <aside class="warm-card fade-in-d3">
           <h2>Task Steps</h2>
           <div class="table-like">
-            <div class="soft-card step-progress-row"><div><p class="strong-title">Requirements and ER diagram</p><p class="muted">38 of 42 completed</p></div><div class="progress-track"><div class="progress-fill" style="--target-width:90%"></div></div><span class="badge">90%</span></div>
-            <div class="soft-card step-progress-row"><div><p class="strong-title">Interface screens</p><p class="muted">29 of 42 completed</p></div><div class="progress-track"><div class="progress-fill accent" style="--target-width:69%"></div></div><span class="badge accent">69%</span></div>
-            <div class="soft-card step-progress-row"><div><p class="strong-title">JSP integration</p><p class="muted">18 of 42 completed</p></div><div class="progress-track"><div class="progress-fill accent" style="--target-width:43%"></div></div><span class="badge accent">43%</span></div>
+            <% if (stepProgress != null && !stepProgress.isEmpty()) {
+                 for (SubTaskTemplate st : stepProgress) {
+                   int done = st.getCompletedCount();
+                   int total = st.getTotalStudentCount();
+                   int pct = total > 0 ? (done * 100 / total) : 0;
+            %>
+                   <div class="soft-card step-progress-row">
+                     <div><p class="strong-title"><%= st.getTitle() %></p><p class="muted"><%= done %> of <%= total %> completed</p></div>
+                     <div class="progress-track"><div class="progress-fill accent" style="--target-width:<%= pct %>%"></div></div>
+                     <span class="badge accent"><%= pct %>%</span>
+                   </div>
+            <%   }
+               } else { %>
+                 <div class="soft-card"><p class="muted" style="text-align:center;padding:20px;">No steps defined.</p></div>
+            <% } %>
           </div>
         </aside>
       </section>

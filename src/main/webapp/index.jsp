@@ -243,20 +243,20 @@ body {
   <div class="flex-shrink-0 pb-6 px-8">
     <div class="max-w-7xl mx-auto grid grid-cols-4 gap-4 max-w-lg lg:max-w-xl mx-auto">
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-primary mb-1">12</div>
-        <div class="text-xs text-textMuted">Active Courses</div>
+        <div class="text-xs text-textDark font-semibold">Course Management</div>
+        <div class="text-xs text-textMuted mt-0.5">Create and enroll courses</div>
       </div>
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-accent mb-1">48</div>
-        <div class="text-xs text-textMuted">Pending Tasks</div>
+        <div class="text-xs text-textDark font-semibold">Task Tracking</div>
+        <div class="text-xs text-textMuted mt-0.5">Publish and complete tasks</div>
       </div>
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-textDark mb-1">326</div>
-        <div class="text-xs text-textMuted">Study Sessions</div>
+        <div class="text-xs text-textDark font-semibold">Progress Dashboard</div>
+        <div class="text-xs text-textMuted mt-0.5">Real-time statistics</div>
       </div>
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-primary mb-1">76%</div>
-        <div class="text-xs text-textMuted">Completion</div>
+        <div class="text-xs text-textDark font-semibold">Role-Based Access</div>
+        <div class="text-xs text-textMuted mt-0.5">Student / Lecturer / Admin</div>
       </div>
     </div>
   </div>

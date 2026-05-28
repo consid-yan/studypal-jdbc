@@ -1,4 +1,51 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.CourseService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    CourseService courseService = new CourseService();
+    String error = null;
+
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        String action = request.getParameter("action");
+        if ("createCourse".equals(action)) {
+            String courseName = request.getParameter("courseName");
+            String courseCode = request.getParameter("courseCode");
+            String semester = request.getParameter("semester");
+            String lecturerIdStr = request.getParameter("lecturerId");
+            String description = request.getParameter("description");
+            try {
+                Long lecturerId = Long.parseLong(lecturerIdStr);
+                String result = courseService.createCourse(courseCode, courseName, lecturerId, semester, description);
+                if (result == null) {
+                    response.sendRedirect(request.getContextPath() + "/admin-courses.jsp?role=ADMIN");
+                    return;
+                } else {
+                    error = result;
+                }
+            } catch (Exception e) {
+                error = "Failed to create course: " + e.getMessage();
+            }
+        }
+    }
+
+    List<Course> courses = null;
+    List<Lecturer> lecturers = null;
+    int totalCourses = 0, totalLecturers = 0, totalEnrollments = 0;
+    try {
+        courses = courseService.getAllCourses();
+        lecturers = courseService.getAllLecturers();
+        totalCourses = courseService.getTotalCourseCount();
+        totalLecturers = courseService.getTotalLecturerCount();
+        totalEnrollments = courseService.getTotalEnrollmentCount();
+    } catch (Exception e) {
+        error = "Failed to load data: " + e.getMessage();
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,10 +74,9 @@
     <main class="workspace-content"><div class="content-inner">
       <section class="hero-card fade-in"><p class="eyebrow">COURSE SETUP</p><h2>Create courses and assign registered lecturers.</h2></section>
       <section class="stats-grid fade-in-d1">
-        <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value">18</p><p class="stat-hint">Current semester</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value accent">14</p><p class="stat-hint">Registered lecturer accounts</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Unassigned</p><p class="stat-value">2</p><p class="stat-hint">No lecturer selected</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent">184</p><p class="stat-hint">Across all courses</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value"><%= totalCourses %></p><p class="stat-hint">Current semester</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value accent"><%= totalLecturers %></p><p class="stat-hint">Registered lecturer accounts</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent"><%= totalEnrollments %></p><p class="stat-hint">Enrolled across all courses</p></div>
       </section>
       <section class="panel-grid">
         <div class="warm-card fade-in-d2">
@@ -39,18 +85,38 @@
             <a class="action-btn action-btn-secondary" href="#course-form">Add Course</a>
           </div>
           <div class="table-like">
-            <div class="soft-card course-row"><div><p class="strong-title">Database Systems</p><p class="muted">DB2026 · Spring 2026</p></div><span class="muted">Dr. Emily Carter</span><span class="muted">ecarter@studypal.test</span><span class="badge">42 students</span><a class="action-btn action-btn-secondary" href="#course-form">Edit</a></div>
-            <div class="soft-card course-row"><div><p class="strong-title">Software Engineering</p><p class="muted">SE2026 · Spring 2026</p></div><span class="muted">Prof. Daniel Hughes</span><span class="muted">dhughes@studypal.test</span><span class="badge">36 students</span><a class="action-btn action-btn-secondary" href="#course-form">Edit</a></div>
-            <div class="soft-card course-row"><div><p class="strong-title">Data Visualization</p><p class="muted">DV2026 · Spring 2026</p></div><span class="muted">Unassigned</span><span class="muted">Select lecturer</span><span class="badge accent">28 students</span><a class="action-btn action-btn-primary" href="#course-form">Assign</a></div>
+            <% if (courses != null && !courses.isEmpty()) {
+                 for (Course c : courses) { %>
+                   <div class="soft-card course-row">
+                     <div><p class="strong-title"><%= c.getCourseName() %></p><p class="muted"><%= c.getCourseCode() %> · <%= c.getSemester() %></p></div>
+                     <span class="muted"><%= c.getLecturerName() != null ? c.getLecturerName() : "N/A" %></span>
+                     <span class="badge"><%= c.getEnrollmentCount() %> students</span>
+                     <a class="action-btn action-btn-secondary" href="#course-form">Edit</a>
+                   </div>
+            <%   }
+               } else { %>
+                 <div class="soft-card"><p class="muted" style="text-align:center;padding:20px;">No courses yet. Create one using the form.</p></div>
+            <% } %>
           </div>
         </div>
         <aside class="warm-card fade-in-d3" id="course-form">
           <h2>Create Course</h2>
-          <form class="form-stack" data-ui-message="Course saved.">
-            <div><label>Course Name</label><input name="courseName" value="Data Visualization" placeholder="Course name" required></div>
-            <div><label>Course Code</label><input name="courseCode" value="DV2026" placeholder="Course code" required></div>
-            <div><label>Semester</label><input name="semester" value="Spring 2026" placeholder="Semester"></div>
-            <div><label>Lecturer Account</label><select name="lecturer" required><option value="">Select registered lecturer</option><option>ecarter - Dr. Emily Carter</option><option>dhughes - Prof. Daniel Hughes</option><option>lwilson - Ms. Laura Wilson</option></select></div>
+          <% if (error != null) { %>
+            <div style="margin-bottom:16px;padding:12px;border-radius:8px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;font-size:13px;"><%= error %></div>
+          <% } %>
+          <form class="form-stack" method="post" action="${pageContext.request.contextPath}/admin-courses.jsp?role=ADMIN">
+            <input type="hidden" name="action" value="createCourse">
+            <div><label>Course Name</label><input name="courseName" placeholder="Course name" required></div>
+            <div><label>Course Code</label><input name="courseCode" placeholder="Course code" required></div>
+            <div><label>Semester</label><input name="semester" placeholder="e.g. 2026-Spring"></div>
+            <div><label>Lecturer Account</label><select name="lecturerId" required>
+              <option value="">Select registered lecturer</option>
+              <% if (lecturers != null) {
+                   for (Lecturer lec : lecturers) { %>
+                     <option value="<%= lec.getLecturerId() %>"><%= lec.getFullName() %> (<%= lec.getEmployeeNo() %>)</option>
+              <%   }
+                 } %>
+            </select></div>
             <div><label>Description</label><textarea name="description" placeholder="Course description"></textarea></div>
             <button class="action-btn action-btn-primary" type="submit">Save Course</button>
           </form>

@@ -1,4 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.AdminService" %>
+<% if (session.getAttribute("user") == null) { response.sendRedirect(request.getContextPath() + "/auth.jsp"); return; }
+   AdminService as = new AdminService(); int[] st = null; try { st = as.getStats(); } catch (Exception e) {}
+   int us = st != null ? st[0] : 0; int stu = st != null ? st[1] : 0; int lec = st != null ? st[2] : 0;
+   int cs = st != null ? st[4] : 0; int ts = st != null ? st[5] : 0; int en = st != null ? st[6] : 0; %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,17 +28,17 @@
     <header class="workspace-header"><div class="header-inner"><div><h1>System Overview</h1></div><div class="header-badges"><span class="pill">Active Admin</span><span class="pill strong">Spring 2026</span></div></div></header>
     <main class="workspace-content"><div class="content-inner">
       <section class="stats-grid fade-in">
-        <div class="warm-card stat-card"><p class="stat-label">Task Completion</p><p class="stat-value">64%</p><p class="stat-hint">Completed student tasks</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Highest Workload</p><p class="stat-value accent">DB</p><p class="stat-hint">Database Systems</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Study Time</p><p class="stat-value">392h</p><p class="stat-hint">Last 30 days</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent">184</p><p class="stat-hint">Course registrations</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Users</p><p class="stat-value"><%= us %></p><p class="stat-hint"><%= stu %> students / <%= lec %> lecturers</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value accent"><%= cs %></p><p class="stat-hint">All available courses</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Tasks</p><p class="stat-value"><%= ts %></p><p class="stat-hint">All published tasks</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= en %></p><p class="stat-hint">Course registrations</p></div>
       </section>
       <section class="warm-card fade-in-d1">
         <h2>System Metrics</h2>
         <div class="table-like">
-          <div class="soft-card admin-row"><p class="strong-title">Task Completion Rate</p><span class="muted">By course</span><span class="badge">64%</span><p class="muted">Student task progress</p></div>
-          <div class="soft-card admin-row"><p class="strong-title">Course Workload</p><span class="muted">Deadlines and effort</span><span class="badge accent">High</span><p class="muted">Courses needing attention</p></div>
-          <div class="soft-card admin-row"><p class="strong-title">Learning Input</p><span class="muted">Study records</span><span class="badge">392h</span><p class="muted">Last 30 days</p></div>
+          <div class="soft-card admin-row"><p class="strong-title">Total Courses</p><span class="muted">Active semester</span><span class="badge"><%= cs %></span><p class="muted">With assigned lecturers</p></div>
+          <div class="soft-card admin-row"><p class="strong-title">Total Tasks</p><span class="muted">Published</span><span class="badge accent"><%= ts %></span><p class="muted">Across all courses</p></div>
+          <div class="soft-card admin-row"><p class="strong-title">Total Enrollments</p><span class="muted">Student registrations</span><span class="badge"><%= en %></span><p class="muted">Course selections</p></div>
         </div>
       </section>
     </div></main>
