@@ -218,10 +218,6 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="sidebar-link">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
-        Study Sessions
-      </a>
       <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
@@ -275,9 +271,9 @@ body {
             <p class="text-xs text-textMuted mt-1">Overall task completion</p>
           </div>
           <div class="warm-card p-5 stat-card">
-            <p class="text-xs text-textMuted mb-1">Study Time</p>
+            <p class="text-xs text-textMuted mb-1">Planned Time</p>
             <p class="text-2xl font-bold text-accent">18.5h</p>
-            <p class="text-xs text-textMuted mt-1">Recorded this week</p>
+            <p class="text-xs text-textMuted mt-1">From SubTask plans</p>
           </div>
         </div>
 
@@ -323,7 +319,7 @@ body {
               </div>
               <div class="flex gap-3 mt-5 flex-wrap">
                 <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary">View My Tasks</a>
-                <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="action-btn action-btn-secondary">Record Study Session</a>
+                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-secondary">Update Progress</a>
               </div>
             </div>
 
@@ -364,9 +360,9 @@ body {
               </div>
             </div>
 
-            <!-- Study Session Snapshot -->
+            <!-- SubTask Plan Snapshot -->
             <div class="warm-card p-6 fade-in-d3">
-              <h2 class="text-base font-bold text-textDark mb-4">Study Session Snapshot</h2>
+              <h2 class="text-base font-bold text-textDark mb-4">SubTask Plan Snapshot</h2>
               <div class="flex items-end justify-between gap-3 h-[150px]">
                 <div class="flex flex-col items-center flex-1">
                   <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);">
@@ -441,7 +437,7 @@ body {
                   <line x1="38" y1="10" x2="50" y2="10" stroke="#3F5F46" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite;"/>
                   <text x="54" y="13" class="font-pixel" font-size="6" fill="#B76E45">Task</text>
                   <line x1="78" y1="10" x2="90" y2="10" stroke="#B76E45" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite; animation-delay:0.3s;"/>
-                  <text x="94" y="13" class="font-pixel" font-size="6" fill="#3F5F46">Session</text>
+                  <text x="94" y="13" class="font-pixel" font-size="6" fill="#3F5F46">Plan</text>
                   <line x1="136" y1="10" x2="148" y2="10" stroke="#3F5F46" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite; animation-delay:0.6s;"/>
                   <text x="152" y="13" class="font-pixel" font-size="6" fill="#B76E45">Dash</text>
                 </svg>
@@ -477,7 +473,7 @@ body {
                   <span class="w-2 h-2 rounded-full bg-textMuted mt-1.5 flex-shrink-0"></span>
                   <div>
                     <p class="text-xs font-semibold text-textMuted">Next Monday</p>
-                    <p class="text-sm text-textDark">Study Session Summary</p>
+                    <p class="text-sm text-textDark">SubTask Plan Summary</p>
                   </div>
                 </div>
               </div>
@@ -495,9 +491,9 @@ body {
                   <p class="text-sm font-semibold text-primary">View My Tasks</p>
                   <p class="text-xs text-textMuted mt-0.5">Check task status, subtasks, notes, and planned time.</p>
                 </a>
-                <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
-                  <p class="text-sm font-semibold text-accent">Record Study Session</p>
-                  <p class="text-xs text-textMuted mt-0.5">Save study time and connect it to a course or task.</p>
+                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
+                  <p class="text-sm font-semibold text-accent">Update Progress</p>
+                  <p class="text-xs text-textMuted mt-0.5">Edit task status, plan time, and progress notes.</p>
                 </a>
               </div>
             </div>

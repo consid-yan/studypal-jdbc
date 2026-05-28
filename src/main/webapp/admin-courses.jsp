@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin Course Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="assets/css/workspace.css">
 </head>
 <body>
 <div class="workspace-shell">
@@ -59,6 +59,6 @@
     </div></main>
   </div>
 </div>
-<script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
+<script src="assets/js/app.js"></script>
 </body>
 </html>

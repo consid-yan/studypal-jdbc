@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal System Messages</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="assets/css/workspace.css">
 </head>
 <body>
 <div class="workspace-shell">
@@ -24,10 +24,10 @@
     <main class="workspace-content"><div class="content-inner">
       <section class="hero-card fade-in"><p class="eyebrow">MESSAGES</p><h2>Clear feedback for every action.</h2></section>
       <section class="two-grid">
-        <div class="warm-card fade-in-d1"><span class="badge muted">EMPTY</span><h2 style="margin-top:14px">No MainTask yet</h2><p class="muted">After a lecturer publishes a MainTask, it appears here with generated templates.</p><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/main-tasks?role=LECTURER">Publish MainTask</a></div>
-        <div class="warm-card state-warning fade-in-d2"><span class="badge accent">ERROR</span><h2 style="margin-top:14px">Validation failed</h2><p class="muted">End time must be later than start time. Please review the StudySession form.</p><button class="action-btn action-btn-secondary">Return to Form</button></div>
+        <div class="warm-card fade-in-d1"><span class="badge muted">EMPTY</span><h2 style="margin-top:14px">No MainTask yet</h2><p class="muted">After a lecturer publishes a MainTask, it appears here with generated SubTasks.</p><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/main-tasks?role=LECTURER">Publish MainTask</a></div>
+        <div class="warm-card state-warning fade-in-d2"><span class="badge accent">ERROR</span><h2 style="margin-top:14px">Validation failed</h2><p class="muted">End time must be later than start time. Please review the task time range.</p><button class="action-btn action-btn-secondary">Return to Form</button></div>
         <div class="warm-card state-warning fade-in-d3"><span class="badge accent">NO PERMISSION</span><h2 style="margin-top:14px">Role cannot access this page</h2><p class="muted">The current account role does not match the required page permission.</p><a class="action-btn action-btn-secondary" href="${pageContext.request.contextPath}/auth.jsp">Back to Login</a></div>
-        <div class="warm-card state-success fade-in-d4"><span class="badge">SUCCESS</span><h2 style="margin-top:14px">MainTask published</h2><p class="muted">Student progress records are ready.</p><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1">View Detail</a></div>
+        <div class="warm-card state-success fade-in-d4"><span class="badge">SUCCESS</span><h2 style="margin-top:14px">MainTask published</h2><p class="muted">SubTask records are ready.</p><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1">View Detail</a></div>
       </section>
     </div></main>
   </div>

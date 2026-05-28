@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - StudyPal</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <%@ include file="/WEB-INF/jsp/common/header.jsp" %>
@@ -25,8 +25,8 @@
     </div>
     <section class="stat-grid">
         <div class="stat-card"><div class="stat-label">Active Tasks</div><div class="stat-value"><c:out value="${activeTaskCount}"/> / <c:out value="${totalTaskCount}"/></div><div class="stat-hint">MainTask</div></div>
-        <div class="stat-card"><div class="stat-label">Today's Planned</div><div class="stat-value"><c:out value="${todaySlotCount}"/></div><div class="stat-hint">StudentSubTask</div></div>
-        <div class="stat-card"><div class="stat-label">Study Hours</div><div class="stat-value"><c:out value="${weeklyStudyHours}"/>h</div><div class="stat-hint">last 7 days</div></div>
+        <div class="stat-card"><div class="stat-label">Today's Planned</div><div class="stat-value"><c:out value="${todaySlotCount}"/></div><div class="stat-hint">SubTask</div></div>
+        <div class="stat-card"><div class="stat-label">Planned Hours</div><div class="stat-value"><c:out value="${plannedHours}"/>h</div><div class="stat-hint">from SubTask time windows</div></div>
         <div class="stat-card"><div class="stat-label">Courses</div><div class="stat-value"><c:out value="${courseCount}"/></div><div class="stat-hint">Enrollment</div></div>
     </section>
     <div class="section-header"><h3>Upcoming Deadlines</h3></div>

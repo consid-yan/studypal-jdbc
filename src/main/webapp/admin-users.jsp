@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin User Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="assets/css/workspace.css">
 </head>
 <body>
 <div class="workspace-shell">
@@ -30,7 +30,7 @@
         <div class="warm-card stat-card"><p class="stat-label">Total Users</p><p class="stat-value">128</p><p class="stat-hint">All registered accounts</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent">112</p><p class="stat-hint">Public registration</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value">14</p><p class="stat-hint">Created by admins</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Suspended</p><p class="stat-value accent">3</p><p class="stat-hint">Restricted accounts</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Admins</p><p class="stat-value accent">2</p><p class="stat-hint">Administrator accounts</p></div>
       </section>
       <section class="management-grid">
         <div class="warm-card fade-in-d2">
@@ -41,7 +41,6 @@
           <form class="filter-bar" data-ui-message="Filters applied.">
             <div><label>Search</label><input name="keyword" placeholder="Name, username, or email"></div>
             <div><label>Role</label><select name="role"><option>All Roles</option><option>STUDENT</option><option>LECTURER</option><option>ADMIN</option></select></div>
-            <div><label>Status</label><select name="status"><option>All Statuses</option><option>Active</option><option>Suspended</option><option>Pending Reset</option></select></div>
             <button class="action-btn action-btn-primary" type="submit">Apply</button>
           </form>
           <div class="table-like">
@@ -50,32 +49,28 @@
               <span class="badge">STUDENT</span>
               <span class="muted">alexchen@studypal.test</span>
               <span class="muted">Joined DB2026, SE2026</span>
-              <span class="badge">Active</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Send a password reset link to Alex Chen?">Reset Password</button><button class="action-btn action-btn-danger" type="button" data-confirm="Suspend Alex Chen's account?">Suspend</button></div>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Alex Chen?">Update Password</button></div>
             </div>
             <div class="soft-card user-row">
               <div class="user-meta"><p class="strong-title">Dr. Sarah Johnson</p><span class="muted">sjohnson</span></div>
               <span class="badge accent">LECTURER</span>
               <span class="muted">sjohnson@studypal.test</span>
               <span class="muted">Owns SE2026</span>
-              <span class="badge">Active</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Dr. Sarah Johnson?">Reset Password</button><button class="action-btn action-btn-danger" type="button" data-confirm="Suspend Dr. Sarah Johnson's account?">Suspend</button></div>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Dr. Sarah Johnson?">Update Password</button></div>
             </div>
             <div class="soft-card user-row">
               <div class="user-meta"><p class="strong-title">Nina Roy</p><span class="muted">ninaroy</span></div>
               <span class="badge">STUDENT</span>
               <span class="muted">ninaroy@studypal.test</span>
               <span class="muted">No active courses</span>
-              <span class="badge danger">Suspended</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Reset Nina Roy's password before restoring access?">Reset Password</button><button class="action-btn action-btn-primary" type="button" data-confirm="Restore Nina Roy's account access?">Restore</button></div>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Nina Roy?">Update Password</button></div>
             </div>
             <div class="soft-card user-row">
               <div class="user-meta"><p class="strong-title">System Admin</p><span class="muted">admin</span></div>
               <span class="badge muted">ADMIN</span>
               <span class="muted">admin@studypal.test</span>
               <span class="muted">System owner</span>
-              <span class="badge">Active</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for System Admin?">Reset Password</button><button class="action-btn action-btn-danger" type="button" disabled>Protected</button></div>
+              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for System Admin?">Update Password</button></div>
             </div>
           </div>
         </div>
@@ -94,6 +89,6 @@
     </div></main>
   </div>
 </div>
-<script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
+<script src="assets/js/app.js"></script>
 </body>
 </html>
