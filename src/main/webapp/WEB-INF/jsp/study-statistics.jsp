@@ -6,6 +6,7 @@
 <%
     if (session.getAttribute("user") == null) { response.sendRedirect(request.getContextPath() + "/auth.jsp"); return; }
     UserAccount cu = (UserAccount) session.getAttribute("user");
+    if (!"STUDENT".equals(cu.getRole())) { response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission"); return; }
     TaskService ts = new TaskService(); CourseService cs = new CourseService();
     int pending = 0, completed = 0; double rate = 0; List<StudentSubTask> upcoming = null;
     List<Course> enrolledC = null;

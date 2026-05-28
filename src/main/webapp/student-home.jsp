@@ -9,6 +9,10 @@
         return;
     }
     UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"STUDENT".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
     Long studentId = currentUser.getUserId();
     String studentFullName = currentUser.getFullName();
     CourseService courseService = new CourseService();
@@ -151,6 +155,14 @@ body {
   box-shadow: 0 4px 16px rgba(46, 36, 27, 0.1);
 }
 
+.student-content {
+  align-items: start;
+}
+
+.student-aside {
+  min-width: 0;
+}
+
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -245,7 +257,7 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
         Study Sessions
       </a>
@@ -332,7 +344,7 @@ body {
               </div>
               <div class="flex gap-3 mt-5 flex-wrap">
                 <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="action-btn action-btn-primary">View My Tasks</a>
-                <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="action-btn action-btn-secondary">Record Study Session</a>
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="action-btn action-btn-secondary">Record Study Session</a>
               </div>
             </div>
 
@@ -377,7 +389,7 @@ body {
           </div>
 
           <!-- Right Column: Deadlines + Quick Actions + Profile -->
-          <div class="space-y-6">
+          <div class="student-aside space-y-6">
 
             <!-- Profile Summary -->
             <div class="warm-card p-5 fade-in-d1">
@@ -415,8 +427,6 @@ body {
                    } else { %><p class="text-xs text-textMuted text-center py-2">No upcoming deadlines.</p><% } %>
                 </div>
               </div>
-            </div>
-
             <!-- Quick Actions -->
             <div class="warm-card p-5 fade-in-d3">
               <h3 class="text-sm font-bold text-textDark mb-3">Quick Actions</h3>
@@ -429,7 +439,7 @@ body {
                   <p class="text-sm font-semibold text-primary">View My Tasks</p>
                   <p class="text-xs text-textMuted mt-0.5">Check task status, subtasks, notes, and planned time.</p>
                 </a>
-                <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
                   <p class="text-sm font-semibold text-accent">Record Study Session</p>
                   <p class="text-xs text-textMuted mt-0.5">Save study time and connect it to a course or task.</p>
                 </a>

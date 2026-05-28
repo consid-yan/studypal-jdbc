@@ -7,6 +7,11 @@
         response.sendRedirect(request.getContextPath() + "/auth.jsp");
         return;
     }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"LECTURER".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
     String taskIdStr = request.getParameter("id");
     Long taskId = null;
     try { taskId = Long.parseLong(taskIdStr); } catch (Exception ignored) {}
@@ -21,6 +26,10 @@
     if (taskId != null) {
         try {
             task = taskService.getTaskById(taskId);
+            if (task == null || task.getCreatorId() == null || !task.getCreatorId().equals(currentUser.getUserId())) {
+                response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+                return;
+            }
             enrolledCount = taskService.getTaskEnrollmentCount(taskId);
             avgCompletion = taskService.getTaskAvgCompletion(taskId);
             completedCount = taskService.getTaskCompletedStudentCount(taskId);
@@ -36,7 +45,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Lecturer Task Detail</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=3">
 </head>
 <body>
 <div class="workspace-shell">
@@ -47,7 +56,7 @@
     </div>
     <nav class="workspace-nav">
       <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
-      <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
+      <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
       <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
       <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
     </nav>
@@ -84,7 +93,7 @@
                    <div class="soft-card student-progress-row">
                      <div class="user-meta"><p class="strong-title"><%= sp.getStudentName() %></p><span class="muted"><%= sp.getStudentEmail() %></span></div>
                      <span class="<%= badgeClass %>"><%= badgeLabel %></span>
-                     <div><div class="progress-track"><div class="progress-fill <%= badgeClass.contains("accent") ? "accent" : "" %>" style="--target-width:<%= pct %>%"></div></div></div>
+                     <div class="student-progress-cell"><div class="progress-track"><div class="progress-fill <%= badgeClass.contains("accent") ? "accent" : "" %>" style="--target-width:<%= pct %>%"></div></div></div>
                      <span class="muted"><%= pct %>%</span>
                      <span class="muted">--</span>
                      <a class="<%= btnClass %>" href="#"><%= btnLabel %></a>
@@ -106,8 +115,8 @@
             %>
                    <div class="soft-card step-progress-row">
                      <div><p class="strong-title"><%= st.getTitle() %></p><p class="muted"><%= done %> of <%= total %> completed</p></div>
-                     <div class="progress-track"><div class="progress-fill accent" style="--target-width:<%= pct %>%"></div></div>
                      <span class="badge accent"><%= pct %>%</span>
+                     <div class="progress-track"><div class="progress-fill accent" style="--target-width:<%= pct %>%"></div></div>
                    </div>
             <%   }
                } else { %>

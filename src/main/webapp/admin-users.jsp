@@ -7,10 +7,15 @@
         response.sendRedirect(request.getContextPath() + "/auth.jsp");
         return;
     }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"ADMIN".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
     AdminService adminService = new AdminService();
     String error = null, success = null;
 
-    String roleFilter = request.getParameter("role");
+    String roleFilter = request.getParameter("roleFilter");
     String keyword = request.getParameter("keyword");
     if ("All Roles".equals(roleFilter) || "".equals(roleFilter)) roleFilter = null;
 
@@ -57,7 +62,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin User Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
 </head>
 <body>
 <div class="workspace-shell">
@@ -90,9 +95,9 @@
             <h2>Registered Users</h2>
             <a class="action-btn action-btn-secondary" href="#create-account">Create Account</a>
           </div>
-          <form class="filter-bar" method="GET" action="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN">
+          <form class="filter-bar" method="GET" action="${pageContext.request.contextPath}/admin-users.jsp">
             <div><label>Search</label><input name="keyword" value="<%= keyword != null ? keyword : "" %>" placeholder="Name, username, or email"></div>
-            <div><label>Role</label><select name="role"><option value="">All Roles</option><option value="STUDENT" <%= "STUDENT".equals(roleFilter) ? "selected" : "" %>>STUDENT</option><option value="LECTURER" <%= "LECTURER".equals(roleFilter) ? "selected" : "" %>>LECTURER</option><option value="ADMIN" <%= "ADMIN".equals(roleFilter) ? "selected" : "" %>>ADMIN</option></select></div>
+            <div><label>Role</label><select name="roleFilter"><option value="">All Roles</option><option value="STUDENT" <%= "STUDENT".equals(roleFilter) ? "selected" : "" %>>STUDENT</option><option value="LECTURER" <%= "LECTURER".equals(roleFilter) ? "selected" : "" %>>LECTURER</option><option value="ADMIN" <%= "ADMIN".equals(roleFilter) ? "selected" : "" %>>ADMIN</option></select></div>
             <button class="action-btn action-btn-primary" type="submit">Apply</button>
           </form>
           <% if (error != null) { %><div style="margin:12px 0;padding:12px;border-radius:8px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;font-size:13px;"><%= error %></div><% } %>

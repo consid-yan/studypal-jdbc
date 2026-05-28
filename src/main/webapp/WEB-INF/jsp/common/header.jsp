@@ -22,7 +22,7 @@
         <c:choose>
             <c:when test="${currentRole == 'LECTURER'}">
                 <a href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">教师主页</a>
-                <a href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">我教的课程</a>
+                <a href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER">我教的课程</a>
                 <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">发布 MainTask</a>
                 <a href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1">任务详情</a>
             </c:when>
@@ -36,7 +36,7 @@
                 <a href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">学生主页</a>
                 <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT">我的课程 Course</a>
                 <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT">任务进度</a>
-                <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT">学习记录</a>
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT">学习记录</a>
             </c:otherwise>
         </c:choose>
         <a href="${pageContext.request.contextPath}/auth.jsp">切换角色</a>

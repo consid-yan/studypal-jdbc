@@ -220,6 +220,7 @@ textarea {
 .hero-card h2 {
     margin: 0;
     font-size: 24px;
+    overflow-wrap: anywhere;
 }
 
 .hero-card p {
@@ -227,6 +228,7 @@ textarea {
     margin: 8px 0 0;
     color: var(--text-muted);
     font-size: 14px;
+    overflow-wrap: anywhere;
 }
 
 .eyebrow {
@@ -235,6 +237,7 @@ textarea {
     font-family: "Press Start 2P", monospace;
     font-size: 8px;
     letter-spacing: 0;
+    overflow-wrap: anywhere;
 }
 
 .stats-grid {
@@ -246,13 +249,37 @@ textarea {
 
 .panel-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     gap: 24px;
+    align-items: start;
 }
 
 .management-grid {
     display: grid;
+    grid-template-columns: minmax(0, 2.15fr) minmax(0, 0.85fr);
     gap: 24px;
+    align-items: start;
+}
+
+.panel-grid > *,
+.management-grid > * {
+    min-width: 0;
+}
+
+.panel-grid > aside,
+.management-grid > aside {
+    align-self: start;
+}
+
+.panel-grid > :only-child,
+.management-grid > :only-child {
+    grid-column: 1 / -1;
+}
+
+.panel-stack {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
 }
 
 .two-grid {
@@ -309,6 +336,7 @@ textarea {
     border-radius: 12px;
     background: var(--cream);
     padding: 16px;
+    min-width: 0;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -332,6 +360,7 @@ textarea {
     margin: 0;
     font-size: 14px;
     font-weight: 700;
+    min-width: 0;
 }
 
 .tiny {
@@ -362,6 +391,8 @@ textarea {
 
 .progress-track {
     height: 8px;
+    min-width: 0;
+    width: 100%;
     overflow: hidden;
     border-radius: 999px;
     background: rgba(226, 210, 189, 0.7);
@@ -392,6 +423,7 @@ textarea {
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
     transition: all 0.2s;
 }
 
@@ -463,6 +495,11 @@ textarea:focus {
 .table-like {
     display: grid;
     gap: 12px;
+    min-width: 0;
+}
+
+.table-like > * {
+    min-width: 0;
 }
 
 .table-row {
@@ -481,35 +518,83 @@ textarea:focus {
 
 .course-row {
     display: grid;
-    grid-template-columns: minmax(160px, 1.2fr) minmax(120px, 0.8fr) minmax(160px, 1fr) minmax(90px, 0.6fr) auto;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 0.6fr) auto;
     gap: 12px;
     align-items: center;
 }
 
 .student-progress-row {
     display: grid;
-    grid-template-columns: minmax(150px, 1.1fr) minmax(130px, 0.9fr) minmax(160px, 1.2fr) minmax(90px, 0.6fr) minmax(120px, 0.8fr) auto;
+    grid-template-columns: minmax(0, 1.1fr) max-content minmax(120px, 1.2fr) max-content minmax(0, 0.55fr) max-content;
     gap: 12px;
     align-items: center;
 }
 
 .step-progress-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(180px, 1.2fr) minmax(80px, auto);
-    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 12px;
     align-items: center;
+}
+
+.student-progress-row > *,
+.step-progress-row > * {
+    min-width: 0;
+}
+
+.student-progress-cell {
+    min-width: 0;
+}
+
+.student-progress-row .badge,
+.step-progress-row .badge {
+    justify-self: start;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.student-progress-row > .muted,
+.step-progress-row .muted,
+.step-progress-row .strong-title {
+    overflow-wrap: anywhere;
+}
+
+.step-progress-row .progress-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+}
+
+.step-progress-row .badge {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
 }
 
 .user-row {
     display: grid;
-    grid-template-columns: minmax(160px, 1.2fr) minmax(100px, 0.7fr) minmax(170px, 1.1fr) minmax(120px, 0.8fr) minmax(100px, 0.7fr) minmax(220px, auto);
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
+}
+
+.user-row .button-row {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
 }
 
 .user-meta {
     display: grid;
     gap: 3px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.user-meta > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .filter-bar {
@@ -586,13 +671,13 @@ textarea:focus {
 
     .stats-grid,
     .panel-grid,
+    .management-grid,
     .two-grid,
     .form-grid,
     .table-row,
     .admin-row,
     .course-row,
     .student-progress-row,
-    .step-progress-row,
     .user-row,
     .filter-bar {
         grid-template-columns: 1fr;
@@ -605,5 +690,29 @@ textarea:focus {
     .workspace-content,
     .workspace-header {
         padding: 24px;
+    }
+}
+
+@media (min-width: 961px) and (max-width: 1280px) {
+    .management-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .student-progress-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .student-progress-row .user-meta,
+    .student-progress-cell {
+        grid-column: 1 / -1;
+    }
+
+    .student-progress-row .badge {
+        grid-column: 1 / -1;
+    }
+
+    .student-progress-row > .muted,
+    .student-progress-row .action-btn {
+        justify-self: start;
     }
 }

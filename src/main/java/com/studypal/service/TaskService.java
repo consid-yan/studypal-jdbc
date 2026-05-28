@@ -233,7 +233,6 @@ public class TaskService {
             "JOIN MAIN_TASK m ON t.main_task_id = m.main_task_id " +
             "LEFT JOIN COURSE c ON m.course_id = c.course_id " +
             "WHERE sst.student_id = ?");
-        sql.append(" AND m.course_id = ?");
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (m.title LIKE ? OR c.course_name LIKE ?)");
         }
@@ -329,8 +328,11 @@ public class TaskService {
     }
 
     public List<StudentSubTask> getStudentSubTasksByMainTask(Long studentId, Long mainTaskId) throws SQLException {
-        String sql = "SELECT sst.*, t.title AS template_title, t.description AS template_description " +
+        String sql = "SELECT sst.*, t.title AS template_title, t.description AS template_description, " +
+                     "m.main_task_id AS mt_id, m.title AS main_task_title, m.deadline, c.course_name " +
                      "FROM STUDENT_SUB_TASK sst JOIN SUB_TASK_TEMPLATE t ON sst.template_id = t.template_id " +
+                     "JOIN MAIN_TASK m ON t.main_task_id = m.main_task_id " +
+                     "LEFT JOIN COURSE c ON m.course_id = c.course_id " +
                      "WHERE sst.student_id = ? AND t.main_task_id = ? ORDER BY t.sequence_order";
         List<StudentSubTask> list = new ArrayList<>();
         try (Connection conn = DBUtils.getConnection();
@@ -340,6 +342,8 @@ public class TaskService {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     StudentSubTask sst = mapStudentSubTask(rs);
+                    sst.setMainTaskId(rs.getLong("mt_id"));
+                    sst.setDeadline(rs.getTimestamp("deadline"));
                     list.add(sst);
                 }
             }
@@ -354,6 +358,11 @@ public class TaskService {
         try {
             conn = DBUtils.getConnection();
             conn.setAutoCommit(false);
+
+            if (!studentCanAccessTask(conn, studentId, mainTaskId)) {
+                conn.rollback();
+                return "You are not enrolled in this task's course.";
+            }
 
             String checkSql = "SELECT COUNT(*) FROM STUDENT_SUB_TASK WHERE student_id = ? " +
                              "AND template_id IN (SELECT template_id FROM SUB_TASK_TEMPLATE WHERE main_task_id = ?)";
@@ -395,9 +404,13 @@ public class TaskService {
 
     // ==================== 学生：更新进度 ====================
 
-    public String updateStudentSubTaskStatus(Long studentSubTaskId, String status,
+    public String updateStudentSubTaskStatus(Long studentId, Long studentSubTaskId, String status,
                                               String notes, Timestamp completedTime) throws SQLException {
-        String sql = "UPDATE STUDENT_SUB_TASK SET status = ?, notes = ?, completed_time = ? WHERE student_sub_task_id = ?";
+        if (!"NOT_STARTED".equals(status) && !"IN_PROGRESS".equals(status) && !"COMPLETED".equals(status)) {
+            return "Invalid task status.";
+        }
+        String sql = "UPDATE STUDENT_SUB_TASK SET status = ?, notes = ?, completed_time = ? " +
+                     "WHERE student_sub_task_id = ? AND student_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -405,7 +418,11 @@ public class TaskService {
             if (completedTime != null) ps.setTimestamp(3, completedTime);
             else ps.setNull(3, Types.TIMESTAMP);
             ps.setLong(4, studentSubTaskId);
-            ps.executeUpdate();
+            ps.setLong(5, studentId);
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                return "Task not found for current student.";
+            }
             return null;
         } catch (SQLException e) {
             return "Failed to update task: " + e.getMessage();
@@ -466,7 +483,7 @@ public class TaskService {
 
     public String generateSubTaskTemplates(Long mainTaskId, String courseName,
                                             String taskTitle, String description) {
-        String apiUrl = DBUtils.AI_API_URL;
+        String apiUrl = chatCompletionUrl(DBUtils.AI_API_URL);
         String apiKey = DBUtils.AI_API_KEY;
         String model = DBUtils.AI_MODEL;
 
@@ -564,6 +581,28 @@ public class TaskService {
     private String escapeJson(String s) {
         return s.replace("\\", "\\\\").replace("\"", "\\\"")
                 .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+    }
+
+    private String chatCompletionUrl(String apiUrl) {
+        if (apiUrl == null || apiUrl.isBlank() || apiUrl.endsWith("/chat/completions")) {
+            return apiUrl;
+        }
+        return apiUrl.replaceAll("/+$", "") + "/chat/completions";
+    }
+
+    private boolean studentCanAccessTask(Connection conn, Long studentId, Long mainTaskId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM MAIN_TASK m " +
+                     "LEFT JOIN ENROLLMENT e ON m.course_id = e.course_id AND e.student_id = ? " +
+                     "WHERE m.main_task_id = ? AND " +
+                     "((m.course_id IS NULL AND m.creator_id = ?) OR e.enrollment_id IS NOT NULL)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, studentId);
+            ps.setLong(2, mainTaskId);
+            ps.setLong(3, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
     }
 
     private StudentSubTask mapStudentSubTask(ResultSet rs) throws SQLException {

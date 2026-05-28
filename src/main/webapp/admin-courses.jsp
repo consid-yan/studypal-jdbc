@@ -7,6 +7,11 @@
         response.sendRedirect(request.getContextPath() + "/auth.jsp");
         return;
     }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"ADMIN".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
     CourseService courseService = new CourseService();
     String error = null;
 
@@ -52,7 +57,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin Course Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
 </head>
 <body>
 <div class="workspace-shell">

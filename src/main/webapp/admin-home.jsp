@@ -1,6 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.studypal.service.AdminService" %>
+<%@ page import="com.studypal.model.UserAccount" %>
 <% if (session.getAttribute("user") == null) { response.sendRedirect(request.getContextPath() + "/auth.jsp"); return; }
+   UserAccount currentUser = (UserAccount) session.getAttribute("user");
+   if (!"ADMIN".equals(currentUser.getRole())) { response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission"); return; }
    AdminService as = new AdminService(); int[] st = null; try { st = as.getStats(); } catch (Exception e) {}
    int us = st != null ? st[0] : 0; int stu = st != null ? st[1] : 0;
    int lec = st != null ? st[2] : 0; int ad = st != null ? st[3] : 0;
@@ -11,7 +14,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin Home</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
 </head>
 <body>
 <div class="workspace-shell">

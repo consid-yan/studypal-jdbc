@@ -9,6 +9,10 @@
         return;
     }
     UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"STUDENT".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
     Long studentId = currentUser.getUserId();
     CourseService courseService = new CourseService();
     String error = null;
@@ -295,7 +299,7 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/study-sessions?role=STUDENT" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
         Study Sessions
       </a>
