@@ -66,20 +66,4 @@ public class DBUtils {
         } catch (IOException ignored) {}
         return props;
     }
-
-    public static void close(ResultSet rs, Statement st, Connection conn) {
-        try {
-            if (rs != null) rs.close();
-        } catch (SQLException ignored) {}
-        try {
-            if (st != null) st.close();
-        } catch (SQLException ignored) {}
-        try {
-            if (conn != null) conn.close();
-        } catch (SQLException ignored) {}
-    }
-
-    public static void close(Statement st, Connection conn) {
-        close(null, st, conn);
-    }
 }

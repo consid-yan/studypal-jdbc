@@ -9,10 +9,10 @@ import java.util.List;
 
 public class CourseService {
 
-    // ==================== 管理员功能 ====================
+    // ==================== Administrator Features ====================
 
     public String createCourse(String courseCode, String courseName, Long lecturerId,
-                               String semester, String description) throws SQLException {
+                               String semester, String description) {
         String sql = "INSERT INTO COURSE (course_code, course_name, lecturer_id, semester, description) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -33,25 +33,7 @@ public class CourseService {
                      "(SELECT COUNT(*) FROM ENROLLMENT e WHERE e.course_id = c.course_id) AS enrollment_count " +
                      "FROM COURSE c JOIN LECTURER l ON c.lecturer_id = l.lecturer_id " +
                      "JOIN USER_ACCOUNT u ON l.lecturer_id = u.user_id ORDER BY c.created_at DESC";
-        List<Course> list = new ArrayList<>();
-        try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Course c = new Course();
-                c.setCourseId(rs.getLong("course_id"));
-                c.setCourseCode(rs.getString("course_code"));
-                c.setCourseName(rs.getString("course_name"));
-                c.setLecturerId(rs.getLong("lecturer_id"));
-                c.setSemester(rs.getString("semester"));
-                c.setDescription(rs.getString("description"));
-                c.setCreatedAt(rs.getTimestamp("created_at"));
-                c.setLecturerName(rs.getString("lecturer_name"));
-                c.setEnrollmentCount(rs.getInt("enrollment_count"));
-                list.add(c);
-            }
-        }
-        return list;
+        return queryCourses(sql);
     }
 
     public List<Lecturer> getAllLecturers() throws SQLException {
@@ -61,21 +43,19 @@ public class CourseService {
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Lecturer l = new Lecturer();
-                l.setLecturerId(rs.getLong("lecturer_id"));
-                l.setEmployeeNo(rs.getString("employee_no"));
-                l.setDepartment(rs.getString("department"));
-                l.setTitle(rs.getString("title"));
-                l.setOffice(rs.getString("office"));
-                l.setPhone(rs.getString("phone"));
-                l.setFullName(rs.getString("full_name"));
-                list.add(l);
+                list.add(new Lecturer(rs.getLong("lecturer_id"),
+                        rs.getString("employee_no"),
+                        rs.getString("department"),
+                        rs.getString("title"),
+                        rs.getString("office"),
+                        rs.getString("phone"),
+                        rs.getString("full_name")));
             }
         }
         return list;
     }
 
-    // ==================== 统计方法 ====================
+    // ==================== Statistical Methods ====================
 
     public int getTotalCourseCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM COURSE";
@@ -107,17 +87,17 @@ public class CourseService {
         return 0;
     }
 
-    // ==================== 学生功能 ====================
+    // ==================== Student Features ====================
 
-    /** 学生选课，返回 null 表示成功，否则返回错误信息 */
+    /** Student course selection; returns null if successful, otherwise returns an error message */
     public String enrollInCourse(Long studentId, String courseCode) throws SQLException {
         Connection conn = null;
         try {
             conn = DBUtils.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. 查找课程
-            Long courseId = null;
+            // 1. Search for courses
+            long courseId;
             String findSql = "SELECT course_id FROM COURSE WHERE course_code = ?";
             try (PreparedStatement ps = conn.prepareStatement(findSql)) {
                 ps.setString(1, courseCode);
@@ -130,7 +110,7 @@ public class CourseService {
                 }
             }
 
-            // 2. 检查是否已选
+            // 2. Check if it is selected
             String dupSql = "SELECT COUNT(*) FROM ENROLLMENT WHERE student_id = ? AND course_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(dupSql)) {
                 ps.setLong(1, studentId);
@@ -143,7 +123,7 @@ public class CourseService {
                 }
             }
 
-            // 3. 插入选课记录
+            // 3. Insert course registration records
             String insertSql = "INSERT INTO ENROLLMENT (student_id, course_id) VALUES (?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                 ps.setLong(1, studentId);
@@ -165,31 +145,13 @@ public class CourseService {
     }
 
     public List<Course> getEnrolledCourses(Long studentId) throws SQLException {
-        String sql = "SELECT c.*, u.full_name AS lecturer_name " +
+        String sql = "SELECT c.*, u.full_name AS lecturer_name, " +
+                     "(SELECT COUNT(*) FROM ENROLLMENT ec WHERE ec.course_id = c.course_id) AS enrollment_count " +
                      "FROM COURSE c JOIN ENROLLMENT e ON c.course_id = e.course_id " +
                      "JOIN LECTURER l ON c.lecturer_id = l.lecturer_id " +
                      "JOIN USER_ACCOUNT u ON l.lecturer_id = u.user_id " +
                      "WHERE e.student_id = ? ORDER BY e.enrollment_date DESC";
-        List<Course> list = new ArrayList<>();
-        try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, studentId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Course c = new Course();
-                    c.setCourseId(rs.getLong("course_id"));
-                    c.setCourseCode(rs.getString("course_code"));
-                    c.setCourseName(rs.getString("course_name"));
-                    c.setLecturerId(rs.getLong("lecturer_id"));
-                    c.setSemester(rs.getString("semester"));
-                    c.setDescription(rs.getString("description"));
-                    c.setCreatedAt(rs.getTimestamp("created_at"));
-                    c.setLecturerName(rs.getString("lecturer_name"));
-                    list.add(c);
-                }
-            }
-        }
-        return list;
+        return queryCourses(sql, studentId);
     }
 
     public int getEnrolledCourseCount(Long studentId) throws SQLException {
@@ -216,31 +178,14 @@ public class CourseService {
         return 0;
     }
 
-    // ==================== 讲师功能 ====================
+    // ==================== Instructor Features ====================
 
     public List<Course> getCoursesByLecturerId(Long lecturerId) throws SQLException {
-        String sql = "SELECT c.*, (SELECT COUNT(*) FROM ENROLLMENT e WHERE e.course_id = c.course_id) AS enrollment_count " +
-                     "FROM COURSE c WHERE c.lecturer_id = ? ORDER BY c.created_at DESC";
-        List<Course> list = new ArrayList<>();
-        try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, lecturerId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Course c = new Course();
-                    c.setCourseId(rs.getLong("course_id"));
-                    c.setCourseCode(rs.getString("course_code"));
-                    c.setCourseName(rs.getString("course_name"));
-                    c.setLecturerId(rs.getLong("lecturer_id"));
-                    c.setSemester(rs.getString("semester"));
-                    c.setDescription(rs.getString("description"));
-                    c.setCreatedAt(rs.getTimestamp("created_at"));
-                    c.setEnrollmentCount(rs.getInt("enrollment_count"));
-                    list.add(c);
-                }
-            }
-        }
-        return list;
+        String sql = "SELECT c.*, u.full_name AS lecturer_name, " +
+                     "(SELECT COUNT(*) FROM ENROLLMENT e WHERE e.course_id = c.course_id) AS enrollment_count " +
+                     "FROM COURSE c JOIN USER_ACCOUNT u ON c.lecturer_id = u.user_id " +
+                     "WHERE c.lecturer_id = ? ORDER BY c.created_at DESC";
+        return queryCourses(sql, lecturerId);
     }
 
     public int getLecturerCourseCount(Long lecturerId) throws SQLException {
@@ -277,5 +222,31 @@ public class CourseService {
             }
         }
         return 0;
+    }
+
+    private List<Course> queryCourses(String sql, Object... params) throws SQLException {
+        List<Course> list = new ArrayList<>();
+
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.length; i++) {
+                ps.setObject(i + 1, params[i]);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Course(rs.getLong("course_id"),
+                            rs.getString("course_code"),
+                            rs.getString("course_name"),
+                            rs.getLong("lecturer_id"),
+                            rs.getString("semester"),
+                            rs.getString("description"),
+                            rs.getTimestamp("created_at"),
+                            rs.getString("lecturer_name"),
+                            rs.getInt("enrollment_count")));
+                }
+            }
+        }
+        return list;
     }
 }

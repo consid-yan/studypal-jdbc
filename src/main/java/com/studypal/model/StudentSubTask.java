@@ -14,7 +14,7 @@ public class StudentSubTask {
     private String status;
     private String notes;
 
-    // 展示用（不持久化）
+    // For display purposes only (not persisted to the database)
     private String templateTitle;
     private String templateDescription;
     private String mainTaskTitle;

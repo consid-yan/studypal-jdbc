@@ -3,29 +3,43 @@ package com.studypal.model;
 import java.sql.Timestamp;
 
 public class Course {
-    private Long courseId;
-    private String courseCode;
-    private String courseName;
-    private Long lecturerId;
+    private final Long courseId;
+    private final String courseCode;
+    private final String courseName;
+    private final Long lecturerId;
     private String semester;
     private String description;
-    private Timestamp createdAt;
+    private final Timestamp createdAt;
 
-    // 展示用（不持久化到数据库）
-    private String lecturerName;
-    private int enrollmentCount;
+    // For display purposes only (not persisted to the database)
+    private final String lecturerName;
+    private final int enrollmentCount;
+
+    public Course(Long courseId, String courseCode, String courseName, Long lecturerId, String semester,
+                  String description, Timestamp createdAt) {
+        this(courseId, courseCode, courseName, lecturerId, semester, description, createdAt, null, 0);
+    }
+
+    public Course(Long courseId, String courseCode, String courseName, Long lecturerId, String semester,
+                  String description, Timestamp createdAt, String lecturerName, int enrollmentCount) {
+        this.courseId = courseId;
+        this.courseCode = courseCode;
+        this.courseName = courseName;
+        this.lecturerId = lecturerId;
+        this.semester = semester;
+        this.description = description;
+        this.createdAt = createdAt;
+        this.lecturerName = lecturerName;
+        this.enrollmentCount = enrollmentCount;
+    }
 
     public Long getCourseId() { return courseId; }
-    public void setCourseId(Long courseId) { this.courseId = courseId; }
 
     public String getCourseCode() { return courseCode; }
-    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
 
     public String getCourseName() { return courseName; }
-    public void setCourseName(String courseName) { this.courseName = courseName; }
 
     public Long getLecturerId() { return lecturerId; }
-    public void setLecturerId(Long lecturerId) { this.lecturerId = lecturerId; }
 
     public String getSemester() { return semester; }
     public void setSemester(String semester) { this.semester = semester; }
@@ -34,11 +48,8 @@ public class Course {
     public void setDescription(String description) { this.description = description; }
 
     public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
     public String getLecturerName() { return lecturerName; }
-    public void setLecturerName(String lecturerName) { this.lecturerName = lecturerName; }
 
     public int getEnrollmentCount() { return enrollmentCount; }
-    public void setEnrollmentCount(int enrollmentCount) { this.enrollmentCount = enrollmentCount; }
 }

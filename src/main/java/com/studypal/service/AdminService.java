@@ -10,8 +10,7 @@ import java.util.List;
 public class AdminService {
 
     public List<UserAccount> getAllUsers(String roleFilter, String keyword) throws SQLException {
-        StringBuilder sql = new StringBuilder(
-            "SELECT * FROM USER_ACCOUNT WHERE 1=1");
+        var sql = new StringBuilder("SELECT * FROM USER_ACCOUNT WHERE 1=1");
         List<Object> params = new ArrayList<>();
         if (roleFilter != null && !roleFilter.isEmpty()) {
             sql.append(" AND role = ?");
@@ -31,7 +30,7 @@ public class AdminService {
                 ps.setString(i + 1, (String) params.get(i));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    UserAccount u = new UserAccount();
+                    var u = new UserAccount();
                     u.setUserId(rs.getLong("user_id"));
                     u.setUsername(rs.getString("username"));
                     u.setEmail(rs.getString("email"));
@@ -52,7 +51,7 @@ public class AdminService {
         try {
             conn = DBUtils.getConnection();
 
-            // 检查重复
+            // Check for duplicates
             String checkSql = "SELECT username, email FROM USER_ACCOUNT WHERE username = ? OR email = ?";
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setString(1, username);
@@ -120,7 +119,7 @@ public class AdminService {
         }
     }
 
-    public String resetPassword(Long userId, String newPassword) throws SQLException {
+    public String resetPassword(Long userId, String newPassword) {
         String sql = "UPDATE USER_ACCOUNT SET password_hash = ? WHERE user_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

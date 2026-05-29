@@ -14,11 +14,11 @@ import java.util.List;
 
 public class TaskService {
 
-    // ==================== 讲师：创建任务与模板 ====================
+    // ==================== Instructor: Creating Tasks and Templates ====================
 
     public String createMainTask(Long courseId, Long creatorId, String title,
                                  String description, Timestamp deadline,
-                                 int importanceLevel, String roleEnum) throws SQLException {
+                                 int importanceLevel, String roleEnum) {
         String sql = "INSERT INTO MAIN_TASK (course_id, creator_id, title, description, deadline, importance_level, role_enum) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -37,8 +37,8 @@ public class TaskService {
         }
     }
 
-    public String createSubTaskTemplate(Long mainTaskId, String title, String description,
-                                        BigDecimal estimatedHours, int sequenceOrder) throws SQLException {
+    public void createSubTaskTemplate(Long mainTaskId, String title, String description,
+                                      BigDecimal estimatedHours, int sequenceOrder) {
         String sql = "INSERT INTO SUB_TASK_TEMPLATE (main_task_id, title, description, estimated_hours, sequence_order) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -48,18 +48,17 @@ public class TaskService {
             ps.setBigDecimal(4, estimatedHours);
             ps.setInt(5, sequenceOrder);
             ps.executeUpdate();
-            return null;
-        } catch (SQLException e) {
-            return "Failed to create template: " + e.getMessage();
+        } catch (SQLException ignored) {
         }
     }
 
-    // ==================== 讲师：已发布任务列表 ====================
+    // ==================== Instructor: List of Published Assignments ====================
 
     public List<MainTask> getTasksByCreatorId(Long creatorId) throws SQLException {
-        String sql = "SELECT m.*, c.course_code, c.course_name, " +
+        String sql = "SELECT m.*, c.course_code, c.course_name, u.full_name AS creator_name, " +
                      "(SELECT COUNT(*) FROM SUB_TASK_TEMPLATE t WHERE t.main_task_id = m.main_task_id) AS template_count " +
                      "FROM MAIN_TASK m LEFT JOIN COURSE c ON m.course_id = c.course_id " +
+                     "JOIN USER_ACCOUNT u ON m.creator_id = u.user_id " +
                      "WHERE m.creator_id = ? ORDER BY m.created_at DESC";
         List<MainTask> list = new ArrayList<>();
         try (Connection conn = DBUtils.getConnection();
@@ -67,30 +66,18 @@ public class TaskService {
             ps.setLong(1, creatorId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    MainTask m = new MainTask();
-                    m.setMainTaskId(rs.getLong("main_task_id"));
-                    m.setCourseId((Long) rs.getObject("course_id"));
-                    m.setCreatorId(rs.getLong("creator_id"));
-                    m.setTitle(rs.getString("title"));
-                    m.setDescription(rs.getString("description"));
-                    m.setDeadline(rs.getTimestamp("deadline"));
-                    m.setImportanceLevel((Integer) rs.getObject("importance_level"));
-                    m.setRoleEnum(rs.getString("role_enum"));
-                    m.setCreatedAt(rs.getTimestamp("created_at"));
-                    m.setCourseCode(rs.getString("course_code"));
-                    m.setCourseName(rs.getString("course_name"));
-                    m.setTemplateCount(rs.getInt("template_count"));
-                    list.add(m);
+                    list.add(mapMainTask(rs));
                 }
             }
         }
         return list;
     }
 
-    // ==================== 讲师：单任务详情 ====================
+    // ==================== Instructor: Single Task Details ====================
 
     public MainTask getTaskById(Long mainTaskId) throws SQLException {
-        String sql = "SELECT m.*, c.course_code, c.course_name, u.full_name AS creator_name " +
+        String sql = "SELECT m.*, c.course_code, c.course_name, u.full_name AS creator_name, " +
+                     "(SELECT COUNT(*) FROM SUB_TASK_TEMPLATE t WHERE t.main_task_id = m.main_task_id) AS template_count " +
                      "FROM MAIN_TASK m LEFT JOIN COURSE c ON m.course_id = c.course_id " +
                      "JOIN USER_ACCOUNT u ON m.creator_id = u.user_id WHERE m.main_task_id = ?";
         try (Connection conn = DBUtils.getConnection();
@@ -98,27 +85,14 @@ public class TaskService {
             ps.setLong(1, mainTaskId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    MainTask m = new MainTask();
-                    m.setMainTaskId(rs.getLong("main_task_id"));
-                    m.setCourseId((Long) rs.getObject("course_id"));
-                    m.setCreatorId(rs.getLong("creator_id"));
-                    m.setTitle(rs.getString("title"));
-                    m.setDescription(rs.getString("description"));
-                    m.setDeadline(rs.getTimestamp("deadline"));
-                    m.setImportanceLevel((Integer) rs.getObject("importance_level"));
-                    m.setRoleEnum(rs.getString("role_enum"));
-                    m.setCreatedAt(rs.getTimestamp("created_at"));
-                    m.setCourseCode(rs.getString("course_code"));
-                    m.setCourseName(rs.getString("course_name"));
-                    m.setCreatorName(rs.getString("creator_name"));
-                    return m;
+                    return mapMainTask(rs);
                 }
             }
         }
         return null;
     }
 
-    // ==================== 讲师：任务统计 ====================
+    // ==================== Instructor: Task Statistics ====================
 
     public int getTaskEnrollmentCount(Long mainTaskId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM ENROLLMENT e JOIN MAIN_TASK m ON m.course_id = e.course_id WHERE m.main_task_id = ?";
@@ -154,7 +128,7 @@ public class TaskService {
             ps.setLong(1, mainTaskId);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getDouble(1); }
         }
-        return 0.0;
+        return 0;
     }
 
     public int getTaskAtRiskStudentCount(Long mainTaskId) throws SQLException {
@@ -170,7 +144,7 @@ public class TaskService {
         return 0;
     }
 
-    // ==================== 讲师：学生进度与步骤聚合 ====================
+    // ==================== Lecturer: Student Progress and Step Aggregation ====================
 
     public List<StudentSubTask> getStudentProgressByTask(Long mainTaskId) throws SQLException {
         String sql = "SELECT sst.student_id, u.full_name AS student_name, u.email AS student_email, " +
@@ -222,11 +196,11 @@ public class TaskService {
         return list;
     }
 
-    // ==================== 学生：任务过滤列表 ====================
+    // ==================== Student: Task Filter List ====================
 
     public List<StudentSubTask> getTasksByStudentId(Long studentId, String keyword,
                                                      Long courseIdFilter, String statusFilter) throws SQLException {
-        StringBuilder sql = new StringBuilder(
+        var sql = new StringBuilder(
             "SELECT sst.*, t.title AS template_title, t.description AS template_description, " +
             "m.main_task_id AS mt_id, m.title AS main_task_title, m.deadline, c.course_name " +
             "FROM STUDENT_SUB_TASK sst JOIN SUB_TASK_TEMPLATE t ON sst.template_id = t.template_id " +
@@ -272,10 +246,11 @@ public class TaskService {
         return list;
     }
 
-    // ==================== 学生：任务详情 ====================
+    // ==================== Student: Task Details ====================
 
     public MainTask getMainTaskById(Long mainTaskId) throws SQLException {
-        String sql = "SELECT m.*, c.course_code, c.course_name, u.full_name AS creator_name " +
+        String sql = "SELECT m.*, c.course_code, c.course_name, u.full_name AS creator_name, " +
+                     "(SELECT COUNT(*) FROM SUB_TASK_TEMPLATE t WHERE t.main_task_id = m.main_task_id) AS template_count " +
                      "FROM MAIN_TASK m LEFT JOIN COURSE c ON m.course_id = c.course_id " +
                      "JOIN USER_ACCOUNT u ON m.creator_id = u.user_id WHERE m.main_task_id = ?";
         try (Connection conn = DBUtils.getConnection();
@@ -283,20 +258,7 @@ public class TaskService {
             ps.setLong(1, mainTaskId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    MainTask m = new MainTask();
-                    m.setMainTaskId(rs.getLong("main_task_id"));
-                    m.setCourseId((Long) rs.getObject("course_id"));
-                    m.setCreatorId(rs.getLong("creator_id"));
-                    m.setTitle(rs.getString("title"));
-                    m.setDescription(rs.getString("description"));
-                    m.setDeadline(rs.getTimestamp("deadline"));
-                    m.setImportanceLevel((Integer) rs.getObject("importance_level"));
-                    m.setRoleEnum(rs.getString("role_enum"));
-                    m.setCreatedAt(rs.getTimestamp("created_at"));
-                    m.setCourseCode(rs.getString("course_code"));
-                    m.setCourseName(rs.getString("course_name"));
-                    m.setCreatorName(rs.getString("creator_name"));
-                    return m;
+                    return mapMainTask(rs);
                 }
             }
         }
@@ -351,7 +313,7 @@ public class TaskService {
         return list;
     }
 
-    // ==================== 学生：自动实例化 ====================
+    // ==================== Student: Automatic Instantiation ====================
 
     public String ensureStudentSubTasksExist(Long studentId, Long mainTaskId) throws SQLException {
         Connection conn = null;
@@ -402,7 +364,7 @@ public class TaskService {
         }
     }
 
-    // ==================== 学生：更新进度 ====================
+    // ==================== Student: Update Progress ====================
 
     public String updateStudentSubTaskStatus(Long studentId, Long studentSubTaskId, String status,
                                               String notes, Timestamp completedTime) throws SQLException {
@@ -429,7 +391,7 @@ public class TaskService {
         }
     }
 
-    // ==================== 学生：仪表盘统计 ====================
+    // ==================== Student: Dashboard Statistics ====================
 
     public int getPendingTaskCount(Long studentId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM STUDENT_SUB_TASK WHERE student_id = ? AND status != 'COMPLETED'";
@@ -448,7 +410,7 @@ public class TaskService {
             ps.setLong(1, studentId);
             try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getDouble(1); }
         }
-        return 0.0;
+        return 0;
     }
 
     public List<StudentSubTask> getUpcomingDeadlines(Long studentId, int limit) throws SQLException {
@@ -477,19 +439,19 @@ public class TaskService {
         return list;
     }
 
-    // ==================== 工具方法 ====================
+    // ==================== Utility Methods ====================
 
-    // ==================== AI 子步骤模板生成 ====================
+    // ==================== AI Sub-Step Template Generation ====================
 
-    public String generateSubTaskTemplates(Long mainTaskId, String courseName,
-                                            String taskTitle, String description) {
+    public void generateSubTaskTemplates(Long mainTaskId, String courseName,
+                                         String taskTitle, String description) {
         String apiUrl = chatCompletionUrl(DBUtils.AI_API_URL);
         String apiKey = DBUtils.AI_API_KEY;
         String model = DBUtils.AI_MODEL;
 
         if (apiUrl == null || apiUrl.isEmpty() || apiKey == null || apiKey.isEmpty()) {
             insertDefaultTemplate(mainTaskId);
-            return null;
+            return;
         }
 
         String prompt = String.format(
@@ -518,21 +480,19 @@ public class TaskService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String body = response.body();
 
-            // 提取 content：{"choices":[{"message":{"content":"[...]"}}]}
+            // Extract content: {“choices”:[{“message”:{‘content’:“[...]”}}]}
             int contentStart = body.indexOf("\"content\":\"");
-            if (contentStart < 0) { insertDefaultTemplate(mainTaskId); return null; }
+            if (contentStart < 0) { insertDefaultTemplate(mainTaskId); return; }
             int jsonStart = body.indexOf("[", contentStart);
             int jsonEnd = body.lastIndexOf("]");
             if (jsonStart < 0 || jsonEnd < 0 || jsonEnd <= jsonStart) {
-                insertDefaultTemplate(mainTaskId); return null;
+                insertDefaultTemplate(mainTaskId); return;
             }
             String arrStr = body.substring(jsonStart, jsonEnd + 1);
 
             parseAndInsertTemplates(mainTaskId, arrStr);
-            return null;
         } catch (Exception e) {
             insertDefaultTemplate(mainTaskId);
-            return null;
         }
     }
 
@@ -603,6 +563,32 @@ public class TaskService {
                 return rs.next() && rs.getInt(1) > 0;
             }
         }
+    }
+
+    private MainTask mapMainTask(ResultSet rs) throws SQLException {
+        return new MainTask(rs.getLong("main_task_id"),
+                getNullableLong(rs, "course_id"),
+                rs.getLong("creator_id"),
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getTimestamp("deadline"),
+                getNullableInteger(rs, "importance_level"),
+                rs.getString("role_enum"),
+                rs.getTimestamp("created_at"),
+                rs.getString("course_code"),
+                rs.getString("course_name"),
+                rs.getString("creator_name"),
+                rs.getInt("template_count"));
+    }
+
+    private Long getNullableLong(ResultSet rs, String columnLabel) throws SQLException {
+        long value = rs.getLong(columnLabel);
+        return rs.wasNull() ? null : value;
+    }
+
+    private Integer getNullableInteger(ResultSet rs, String columnLabel) throws SQLException {
+        int value = rs.getInt(columnLabel);
+        return rs.wasNull() ? null : value;
     }
 
     private StudentSubTask mapStudentSubTask(ResultSet rs) throws SQLException {

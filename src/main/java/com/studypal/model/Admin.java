@@ -10,7 +10,7 @@ public class Admin {
     private Timestamp createdAt;
 
     public Long getAdminId() { return adminId; }
-    public void setAdminId(Long adminId) { this.adminId = adminId; }
+    public void setAdminId(Long id) { adminId = id; }
 
     public String getAdminNo() { return adminNo; }
     public void setAdminNo(String adminNo) { this.adminNo = adminNo; }

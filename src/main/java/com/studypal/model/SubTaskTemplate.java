@@ -13,15 +13,15 @@ public class SubTaskTemplate {
     private Timestamp plannedStart;
     private Timestamp plannedEnd;
 
-    // 展示用（不持久化）
+    // For display purposes only (not persisted to the database)
     private int completedCount;
     private int totalStudentCount;
 
     public Long getTemplateId() { return templateId; }
-    public void setTemplateId(Long templateId) { this.templateId = templateId; }
+    public void setTemplateId(Long id) { templateId = id; }
 
     public Long getMainTaskId() { return mainTaskId; }
-    public void setMainTaskId(Long mainTaskId) { this.mainTaskId = mainTaskId; }
+    public void setMainTaskId(Long id) { mainTaskId = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -30,19 +30,19 @@ public class SubTaskTemplate {
     public void setDescription(String description) { this.description = description; }
 
     public BigDecimal getEstimatedHours() { return estimatedHours; }
-    public void setEstimatedHours(BigDecimal estimatedHours) { this.estimatedHours = estimatedHours; }
+    public void setEstimatedHours(BigDecimal hours) { estimatedHours = hours; }
 
     public Integer getSequenceOrder() { return sequenceOrder; }
-    public void setSequenceOrder(Integer sequenceOrder) { this.sequenceOrder = sequenceOrder; }
+    public void setSequenceOrder(Integer order) { sequenceOrder = order; }
 
     public Timestamp getPlannedStart() { return plannedStart; }
-    public void setPlannedStart(Timestamp plannedStart) { this.plannedStart = plannedStart; }
+    public void setPlannedStart(Timestamp start) { plannedStart = start; }
 
     public Timestamp getPlannedEnd() { return plannedEnd; }
-    public void setPlannedEnd(Timestamp plannedEnd) { this.plannedEnd = plannedEnd; }
+    public void setPlannedEnd(Timestamp end) { plannedEnd = end; }
 
     public int getCompletedCount() { return completedCount; }
-    public void setCompletedCount(int completedCount) { this.completedCount = completedCount; }
+    public void setCompletedCount(int count) { completedCount = count; }
     public int getTotalStudentCount() { return totalStudentCount; }
-    public void setTotalStudentCount(int totalStudentCount) { this.totalStudentCount = totalStudentCount; }
+    public void setTotalStudentCount(int totalStudent) { totalStudentCount = totalStudent; }
 }

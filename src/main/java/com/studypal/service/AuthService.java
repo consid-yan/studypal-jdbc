@@ -39,14 +39,12 @@ public class AuthService {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Lecturer l = new Lecturer();
-                    l.setLecturerId(rs.getLong("lecturer_id"));
-                    l.setEmployeeNo(rs.getString("employee_no"));
-                    l.setDepartment(rs.getString("department"));
-                    l.setTitle(rs.getString("title"));
-                    l.setOffice(rs.getString("office"));
-                    l.setPhone(rs.getString("phone"));
-                    return l;
+                    return new Lecturer(rs.getLong("lecturer_id"),
+                            rs.getString("employee_no"),
+                            rs.getString("department"),
+                            rs.getString("title"),
+                            rs.getString("office"),
+                            rs.getString("phone"));
                 }
             }
         }
@@ -95,8 +93,8 @@ public class AuthService {
     }
 
     /**
-     * 注册学生账号。
-     * @return null 表示注册成功；非 null 字符串为错误提示信息
+     * Register a student account.
+     * @return null indicates successful registration; a non-null string indicates an error message
      */
     public String registerStudent(String username, String email, String password,
                                   String fullName) throws SQLException {
@@ -104,7 +102,7 @@ public class AuthService {
         try {
             conn = DBUtils.getConnection();
 
-            // 检查用户名、邮箱是否已存在
+            // Check if the username and email address already exist
             String checkSql = "SELECT username, email FROM USER_ACCOUNT WHERE username = ? OR email = ?";
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setString(1, username);
@@ -147,7 +145,7 @@ public class AuthService {
                 }
 
                 conn.commit();
-                return null; // null = 注册成功，无错误
+                return null; // null = Registration successful, no errors
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
