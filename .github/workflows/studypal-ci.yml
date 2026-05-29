@@ -1,0 +1,66 @@
+name: StudyPal CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - "codex/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    name: Build WAR and validate SQL
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - "3306:3306"
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build Maven WAR
+        run: mvn -B clean package
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Validate database schema and demo data
+        run: |
+          mysql --host=127.0.0.1 --port=3306 --user=root --password=root < sql/creat-tables.sql
+          mysql --host=127.0.0.1 --port=3306 --user=root --password=root < sql/demo-data.sql
+
+      - name: Check WAR artifact exists
+        run: test -f target/studypal.war
+
+      - name: Upload WAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: studypal-war
+          path: target/studypal.war
+          if-no-files-found: error
