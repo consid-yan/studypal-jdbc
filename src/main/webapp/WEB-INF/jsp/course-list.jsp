@@ -37,7 +37,11 @@
       <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
       <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
       <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
-      <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
+      <% if (lecturerTasks != null && !lecturerTasks.isEmpty()) { %>
+        <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=<%= lecturerTasks.get(0).getMainTaskId() %>"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
+      <% } else { %>
+        <span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="请先创建任务"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
+      <% } %>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
   </aside>

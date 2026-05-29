@@ -24,7 +24,7 @@
                 <a href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">教师主页</a>
                 <a href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER">我教的课程</a>
                 <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">发布 MainTask</a>
-                <a href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1">任务详情</a>
+                <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">任务列表</a>
             </c:when>
             <c:when test="${currentRole == 'ADMIN'}">
                 <a href="${pageContext.request.contextPath}/admin-home.jsp?role=ADMIN">管理员主页</a>

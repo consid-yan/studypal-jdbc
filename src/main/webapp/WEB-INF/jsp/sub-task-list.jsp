@@ -3,6 +3,9 @@
 <%@ page import="com.studypal.service.CourseService" %>
 <%@ page import="com.studypal.model.*" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.LinkedHashMap" %>
+<%@ page import="java.util.ArrayList" %>
 <%@ page import="java.sql.Timestamp" %>
 <%
     if (session.getAttribute("user") == null) {
@@ -27,14 +30,8 @@
     if (courseFilter != null && !courseFilter.isEmpty() && !"All Courses".equals(courseFilter)) {
         try { courseIdFilter = Long.parseLong(courseFilter); } catch (Exception ignored) {}
     }
-    if (statusFilter != null && ("All Status".equals(statusFilter) || statusFilter.isEmpty())) {
+    if (statusFilter != null && statusFilter.isEmpty()) {
         statusFilter = null;
-    } else if ("Not Started".equals(statusFilter)) {
-        statusFilter = "NOT_STARTED";
-    } else if ("In Progress".equals(statusFilter)) {
-        statusFilter = "IN_PROGRESS";
-    } else if ("Completed".equals(statusFilter)) {
-        statusFilter = "COMPLETED";
     }
 
     if ("POST".equalsIgnoreCase(request.getMethod())) {
@@ -64,6 +61,7 @@
 
     List<StudentSubTask> allTasks = null;
     List<Course> enrolledCourses = null;
+    Map<String, Map<String, List<StudentSubTask>>> groupedTasks = new LinkedHashMap<>();
     int totalCount = 0, inProgressCount = 0, completedCount = 0, dueThisWeek = 0;
     try {
         enrolledCourses = courseService.getEnrolledCourses(studentId);
@@ -79,6 +77,12 @@
                     long dl = sst.getDeadline().getTime();
                     if (dl >= now && dl <= weekLater) dueThisWeek++;
                 }
+                String courseName = sst.getCourseName() != null ? sst.getCourseName() : "未归属课程";
+                String mainTaskTitle = sst.getMainTaskTitle() != null ? sst.getMainTaskTitle() : "未命名主任务";
+                groupedTasks
+                    .computeIfAbsent(courseName, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(mainTaskTitle, k -> new ArrayList<>())
+                    .add(sst);
             }
         }
     } catch (Exception e) {
@@ -284,10 +288,10 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
         Study Sessions
       </a>
-      <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=1" class="sidebar-link">
+      <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
-      </a>
+      </span>
     </nav>
 
     <div class="p-4 border-t border-border">
@@ -322,8 +326,9 @@ body {
         <!-- Status Summary Cards -->
         <div class="task-stats grid grid-cols-4 gap-4 mb-6 fade-in">
           <div class="warm-card task-card p-5">
-            <span class="text-xs text-textMuted font-medium uppercase tracking-wide">Total Tasks</span>
+            <span class="text-xs text-textMuted font-medium uppercase tracking-wide">StudentSubTasks</span>
             <p class="text-2xl font-bold text-primary mt-1"><%= totalCount %></p>
+            <p class="text-xs text-textMuted mt-1">子任务实例数</p>
           </div>
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">In Progress</span>
@@ -357,9 +362,9 @@ body {
             </select>
             <select name="status" class="px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary text-textDark cursor-pointer">
               <option value="">All Status</option>
-              <option value="Not Started" <%= "NOT_STARTED".equals(statusFilter) ? "selected" : "" %>>Not Started</option>
-              <option value="In Progress" <%= "IN_PROGRESS".equals(statusFilter) ? "selected" : "" %>>In Progress</option>
-              <option value="Completed" <%= "COMPLETED".equals(statusFilter) ? "selected" : "" %>>Completed</option>
+              <option value="NOT_STARTED" <%= "NOT_STARTED".equals(statusFilter) ? "selected" : "" %>>Not Started</option>
+              <option value="IN_PROGRESS" <%= "IN_PROGRESS".equals(statusFilter) ? "selected" : "" %>>In Progress</option>
+              <option value="COMPLETED" <%= "COMPLETED".equals(statusFilter) ? "selected" : "" %>>Completed</option>
             </select>
             <button type="submit" class="action-btn action-btn-primary text-sm">Apply Filters</button>
             <button type="reset" class="action-btn action-btn-secondary text-sm">Reset</button>
@@ -372,60 +377,85 @@ body {
           <!-- Task List -->
           <section class="task-list-column col-span-2 warm-card p-5">
             <div class="flex items-center justify-between gap-3 mb-4">
-              <h2 class="text-sm font-semibold text-textDark">Current StudentSubTasks</h2>
-              <span class="text-xs text-textMuted">Generated from SubTaskTemplate</span>
+              <h2 class="text-sm font-semibold text-textDark">按课程和主任务分组的子任务</h2>
+              <span class="text-xs text-textMuted">显示 StudentSubTask ID，可直接更新进度</span>
             </div>
 
             <% if (error != null) { %><div class="mb-3 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200"><%= error %></div><% } %>
             <% if (success != null) { %><div class="mb-3 p-3 rounded-lg text-sm bg-green-50 text-green-700 border border-green-200"><%= success %></div><% } %>
             <div class="flex flex-col gap-3">
-              <% if (allTasks != null && !allTasks.isEmpty()) {
-                   for (StudentSubTask sst : allTasks) {
-                     String sstStatus = sst.getStatus();
-                     String statusClass = "COMPLETED".equals(sstStatus) ? "bg-primary/10 text-primary" : ("IN_PROGRESS".equals(sstStatus) ? "bg-accent/15 text-accent" : "border border-border bg-card text-textMuted");
-                     String deadlineText = sst.getDeadline() != null ? sst.getDeadline().toString().substring(0, 16) : "No deadline";
-                     int pct = sst.getProgressPercentage();
-                     String barColor = "COMPLETED".equals(sstStatus) ? "bg-primary" : "bg-accent";
-              %>
-                     <article class="bg-cream rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
-                       <div class="flex items-start justify-between gap-4 mb-2">
-                         <div>
-                           <span class="text-xs text-textMuted"><%= sst.getCourseName() != null ? sst.getCourseName() : "N/A" %></span>
-                           <p class="text-sm font-semibold text-textDark mt-0.5"><%= sst.getMainTaskTitle() %></p>
-                           <p class="text-xs text-textDark/80 mt-0.5"><%= sst.getTemplateTitle() %></p>
+              <% if (!groupedTasks.isEmpty()) {
+                   for (Map.Entry<String, Map<String, List<StudentSubTask>>> courseEntry : groupedTasks.entrySet()) { %>
+                     <section class="rounded-xl border border-border/70 bg-card p-3">
+                       <h3 class="text-xs font-semibold text-primary mb-3"><%= courseEntry.getKey() %></h3>
+                       <div class="space-y-3">
+                       <% for (Map.Entry<String, List<StudentSubTask>> taskEntry : courseEntry.getValue().entrySet()) {
+                            List<StudentSubTask> taskItems = taskEntry.getValue();
+                            StudentSubTask firstTask = taskItems.get(0);
+                       %>
+                         <div class="rounded-xl border border-border/60 bg-cream/70 p-3">
+                           <div class="flex items-center justify-between gap-3 mb-3">
+                             <div>
+                               <p class="text-sm font-semibold text-textDark"><%= taskEntry.getKey() %></p>
+                               <p class="text-xs text-textMuted">共 <%= taskItems.size() %> 个子任务</p>
+                             </div>
+                             <% if (firstTask.getMainTaskId() != null) { %>
+                               <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= firstTask.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-primary border border-border rounded-lg hover:border-primary transition-all font-medium">查看主任务</a>
+                             <% } %>
+                           </div>
+                           <div class="space-y-3">
+                           <% for (StudentSubTask sst : taskItems) {
+                                String sstStatus = sst.getStatus();
+                                String statusClass = "COMPLETED".equals(sstStatus) ? "bg-primary/10 text-primary" : ("IN_PROGRESS".equals(sstStatus) ? "bg-accent/15 text-accent" : "border border-border bg-card text-textMuted");
+                                String deadlineText = sst.getDeadline() != null ? sst.getDeadline().toString().substring(0, 16) : "No deadline";
+                                int pct = "COMPLETED".equals(sstStatus) ? 100 : sst.getProgressPercentage();
+                                String barColor = "COMPLETED".equals(sstStatus) ? "bg-primary" : "bg-accent";
+                           %>
+                             <article class="bg-card rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
+                               <div class="flex items-start justify-between gap-4 mb-2">
+                                 <div>
+                                   <span class="text-xs text-textMuted">StudentSubTask ID: <%= sst.getStudentSubTaskId() %></span>
+                                   <p class="text-sm font-semibold text-textDark mt-0.5"><%= sst.getTemplateTitle() %></p>
+                                   <p class="text-xs text-textMuted mt-0.5"><%= sst.getTemplateDescription() != null ? sst.getTemplateDescription() : "" %></p>
+                                 </div>
+                                 <div class="flex items-center gap-2 flex-shrink-0">
+                                   <span class="px-2 py-0.5 text-xs font-medium rounded-full <%= statusClass %>"><%= sstStatus %></span>
+                                   <span class="text-xs text-accent font-medium"><%= deadlineText %></span>
+                                 </div>
+                               </div>
+                               <div class="flex items-center gap-3 mb-2">
+                                 <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
+                                   <div class="h-full <%= barColor %> rounded-full" style="width: <%= pct %>%;"></div>
+                                 </div>
+                                 <span class="text-xs font-semibold text-textDark"><%= pct %>%</span>
+                               </div>
+                               <p class="text-xs text-textMuted mb-3 leading-relaxed"><%= sst.getNotes() != null ? sst.getNotes() : "暂无备注。" %></p>
+                               <div class="flex items-center justify-end gap-2">
+                                 <button type="button" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium" data-fill-subtask-id="<%= sst.getStudentSubTaskId() %>" data-fill-status="<%= sstStatus %>">更新此项</button>
+                               </div>
+                             </article>
+                           <% } %>
+                           </div>
                          </div>
-                         <div class="flex items-center gap-2 flex-shrink-0">
-                           <span class="px-2 py-0.5 text-xs font-medium rounded-full <%= statusClass %>"><%= sstStatus %></span>
-                           <span class="text-xs text-accent font-medium"><%= deadlineText %></span>
-                         </div>
+                       <% } %>
                        </div>
-                       <div class="flex items-center gap-3 mb-2">
-                         <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
-                           <div class="h-full <%= barColor %> rounded-full" style="width: <%= pct %>%;"></div>
-                         </div>
-                         <span class="text-xs font-semibold text-textDark"><%= pct %>%</span>
-                       </div>
-                       <p class="text-xs text-textMuted mb-3 leading-relaxed"><%= sst.getNotes() != null ? sst.getNotes() : "" %></p>
-                       <div class="flex items-center justify-end gap-2">
-                         <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= sst.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium">View Detail</a>
-                       </div>
-                     </article>
+                     </section>
               <%   }
                  } else { %>
-                   <p class="text-xs text-textMuted text-center py-8">No sub-tasks found.</p>
+                   <p class="text-xs text-textMuted text-center py-8">暂无子任务。若老师刚发布任务，可能还需要后端生成学生子任务记录。</p>
               <% } %>
             </div>
           </section>
 
           <!-- Side Panel -->
           <aside class="space-y-6">
-            <section class="warm-card p-5">
+            <section class="warm-card p-5" id="update-progress-panel">
               <h2 class="text-sm font-semibold text-textDark mb-4">Update Progress</h2>
               <form method="post" action="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="space-y-3">
                 <input type="hidden" name="action" value="updateSubTask">
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">SubTask ID</label>
-                  <input type="number" name="studentSubTaskId" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary" placeholder="Enter sub-task ID to update" required>
+                  <input id="studentSubTaskIdInput" type="number" name="studentSubTaskId" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary" placeholder="点击左侧“更新此项”自动填入" required>
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Status</label>
@@ -453,6 +483,25 @@ body {
   </div>
 </div>
 
+<script>
+document.querySelectorAll('[data-fill-subtask-id]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var idInput = document.getElementById('studentSubTaskIdInput');
+    var statusSelect = document.querySelector('[name="newStatus"]');
+    if (idInput) {
+      idInput.value = button.getAttribute('data-fill-subtask-id');
+      idInput.focus();
+    }
+    if (statusSelect && button.getAttribute('data-fill-status')) {
+      statusSelect.value = button.getAttribute('data-fill-status');
+    }
+    var panel = document.getElementById('update-progress-panel');
+    if (panel) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+});
+</script>
 <script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <%@ page import="com.studypal.service.AuthService" %>
 <%@ page import="com.studypal.model.*" %>
 <%
+    String registerErrorField = null;
     // 仅处理 POST 请求
     if ("POST".equalsIgnoreCase(request.getMethod())) {
         String action = request.getParameter("action");
@@ -48,7 +49,9 @@
             String passwordConfirm = request.getParameter("passwordConfirm");
 
             if (password == null || !password.equals(passwordConfirm)) {
-                request.setAttribute("error", "Passwords do not match.");
+                request.setAttribute("error", "两次输入的密码不一致。");
+                registerErrorField = "password";
+                request.setAttribute("registerErrorField", registerErrorField);
             } else {
                 try {
                     String result = authService.registerStudent(username, email, password, fullName);
@@ -62,7 +65,16 @@
                         response.sendRedirect(request.getContextPath() + "/student-home.jsp?role=STUDENT");
                         return;
                     } else {
-                        request.setAttribute("error", result);
+                        if (result.startsWith("Email")) {
+                            request.setAttribute("error", "该邮箱已被使用。");
+                            registerErrorField = "email";
+                        } else if (result.startsWith("Username")) {
+                            request.setAttribute("error", "该用户名已被注册。");
+                            registerErrorField = "username";
+                        } else {
+                            request.setAttribute("error", result);
+                        }
+                        request.setAttribute("registerErrorField", registerErrorField);
                     }
                 } catch (Exception e) {
                     request.setAttribute("error", "Registration failed: " + e.getMessage());
@@ -201,6 +213,15 @@ body {
 }
 </style>
 </head>
+<%
+    String error = (String) request.getAttribute("error");
+    String submittedAction = request.getParameter("action");
+    boolean showRegisterForm = error != null && "register".equals(submittedAction);
+    String errorField = (String) request.getAttribute("registerErrorField");
+    String submittedFullName = showRegisterForm && request.getParameter("fullName") != null ? request.getParameter("fullName") : "";
+    String submittedUsername = showRegisterForm && !"username".equals(errorField) && request.getParameter("username") != null ? request.getParameter("username") : "";
+    String submittedEmail = showRegisterForm && !"email".equals(errorField) && request.getParameter("email") != null ? request.getParameter("email") : "";
+%>
 <body class="font-sans text-textDark paper-texture">
 
 <!-- Top Navigation -->
@@ -304,21 +325,22 @@ body {
       <div class="warm-card p-6 md:p-8 w-full max-w-[460px] mx-auto fade-in">
 
         <%-- Error Message --%>
-        <% String error = (String) request.getAttribute("error"); if (error != null) { %>
+        <% if (error != null) { %>
           <div class="w-full max-w-[460px] mx-auto mb-4 p-3 rounded-lg text-sm font-semibold bg-red-50 text-red-700 border border-red-200"><%= error %></div>
         <% } %>
 
         <!-- Login Form -->
         <form id="form-login"
               method="post"
-              action="${pageContext.request.contextPath}/auth.jsp">
+              action="${pageContext.request.contextPath}/auth.jsp"
+              class="<%= showRegisterForm ? "hidden" : "" %>">
           <h2 class="text-xl font-bold text-textDark mb-1">Welcome Back</h2>
           <p class="text-sm text-textMuted mb-6">Use your campus account to access StudyPal.</p>
           <input type="hidden" name="action" value="login">
           <div class="space-y-4">
             <div>
               <label class="block text-sm text-textDark mb-1.5">Email or Student ID</label>
-              <input type="text" name="username" class="auth-input" value="student_chen" placeholder="student_chen / lecturer_wang / admin_root" required>
+              <input type="text" name="username" class="auth-input" placeholder="student / lecturer / admin" required>
             </div>
             <div>
               <label class="block text-sm text-textDark mb-1.5">Password</label>
@@ -327,8 +349,8 @@ body {
             <button type="submit" class="auth-btn mt-2">Sign In</button>
           </div>
           <div class="flex items-center justify-between mt-4 pt-4 border-t border-border">
-            <a href="#" onclick="switchTab('register'); return false;" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors">Create Student Account</a>
-            <a href="#" class="text-sm text-accent hover:text-accent/80 transition-colors">Forgot Password?</a>
+            <button type="button" onclick="switchTab('register')" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">创建学生账号</button>
+            <button type="button" onclick="showPasswordHelp()" class="text-sm text-accent hover:text-accent/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">忘记密码？</button>
           </div>
         </form>
 
@@ -336,21 +358,21 @@ body {
         <form id="form-register"
               method="post"
               action="${pageContext.request.contextPath}/auth.jsp"
-              class="hidden">
+              class="<%= showRegisterForm ? "" : "hidden" %>">
           <h2 class="text-xl font-bold text-textDark mb-1">Create Student Account</h2>
           <p class="text-sm text-textMuted mb-6">Public registration creates a STUDENT account only.</p>
           <div class="space-y-4">
             <div>
               <label class="block text-sm text-textDark mb-1.5">Full Name</label>
-              <input type="text" name="fullName" class="auth-input" placeholder="Enter your full name" required>
+              <input type="text" name="fullName" class="auth-input" value="<%= submittedFullName %>" placeholder="Enter your full name" required>
             </div>
             <div>
               <label class="block text-sm text-textDark mb-1.5">Username</label>
-              <input type="text" name="username" class="auth-input" placeholder="Choose a username" required>
+              <input type="text" name="username" class="auth-input" value="<%= submittedUsername %>" placeholder="Choose a username" required>
             </div>
             <div>
               <label class="block text-sm text-textDark mb-1.5">Email</label>
-              <input type="email" name="email" class="auth-input" placeholder="Enter your email address" required>
+              <input type="email" name="email" class="auth-input" value="<%= submittedEmail %>" placeholder="Enter your email address" required>
             </div>
             <div>
               <label class="block text-sm text-textDark mb-1.5">Password</label>
@@ -367,7 +389,7 @@ body {
             Lecturer and Admin accounts are created by the super administrator, not through public registration.
           </p>
           <div class="text-center mt-3">
-            <a href="#" onclick="switchTab('login'); return false;" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors">Back to Sign In</a>
+            <button type="button" onclick="switchTab('login')" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">返回登录</button>
           </div>
         </form>
       </div>
@@ -392,6 +414,9 @@ function switchTab(tab) {
     registerForm.classList.remove('hidden');
     loginForm.classList.add('hidden');
   }
+}
+function showPasswordHelp() {
+  window.alert('请联系管理员为你的账号重置密码。管理员可以在用户管理页面将密码重置为初始密码。');
 }
 </script>
 <script src="assets/js/app.js"></script>
