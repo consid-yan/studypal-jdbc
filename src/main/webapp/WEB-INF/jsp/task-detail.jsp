@@ -190,7 +190,7 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
           Task Detail
         </a>
       <% } else { %>
-        <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
+        <span class="sidebar-link opacity-60 cursor-not-allowed" title="Open from a specific task">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
           Task Detail
         </span>
@@ -291,7 +291,7 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
                      for (StudentSubTask sst : mySubTasks) {
                        String sstStatus = sst.getStatus();
                        String sstStatusClass = "COMPLETED".equals(sstStatus) ? "bg-primary/10 text-primary" : ("IN_PROGRESS".equals(sstStatus) ? "bg-accent/15 text-accent" : "bg-border text-textMuted");
-                       int barPct = "COMPLETED".equals(sstStatus) ? 100 : ("IN_PROGRESS".equals(sstStatus) ? 70 : 0);
+                       int barPct = "COMPLETED".equals(sstStatus) ? 100 : ("IN_PROGRESS".equals(sstStatus) ? 50 : 0);
                        String barColor = "COMPLETED".equals(sstStatus) ? "bg-primary" : "bg-accent";
                 %>
                    <div>

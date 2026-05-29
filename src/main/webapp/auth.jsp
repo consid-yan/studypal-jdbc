@@ -3,7 +3,7 @@
 <%@ page import="com.studypal.model.*" %>
 <%
     String registerErrorField = null;
-    // 仅处理 POST 请求
+    // Only handle POST requests
     if ("POST".equalsIgnoreCase(request.getMethod())) {
         String action = request.getParameter("action");
         AuthService authService = new AuthService();
@@ -49,14 +49,14 @@
             String passwordConfirm = request.getParameter("passwordConfirm");
 
             if (password == null || !password.equals(passwordConfirm)) {
-                request.setAttribute("error", "两次输入的密码不一致。");
+                request.setAttribute("error", "Passwords do not match.");
                 registerErrorField = "password";
                 request.setAttribute("registerErrorField", registerErrorField);
             } else {
                 try {
                     String result = authService.registerStudent(username, email, password, fullName);
                     if (result == null) {
-                        // 注册成功：result 为 null 表示无错误
+                        // Registration succeeded: a null result means no error
                         UserAccount user = authService.authenticate(username, password);
                         session.setAttribute("user", user);
                         session.setAttribute("currentRole", "STUDENT");
@@ -66,10 +66,10 @@
                         return;
                     } else {
                         if (result.startsWith("Email")) {
-                            request.setAttribute("error", "该邮箱已被使用。");
+                            request.setAttribute("error", "This email is already in use.");
                             registerErrorField = "email";
                         } else if (result.startsWith("Username")) {
-                            request.setAttribute("error", "该用户名已被注册。");
+                            request.setAttribute("error", "This username is already taken.");
                             registerErrorField = "username";
                         } else {
                             request.setAttribute("error", result);
@@ -349,8 +349,8 @@ body {
             <button type="submit" class="auth-btn mt-2">Sign In</button>
           </div>
           <div class="flex items-center justify-between mt-4 pt-4 border-t border-border">
-            <button type="button" onclick="switchTab('register')" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">创建学生账号</button>
-            <button type="button" onclick="showPasswordHelp()" class="text-sm text-accent hover:text-accent/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">忘记密码？</button>
+            <button type="button" onclick="switchTab('register')" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">Create Student Account</button>
+            <button type="button" onclick="showPasswordHelp()" class="text-sm text-accent hover:text-accent/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">Forgot Password?</button>
           </div>
         </form>
 
@@ -389,7 +389,7 @@ body {
             Lecturer and Admin accounts are created by the super administrator, not through public registration.
           </p>
           <div class="text-center mt-3">
-            <button type="button" onclick="switchTab('login')" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">返回登录</button>
+            <button type="button" onclick="switchTab('login')" class="text-sm text-primary font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 p-0 cursor-pointer">Back to Sign In</button>
           </div>
         </form>
       </div>
@@ -416,7 +416,7 @@ function switchTab(tab) {
   }
 }
 function showPasswordHelp() {
-  window.alert('请联系管理员为你的账号重置密码。管理员可以在用户管理页面将密码重置为初始密码。');
+  window.alert('Please contact an administrator to reset your account password. Admins can reset it to the default password on the User Management page.');
 }
 </script>
 <script src="assets/js/app.js"></script>

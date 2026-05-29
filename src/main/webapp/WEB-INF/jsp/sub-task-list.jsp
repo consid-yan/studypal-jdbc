@@ -77,8 +77,8 @@
                     long dl = sst.getDeadline().getTime();
                     if (dl >= now && dl <= weekLater) dueThisWeek++;
                 }
-                String courseName = sst.getCourseName() != null ? sst.getCourseName() : "未归属课程";
-                String mainTaskTitle = sst.getMainTaskTitle() != null ? sst.getMainTaskTitle() : "未命名主任务";
+                String courseName = sst.getCourseName() != null ? sst.getCourseName() : "Unassigned Course";
+                String mainTaskTitle = sst.getMainTaskTitle() != null ? sst.getMainTaskTitle() : "Untitled Main Task";
                 groupedTasks
                     .computeIfAbsent(courseName, k -> new LinkedHashMap<>())
                     .computeIfAbsent(mainTaskTitle, k -> new ArrayList<>())
@@ -288,7 +288,7 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
         Study Sessions
       </a>
-      <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
+      <span class="sidebar-link opacity-60 cursor-not-allowed" title="Open from a specific task">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
       </span>
@@ -328,7 +328,7 @@ body {
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">StudentSubTasks</span>
             <p class="text-2xl font-bold text-primary mt-1"><%= totalCount %></p>
-            <p class="text-xs text-textMuted mt-1">子任务实例数</p>
+            <p class="text-xs text-textMuted mt-1">Sub-task instances</p>
           </div>
           <div class="warm-card task-card p-5">
             <span class="text-xs text-textMuted font-medium uppercase tracking-wide">In Progress</span>
@@ -377,8 +377,8 @@ body {
           <!-- Task List -->
           <section class="task-list-column col-span-2 warm-card p-5">
             <div class="flex items-center justify-between gap-3 mb-4">
-              <h2 class="text-sm font-semibold text-textDark">按课程和主任务分组的子任务</h2>
-              <span class="text-xs text-textMuted">显示 StudentSubTask ID，可直接更新进度</span>
+              <h2 class="text-sm font-semibold text-textDark">Sub-tasks grouped by course and main task</h2>
+              <span class="text-xs text-textMuted">Showing StudentSubTask ID — update progress directly</span>
             </div>
 
             <% if (error != null) { %><div class="mb-3 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200"><%= error %></div><% } %>
@@ -397,10 +397,10 @@ body {
                            <div class="flex items-center justify-between gap-3 mb-3">
                              <div>
                                <p class="text-sm font-semibold text-textDark"><%= taskEntry.getKey() %></p>
-                               <p class="text-xs text-textMuted">共 <%= taskItems.size() %> 个子任务</p>
+                               <p class="text-xs text-textMuted"><%= taskItems.size() %> sub-tasks</p>
                              </div>
                              <% if (firstTask.getMainTaskId() != null) { %>
-                               <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= firstTask.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-primary border border-border rounded-lg hover:border-primary transition-all font-medium">查看主任务</a>
+                               <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= firstTask.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-primary border border-border rounded-lg hover:border-primary transition-all font-medium">View Main Task</a>
                              <% } %>
                            </div>
                            <div class="space-y-3">
@@ -408,7 +408,14 @@ body {
                                 String sstStatus = sst.getStatus();
                                 String statusClass = "COMPLETED".equals(sstStatus) ? "bg-primary/10 text-primary" : ("IN_PROGRESS".equals(sstStatus) ? "bg-accent/15 text-accent" : "border border-border bg-card text-textMuted");
                                 String deadlineText = sst.getDeadline() != null ? sst.getDeadline().toString().substring(0, 16) : "No deadline";
-                                int pct = "COMPLETED".equals(sstStatus) ? 100 : sst.getProgressPercentage();
+                                int pct;
+                                if ("COMPLETED".equals(sstStatus)) {
+                                    pct = 100;
+                                } else if ("IN_PROGRESS".equals(sstStatus)) {
+                                    pct = 50;
+                                } else {
+                                    pct = 0;
+                                }
                                 String barColor = "COMPLETED".equals(sstStatus) ? "bg-primary" : "bg-accent";
                            %>
                              <article class="bg-card rounded-xl border border-border/60 p-4 hover:shadow-sm transition-all">
@@ -425,13 +432,13 @@ body {
                                </div>
                                <div class="flex items-center gap-3 mb-2">
                                  <div class="flex-1 h-2 bg-border/60 rounded-full overflow-hidden">
-                                   <div class="h-full <%= barColor %> rounded-full" style="width: <%= pct %>%;"></div>
+                                   <div class="h-full <%= barColor %> rounded-full progress-bar-inner" style="--target-width: <%= pct %>%;"></div>
                                  </div>
                                  <span class="text-xs font-semibold text-textDark"><%= pct %>%</span>
                                </div>
-                               <p class="text-xs text-textMuted mb-3 leading-relaxed"><%= sst.getNotes() != null ? sst.getNotes() : "暂无备注。" %></p>
+                               <p class="text-xs text-textMuted mb-3 leading-relaxed"><%= sst.getNotes() != null ? sst.getNotes() : "No notes yet." %></p>
                                <div class="flex items-center justify-end gap-2">
-                                 <button type="button" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium" data-fill-subtask-id="<%= sst.getStudentSubTaskId() %>" data-fill-status="<%= sstStatus %>">更新此项</button>
+                                 <button type="button" class="px-3 py-1.5 text-xs text-white bg-primary rounded-lg hover:opacity-90 transition-all font-medium" data-fill-subtask-id="<%= sst.getStudentSubTaskId() %>" data-fill-status="<%= sstStatus %>">Update</button>
                                </div>
                              </article>
                            <% } %>
@@ -442,7 +449,7 @@ body {
                      </section>
               <%   }
                  } else { %>
-                   <p class="text-xs text-textMuted text-center py-8">暂无子任务。若老师刚发布任务，可能还需要后端生成学生子任务记录。</p>
+                   <p class="text-xs text-textMuted text-center py-8">No sub-tasks yet. If your lecturer just published a task, the student sub-task records may still need to be generated.</p>
               <% } %>
             </div>
           </section>
@@ -455,7 +462,7 @@ body {
                 <input type="hidden" name="action" value="updateSubTask">
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">SubTask ID</label>
-                  <input id="studentSubTaskIdInput" type="number" name="studentSubTaskId" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary" placeholder="点击左侧“更新此项”自动填入" required>
+                  <input id="studentSubTaskIdInput" type="number" name="studentSubTaskId" class="w-full px-3 py-2 text-sm bg-cream border border-border rounded-lg focus:outline-none focus:border-primary" placeholder="Click “Update” on the left to auto-fill" required>
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-textMuted mb-1">Status</label>

@@ -40,7 +40,7 @@
             try {
                 Long uid = Long.parseLong(uidStr);
                 String r = adminService.resetPassword(uid, newPw);
-                if (r == null) success = "已将 " + (targetName != null && !targetName.isEmpty() ? targetName : "该用户") + " 的密码重置为 " + newPw + "。";
+                if (r == null) success = "Password for " + (targetName != null && !targetName.isEmpty() ? targetName : "this user") + " has been reset to " + newPw + ".";
                 else error = r;
             } catch (Exception e) { error = "Reset failed: " + e.getMessage(); }
         }
@@ -119,7 +119,7 @@
                          <input type="hidden" name="userId" value="<%= u.getUserId() %>">
                          <input type="hidden" name="userName" value="<%= u.getFullName() %>">
                          <input type="hidden" name="newPassword" value="studypal123">
-                         <button class="action-btn action-btn-secondary" type="submit">重置该用户密码为 studypal123</button>
+                         <button class="action-btn action-btn-secondary" type="submit">Reset password to studypal123</button>
                        </form>
                      </div>
                    </div>

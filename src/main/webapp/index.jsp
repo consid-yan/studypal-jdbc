@@ -103,7 +103,7 @@ body {
     <a href="#roles" class="hover:text-primary transition-colors">Roles</a>
     <a href="#" class="hover:text-primary transition-colors">Dashboard Preview</a>
   </div>
-  <a href="${pageContext.request.contextPath}/auth.jsp" class="text-sm text-textMuted border border-border rounded-full px-4 py-1.5 hover:border-primary hover:text-primary transition-colors">登录 / 注册</a>
+  <a href="${pageContext.request.contextPath}/auth.jsp" class="text-sm text-textMuted border border-border rounded-full px-4 py-1.5 hover:border-primary hover:text-primary transition-colors">Sign In / Register</a>
 </nav>
 
 <!-- Single-screen Hero -->
@@ -128,7 +128,7 @@ body {
           StudyPal Campus Console
         </h1>
         <p class="text-base md:text-lg text-textMuted leading-relaxed max-w-md">
-          让<span class="text-primary font-semibold">学生</span>、<span class="text-accent font-semibold">教师</span>和<span class="text-textDark font-semibold">管理员</span>在同一个清晰的系统里完成课程、任务和学习进度管理。
+          A single, clear system where <span class="text-primary font-semibold">students</span>, <span class="text-accent font-semibold">lecturers</span>, and <span class="text-textDark font-semibold">administrators</span> manage courses, tasks, and study progress together.
         </p>
         <p class="text-sm text-textMuted/80 max-w-md">
           A calm and structured information system for courses, tasks, study sessions, and role-based dashboards.
@@ -136,9 +136,9 @@ body {
 
         <!-- CTA Button -->
         <a href="${pageContext.request.contextPath}/auth.jsp" class="inline-block px-10 py-4 rounded-full font-bold text-lg text-white bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 mt-2 shadow-lg shadow-primary/20" style="text-decoration: none;">
-          进入系统 / Enter System
+          Enter System
         </a>
-        <a href="#roles" class="text-sm text-accent hover:text-accent/80 transition-colors underline underline-offset-4">了解角色 / View Roles</a>
+        <a href="#roles" class="text-sm text-accent hover:text-accent/80 transition-colors underline underline-offset-4">View Roles</a>
       </div>
 
       <!-- Right: Dashboard Mockup with floating characters -->

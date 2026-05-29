@@ -19,7 +19,7 @@
         enrolledC = cs.getEnrolledCourses(cu.getUserId());
     } catch (Exception ignored) {}
     int courseCount = enrolledC != null ? enrolledC.size() : 0;
-    String courseHint = enrolledC == null ? "暂无课程数据" : (courseCount == 0 ? "尚未加入课程" : "Enrolled");
+    String courseHint = enrolledC == null ? "No course data" : (courseCount == 0 ? "Not enrolled in any course" : "Enrolled");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,7 +68,7 @@ body{background-color:#F4EBDD;min-height:100vh;overflow-x:hidden}
 <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
 <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>My Tasks</a>
 <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link active"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>Study Sessions</a>
-<span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="请从具体任务进入详情"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
+<span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="Open from a specific task"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
 </nav>
 </aside>
 <div class="student-main ml-[240px] flex-1">

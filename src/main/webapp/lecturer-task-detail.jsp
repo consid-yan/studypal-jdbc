@@ -61,7 +61,7 @@
       <% if (taskId != null) { %>
         <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=<%= taskId %>"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
       <% } else { %>
-        <span class="sidebar-link active" style="opacity:.6;cursor:not-allowed" title="请从具体任务进入详情"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
+        <span class="sidebar-link active" style="opacity:.6;cursor:not-allowed" title="Open from a specific task"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
       <% } %>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
@@ -144,7 +144,7 @@
     exportButton.addEventListener('click', function () {
       var rows = Array.prototype.slice.call(document.querySelectorAll('.student-progress-row'));
       if (!rows.length) {
-        window.alert('当前任务还没有可导出的学生进度。');
+        window.alert('No student progress to export for this task yet.');
         return;
       }
       var lines = [['Student', 'Email', 'Status', 'Progress'].map(csvCell).join(',')];

@@ -15,12 +15,12 @@
     <div class="page-header">
         <div class="page-title">
             <h1>Dashboard</h1>
-            <p>兼容旧 `/dashboard` 路由；新演示入口建议使用三角色主页。</p>
+            <p>Legacy `/dashboard` route compatibility; use the three role home pages for the new demo entry.</p>
         </div>
         <div class="toolbar">
-            <a class="btn" href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">学生主页</a>
-            <a class="btn" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">教师主页</a>
-            <a class="btn" href="${pageContext.request.contextPath}/admin-home.jsp?role=ADMIN">管理员主页</a>
+            <a class="btn" href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">Student Home</a>
+            <a class="btn" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">Lecturer Home</a>
+            <a class="btn" href="${pageContext.request.contextPath}/admin-home.jsp?role=ADMIN">Admin Home</a>
         </div>
     </div>
     <section class="stat-grid">
@@ -32,7 +32,7 @@
     <div class="section-header"><h3>Upcoming Deadlines</h3></div>
     <c:choose>
         <c:when test="${empty topTasks}">
-            <div class="empty-state">当前没有即将截止的 MainTask。</div>
+            <div class="empty-state">No upcoming MainTask deadlines.</div>
         </c:when>
         <c:otherwise>
             <section class="table-card">

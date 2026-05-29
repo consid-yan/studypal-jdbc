@@ -36,7 +36,7 @@
         <div class="warm-card stat-card"><p class="stat-label">Users</p><p class="stat-value"><%= us %></p><p class="stat-hint"><%= stu %> students / <%= lec %> lecturers / <%= ad %> admins</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value accent"><%= cs %></p><p class="stat-hint">All courses</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Tasks</p><p class="stat-value"><%= ts %></p><p class="stat-hint">All published tasks</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= st != null ? st[6] : 0 %></p><p class="stat-hint">选课记录总数（非去重学生数）</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= st != null ? st[6] : 0 %></p><p class="stat-hint">Total enrollment records (not unique students)</p></div>
       </section>
       <section class="panel-grid">
         <div class="warm-card fade-in-d2">

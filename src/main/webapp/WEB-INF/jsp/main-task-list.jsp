@@ -33,7 +33,7 @@
                 Timestamp deadline = Timestamp.valueOf(deadlineStr.replace("T", " ") + ":00");
                 String result = taskService.createMainTask(courseId, lecturerId, title, description, deadline, importance, "COURSE_TASK");
                 if (result == null) {
-                    // AI 生成子任务模板
+                    // AI-generated sub-task templates
                     List<MainTask> tasks = taskService.getTasksByCreatorId(lecturerId);
                     if (tasks != null && !tasks.isEmpty()) {
                         Long newTaskId = tasks.get(0).getMainTaskId();
@@ -79,7 +79,7 @@
       <% if (publishedTasks != null && !publishedTasks.isEmpty()) { %>
         <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=<%= publishedTasks.get(0).getMainTaskId() %>"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
       <% } else { %>
-        <span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="请先创建任务"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
+        <span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="Create a task first"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
       <% } %>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>

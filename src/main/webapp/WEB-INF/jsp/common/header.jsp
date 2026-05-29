@@ -21,24 +21,24 @@
     <nav>
         <c:choose>
             <c:when test="${currentRole == 'LECTURER'}">
-                <a href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">教师主页</a>
-                <a href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER">我教的课程</a>
-                <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">发布 MainTask</a>
-                <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">任务列表</a>
+                <a href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER">Lecturer Home</a>
+                <a href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER">My Courses</a>
+                <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">Publish MainTask</a>
+                <a href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">Task List</a>
             </c:when>
             <c:when test="${currentRole == 'ADMIN'}">
-                <a href="${pageContext.request.contextPath}/admin-home.jsp?role=ADMIN">管理员主页</a>
-                <a href="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN">用户管理</a>
-                <a href="${pageContext.request.contextPath}/admin-overview.jsp?role=ADMIN">系统总览</a>
-                <a href="${pageContext.request.contextPath}/admin-courses.jsp?role=ADMIN">课程管理</a>
+                <a href="${pageContext.request.contextPath}/admin-home.jsp?role=ADMIN">Admin Home</a>
+                <a href="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN">User Management</a>
+                <a href="${pageContext.request.contextPath}/admin-overview.jsp?role=ADMIN">System Overview</a>
+                <a href="${pageContext.request.contextPath}/admin-courses.jsp?role=ADMIN">Course Management</a>
             </c:when>
             <c:otherwise>
-                <a href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">学生主页</a>
-                <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT">我的课程 Course</a>
-                <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT">任务进度</a>
-                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT">学习记录</a>
+                <a href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT">Student Home</a>
+                <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT">My Courses</a>
+                <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT">Task Progress</a>
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT">Study Records</a>
             </c:otherwise>
         </c:choose>
-        <a href="${pageContext.request.contextPath}/auth.jsp">切换角色</a>
+        <a href="${pageContext.request.contextPath}/auth.jsp">Switch Role</a>
     </nav>
 </header>

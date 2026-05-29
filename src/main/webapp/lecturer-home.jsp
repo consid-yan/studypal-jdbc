@@ -50,7 +50,7 @@
       <% if (activeTasks != null && !activeTasks.isEmpty()) { %>
         <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=<%= activeTasks.get(0).getMainTaskId() %>"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
       <% } else { %>
-        <span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="请先创建任务"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
+        <span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="Create a task first"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
       <% } %>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
