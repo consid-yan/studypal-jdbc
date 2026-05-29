@@ -1,13 +1,14 @@
 -- =========================================================================
--- 核心设计说明：
--- 1. 采用 utf8mb4 字符集，完美支持中文。
--- 2. 严格遵循 EER 映射规范，STUDENT/LECTURER/ADMIN 主键同时作为指向 USER_ACCOUNT 的外键。
--- 3. 建表顺序严格按照外键依赖拓扑结构排布。
--- 4. 设置了完善的级联删除（ON DELETE CASCADE）和唯一约束。
+-- Core Design Notes:
+-- 1. Uses the utf8mb4 character set for full support of Chinese.
+-- 2. Strictly adheres to the EER mapping standard; the primary keys of STUDENT, LECTURER,
+-- and ADMIN also serve as foreign keys pointing to USER_ACCOUNT.
+-- 3. Table creation order strictly follows the foreign key dependency topology.
+-- 4. Comprehensive cascade delete (ON DELETE CASCADE) and unique constraints have been implemented.
 -- =========================================================================
 
 -- =========================================================================
--- 0. 环境准备与数据库创建
+-- 0. Environment Setup and Database Creation
 -- =========================================================================
 DROP DATABASE IF EXISTS studypal_db;
 CREATE DATABASE studypal_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -15,23 +16,23 @@ USE studypal_db;
 
 
 -- =========================================================================
--- 1. 用户中心模块表结构 (User Management)
+-- 1. User Management Module Table Structure
 -- =========================================================================
 
--- 用户基表 (Supertype)
+-- User Base Table (Supertype)
 CREATE TABLE USER_ACCOUNT (
         user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
         full_name VARCHAR(100) NOT NULL,
-        role VARCHAR(20) NOT NULL, -- 枚举值: 'STUDENT', 'LECTURER', 'ADMIN'
+        role VARCHAR(20) NOT NULL, -- Enumeration values: ‘STUDENT’, ‘LECTURER’, ‘ADMIN’
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 讲师详情表 (Subtype)
+-- Lecturer Details Table (Subtype)
 CREATE TABLE LECTURER (
-        lecturer_id BIGINT PRIMARY KEY, -- 既是主键，又是外键
+        lecturer_id BIGINT PRIMARY KEY, -- Both primary key and foreign key
         employee_no VARCHAR(50) NOT NULL UNIQUE,
         department VARCHAR(100) NOT NULL,
         title VARCHAR(50),
@@ -40,9 +41,9 @@ CREATE TABLE LECTURER (
         FOREIGN KEY (lecturer_id) REFERENCES USER_ACCOUNT(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 学生详情表 (Subtype)
+-- Student Details Table (Subtype)
 CREATE TABLE STUDENT (
-        student_id BIGINT PRIMARY KEY, -- 既是主键，又是外键
+        student_id BIGINT PRIMARY KEY, -- Both primary key and foreign key
         student_no VARCHAR(50) NOT NULL UNIQUE,
         major VARCHAR(100) NOT NULL,
         grade VARCHAR(20) NOT NULL,
@@ -51,9 +52,9 @@ CREATE TABLE STUDENT (
         FOREIGN KEY (student_id) REFERENCES USER_ACCOUNT(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 管理员详情表 (Subtype)
+-- Administrator Details Table (Subtype)
 CREATE TABLE ADMIN (
-        admin_id BIGINT PRIMARY KEY, -- 既是主键，又是外键
+        admin_id BIGINT PRIMARY KEY, -- Both primary key and foreign key
         admin_no VARCHAR(50) NOT NULL UNIQUE,
         department VARCHAR(100) NOT NULL,
         position VARCHAR(50),
@@ -63,10 +64,10 @@ CREATE TABLE ADMIN (
 
 
 -- =========================================================================
--- 2. 课程与选课模块表结构 (Course & Enrollment)
+-- 2. Course and Enrollment Module Table Structures (Course & Enrollment)
 -- =========================================================================
 
--- 课程表
+-- Course Table
 CREATE TABLE COURSE (
         course_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         course_code VARCHAR(50) NOT NULL UNIQUE,
@@ -78,38 +79,40 @@ CREATE TABLE COURSE (
         FOREIGN KEY (lecturer_id) REFERENCES LECTURER(lecturer_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
--- 选课表 (M:N 映射中间表)
+-- Course Registration Schedule (M:N mapping intermediate table)
 CREATE TABLE ENROLLMENT (
         enrollment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         student_id BIGINT NOT NULL,
         course_id BIGINT NOT NULL,
         enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT idx_student_course UNIQUE (student_id, course_id), -- 联合唯一约束，防止重复选课
+        CONSTRAINT idx_student_course UNIQUE (student_id, course_id), -- Union of unique constraints to prevent
+                                                                      -- duplicate course selection
         FOREIGN KEY (student_id) REFERENCES STUDENT(student_id) ON DELETE CASCADE,
         FOREIGN KEY (course_id) REFERENCES COURSE(course_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 
 -- =========================================================================
--- 3. 任务与进度管理模块表结构 (Task & Progress)
+-- 3. Task and Progress Management Module Table Structure
 -- =========================================================================
 
--- 主任务表
+-- Main Task Table
 CREATE TABLE MAIN_TASK (
         main_task_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-        course_id BIGINT NULL, -- 允许为 NULL。NULL 代表学生的“自主任务”，非 NULL 代表“课程任务”
-        creator_id BIGINT NOT NULL, -- 关联创建者（学生或讲师）
+        course_id BIGINT NULL, -- NULL is allowed. NULL indicates a “self-directed assignment” for the student;
+                               -- non-NULL indicates a “course assignment”
+        creator_id BIGINT NOT NULL, -- Associates the creator (student or instructor)
         title VARCHAR(200) NOT NULL,
         description TEXT,
         deadline DATETIME NOT NULL,
-        importance_level INT DEFAULT 3, -- 1-5 优先级
-        role_enum VARCHAR(20) NOT NULL, -- 'COURSE_TASK' 或 'PERSONAL_TASK'
+        importance_level INT DEFAULT 3, -- Priority level 1-5
+        role_enum VARCHAR(20) NOT NULL, -- ‘COURSE_TASK’ or 'PERSONAL_TASK'
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (course_id) REFERENCES COURSE(course_id) ON DELETE CASCADE,
         FOREIGN KEY (creator_id) REFERENCES USER_ACCOUNT(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 子任务模板表
+-- Subtask Template Table
 CREATE TABLE SUB_TASK_TEMPLATE (
         template_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         main_task_id BIGINT NOT NULL,
@@ -122,19 +125,19 @@ CREATE TABLE SUB_TASK_TEMPLATE (
         FOREIGN KEY (main_task_id) REFERENCES MAIN_TASK(main_task_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 学生进度/子任务实例表
+-- Student Progress/Subtask Instance Table
 CREATE TABLE STUDENT_SUB_TASK (
         student_sub_task_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         student_id BIGINT NOT NULL,
         template_id BIGINT NOT NULL,
-        custom_title VARCHAR(200) NULL, -- 允许学生个性化修改标题
+        custom_title VARCHAR(200) NULL, -- Allow students to customize the title
         custom_description TEXT NULL,
         custom_planned_start_time DATETIME NULL,
         custom_planned_end_time DATETIME NULL,
         completed_time DATETIME NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'NOT_STARTED', -- 'NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'
         notes TEXT,
-        CONSTRAINT idx_student_template UNIQUE (student_id, template_id), -- 每个学生对一个模板只有一条实例记录
+        CONSTRAINT idx_student_template UNIQUE (student_id, template_id), -- Each student has only one instance record for a template
         FOREIGN KEY (student_id) REFERENCES STUDENT(student_id) ON DELETE CASCADE,
         FOREIGN KEY (template_id) REFERENCES SUB_TASK_TEMPLATE(template_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
