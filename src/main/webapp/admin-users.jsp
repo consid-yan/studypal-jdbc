@@ -36,10 +36,11 @@
         } else if ("resetPassword".equals(action)) {
             String uidStr = request.getParameter("userId");
             String newPw = request.getParameter("newPassword");
+            String targetName = request.getParameter("userName");
             try {
                 Long uid = Long.parseLong(uidStr);
                 String r = adminService.resetPassword(uid, newPw);
-                if (r == null) success = "Password reset successfully.";
+                if (r == null) success = "已将 " + (targetName != null && !targetName.isEmpty() ? targetName : "该用户") + " 的密码重置为 " + newPw + "。";
                 else error = r;
             } catch (Exception e) { error = "Reset failed: " + e.getMessage(); }
         }
@@ -116,8 +117,9 @@
                        <form method="post" action="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN" style="display:inline;">
                          <input type="hidden" name="action" value="resetPassword">
                          <input type="hidden" name="userId" value="<%= u.getUserId() %>">
+                         <input type="hidden" name="userName" value="<%= u.getFullName() %>">
                          <input type="hidden" name="newPassword" value="studypal123">
-                         <button class="action-btn action-btn-secondary" type="submit">Reset to studypal123</button>
+                         <button class="action-btn action-btn-secondary" type="submit">重置该用户密码为 studypal123</button>
                        </form>
                      </div>
                    </div>

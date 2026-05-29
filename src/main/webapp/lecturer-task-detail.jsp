@@ -58,7 +58,11 @@
       <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-home.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
       <a class="sidebar-link" href="${pageContext.request.contextPath}/lecturer-courses.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
       <a class="sidebar-link" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>MainTasks</a>
-      <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
+      <% if (taskId != null) { %>
+        <a class="sidebar-link active" href="${pageContext.request.contextPath}/lecturer-task-detail.jsp?role=LECTURER&id=<%= taskId %>"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
+      <% } else { %>
+        <span class="sidebar-link active" style="opacity:.6;cursor:not-allowed" title="请从具体任务进入详情"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
+      <% } %>
     </nav>
     <div class="sidebar-footer"><a class="sidebar-link" href="${pageContext.request.contextPath}/auth.jsp"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10 11l4-3-4-3M14 8H7"/></svg>Log out</a></div>
   </aside>
@@ -79,7 +83,7 @@
         <div class="warm-card fade-in-d2">
           <div class="row-between">
             <h2>Student Completion</h2>
-            <button class="action-btn action-btn-secondary" type="button" data-confirm="Export this task progress report?">Export</button>
+            <button class="action-btn action-btn-secondary" type="button" id="exportTaskReportButton">Export CSV</button>
           </div>
           <div class="table-like">
             <% if (studentProgress != null && !studentProgress.isEmpty()) {
@@ -90,13 +94,13 @@
                    String btnLabel = pct < 40 ? "Follow Up" : "View";
                    String btnClass = pct < 40 ? "action-btn action-btn-primary" : "action-btn action-btn-secondary";
             %>
-                   <div class="soft-card student-progress-row">
+                   <div class="soft-card student-progress-row" id="student-progress-<%= sp.getStudentId() %>">
                      <div class="user-meta"><p class="strong-title"><%= sp.getStudentName() %></p><span class="muted"><%= sp.getStudentEmail() %></span></div>
                      <span class="<%= badgeClass %>"><%= badgeLabel %></span>
                      <div class="student-progress-cell"><div class="progress-track"><div class="progress-fill <%= badgeClass.contains("accent") ? "accent" : "" %>" style="--target-width:<%= pct %>%"></div></div></div>
-                     <span class="muted"><%= pct %>%</span>
+                     <span class="muted student-progress-pct"><%= pct %>%</span>
                      <span class="muted">--</span>
-                     <a class="<%= btnClass %>" href="#"><%= btnLabel %></a>
+                     <button class="<%= btnClass %>" type="button" data-focus-student="student-progress-<%= sp.getStudentId() %>"><%= btnLabel %></button>
                    </div>
             <%   }
                } else { %>
@@ -128,5 +132,58 @@
     </div></main>
   </div>
 </div>
+<script>
+(function () {
+  function csvCell(value) {
+    var text = (value || '').replace(/\s+/g, ' ').trim();
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+
+  var exportButton = document.getElementById('exportTaskReportButton');
+  if (exportButton) {
+    exportButton.addEventListener('click', function () {
+      var rows = Array.prototype.slice.call(document.querySelectorAll('.student-progress-row'));
+      if (!rows.length) {
+        window.alert('当前任务还没有可导出的学生进度。');
+        return;
+      }
+      var lines = [['Student', 'Email', 'Status', 'Progress'].map(csvCell).join(',')];
+      rows.forEach(function (row) {
+        var name = row.querySelector('.user-meta .strong-title');
+        var email = row.querySelector('.user-meta .muted');
+        var status = row.querySelector('.badge');
+        var progress = row.querySelector('.student-progress-pct');
+        lines.push([name, email, status, progress].map(function (node) {
+          return csvCell(node ? node.textContent : '');
+        }).join(','));
+      });
+      var blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'studypal-task-progress.csv';
+      document.body.appendChild(link);
+      link.click();
+      URL.revokeObjectURL(link.href);
+      link.remove();
+    });
+  }
+
+  document.querySelectorAll('[data-focus-student]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var row = document.getElementById(button.getAttribute('data-focus-student'));
+      if (!row) {
+        return;
+      }
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.style.outline = '2px solid #3F5F46';
+      row.style.outlineOffset = '2px';
+      window.setTimeout(function () {
+        row.style.outline = '';
+        row.style.outlineOffset = '';
+      }, 1800);
+    });
+  });
+})();
+</script>
 </body>
 </html>

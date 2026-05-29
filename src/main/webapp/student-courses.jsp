@@ -303,10 +303,10 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
         Study Sessions
       </a>
-      <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=1" class="sidebar-link">
+      <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
-      </a>
+      </span>
     </nav>
 
     <div class="p-4 border-t border-border">

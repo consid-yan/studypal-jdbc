@@ -18,6 +18,8 @@
         upcoming = ts.getUpcomingDeadlines(cu.getUserId(), 3);
         enrolledC = cs.getEnrolledCourses(cu.getUserId());
     } catch (Exception ignored) {}
+    int courseCount = enrolledC != null ? enrolledC.size() : 0;
+    String courseHint = enrolledC == null ? "暂无课程数据" : (courseCount == 0 ? "尚未加入课程" : "Enrolled");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +67,8 @@ body{background-color:#F4EBDD;min-height:100vh;overflow-x:hidden}
 <a href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
 <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
 <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>My Tasks</a>
-<a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=1" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</a>
+<a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link active"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>Study Sessions</a>
+<span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="请从具体任务进入详情"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
 </nav>
 </aside>
 <div class="student-main ml-[240px] flex-1">
@@ -75,7 +78,7 @@ body{background-color:#F4EBDD;min-height:100vh;overflow-x:hidden}
 <div class="warm-card p-5"><p class="text-xs text-textMuted mb-1">This Week</p><p class="text-2xl font-bold text-primary"><%= pending %></p><p class="text-xs text-textMuted mt-1">Pending tasks</p></div>
 <div class="warm-card p-5"><p class="text-xs text-textMuted mb-1">Completed</p><p class="text-2xl font-bold text-accent"><%= completed %></p><p class="text-xs text-textMuted mt-1">Finished sub-tasks</p></div>
 <div class="warm-card p-5"><p class="text-xs text-textMuted mb-1">Completion Rate</p><p class="text-2xl font-bold text-primary"><%= (int)rate %>%</p><p class="text-xs text-textMuted mt-1">Overall progress</p></div>
-<div class="warm-card p-5"><p class="text-xs text-textMuted mb-1">Courses</p><p class="text-2xl font-bold text-accent"><%= enrolledC != null ? enrolledC.size() : 0 %></p><p class="text-xs text-textMuted mt-1">Enrolled</p></div>
+<div class="warm-card p-5"><p class="text-xs text-textMuted mb-1">Courses</p><p class="text-2xl font-bold text-accent"><%= courseCount %></p><p class="text-xs text-textMuted mt-1"><%= courseHint %></p></div>
 </div>
 <div class="detail-grid grid grid-cols-3 gap-6">
 <section class="col-span-2 space-y-6">
