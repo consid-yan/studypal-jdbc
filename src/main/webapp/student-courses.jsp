@@ -1,4 +1,53 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.CourseService" %>
+<%@ page import="com.studypal.service.TaskService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"STUDENT".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
+    Long studentId = currentUser.getUserId();
+    CourseService courseService = new CourseService();
+    String error = null;
+    String success = null;
+
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        String action = request.getParameter("action");
+        if ("joinCourse".equals(action)) {
+            String courseCode = request.getParameter("courseCode");
+            try {
+                String result = courseService.enrollInCourse(studentId, courseCode);
+                if (result == null) {
+                    success = "Successfully enrolled in course!";
+                } else {
+                    error = result;
+                }
+            } catch (Exception e) {
+                error = "Failed to join course: " + e.getMessage();
+            }
+        }
+    }
+
+    List<Course> enrolledCourses = null;
+    int enrolledCount = 0, activeTaskCount = 0;
+    double overallProgress = 0.0;
+    try {
+        enrolledCourses = courseService.getEnrolledCourses(studentId);
+        enrolledCount = courseService.getEnrolledCourseCount(studentId);
+        activeTaskCount = courseService.getActiveTaskCount(studentId);
+        TaskService ts = new TaskService();
+        overallProgress = ts.getCompletionRate(studentId);
+    } catch (Exception e) {
+        error = "Failed to load courses: " + e.getMessage();
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,14 +295,18 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>
         My Courses
       </a>
-      <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+        Study Sessions
+      </a>
+      <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
-      </a>
+      </span>
     </nav>
 
     <div class="p-4 border-t border-border">
@@ -289,23 +342,23 @@ body {
         <div class="course-stats grid grid-cols-4 gap-5 mb-8 fade-in">
           <div class="warm-card p-5 stat-card">
             <p class="text-xs text-textMuted mb-1">Enrolled Courses</p>
-            <p class="text-2xl font-bold text-primary">4</p>
+            <p class="text-2xl font-bold text-primary"><%= enrolledCount %></p>
             <p class="text-xs text-textMuted mt-1">Active learning spaces</p>
           </div>
           <div class="warm-card p-5 stat-card">
             <p class="text-xs text-textMuted mb-1">Active Tasks</p>
-            <p class="text-2xl font-bold text-accent">12</p>
+            <p class="text-2xl font-bold text-accent"><%= activeTaskCount %></p>
             <p class="text-xs text-textMuted mt-1">Across all courses</p>
           </div>
           <div class="warm-card p-5 stat-card">
             <p class="text-xs text-textMuted mb-1">Average Progress</p>
-            <p class="text-2xl font-bold text-primary">76%</p>
+            <p class="text-2xl font-bold text-primary"><%= (int)overallProgress %>%</p>
             <p class="text-xs text-textMuted mt-1">Overall completion</p>
           </div>
           <div class="warm-card p-5 stat-card">
-            <p class="text-xs text-textMuted mb-1">Planned Hours</p>
-            <p class="text-2xl font-bold text-accent">38.5h</p>
-            <p class="text-xs text-textMuted mt-1">From SubTask time windows</p>
+            <p class="text-xs text-textMuted mb-1">Active Tasks</p>
+            <p class="text-2xl font-bold text-accent"><%= activeTaskCount %></p>
+            <p class="text-xs text-textMuted mt-1">Pending sub-tasks</p>
           </div>
         </div>
 
@@ -315,12 +368,21 @@ body {
             <div class="flex-1">
               <h2 class="text-base font-bold text-textDark mb-1">Join a Course</h2>
               <p class="text-sm text-textMuted mb-4">Enter a course code provided by your lecturer to join a new class.</p>
-              <div class="course-join-row flex items-center gap-3">
-                <input type="text" placeholder="e.g. COMP2009J" class="px-4 py-2.5 rounded-lg border border-border bg-cream/40 text-sm text-textDark placeholder:text-textMuted/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 w-[240px]">
-                <button class="action-btn action-btn-primary" data-confirm="Confirm joining this course? SubTask records will be generated after enrollment.">Join Course</button>
-                <button class="action-btn action-btn-secondary">Cancel</button>
-              </div>
-              <p class="text-xs text-textMuted mt-3">Your role is detected automatically after login. No manual role selection is required.</p>
+              <% if (error != null) { %>
+                <div class="mb-3 p-3 rounded-lg text-sm font-semibold bg-red-50 text-red-700 border border-red-200"><%= error %></div>
+              <% } %>
+              <% if (success != null) { %>
+                <div class="mb-3 p-3 rounded-lg text-sm font-semibold bg-green-50 text-green-700 border border-green-200"><%= success %></div>
+              <% } %>
+              <form method="post" action="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT">
+                <input type="hidden" name="action" value="joinCourse">
+                <div class="course-join-row flex items-center gap-3">
+                  <input type="text" name="courseCode" placeholder="e.g. COMP2009J" class="px-4 py-2.5 rounded-lg border border-border bg-cream/40 text-sm text-textDark placeholder:text-textMuted/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 w-[240px]" required>
+                  <button type="submit" class="action-btn action-btn-primary">Join Course</button>
+                  <button type="button" class="action-btn action-btn-secondary" onclick="this.form.reset()">Cancel</button>
+                </div>
+              </form>
+              <p class="text-xs text-textMuted mt-3">Once you join a course, enrollment is final and cannot be revoked.</p>
             </div>
             <!-- Pixel book icon -->
             <div class="float-char ml-4">
@@ -360,126 +422,30 @@ body {
 
         <!-- Course Cards -->
         <div class="course-grid grid grid-cols-2 gap-5 mb-6">
-
-          <!-- Database Systems -->
-          <div class="warm-card p-5 course-card fade-in-d2">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <h3 class="text-sm font-bold text-textDark">Database Systems</h3>
-                <p class="text-xs text-textMuted mt-0.5 font-pixel" style="font-size:8px;">COMP2026J</p>
-              </div>
-              <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">In Progress</span>
-            </div>
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Lecturer</span><span class="text-textDark">Dr. Emily Carter</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Active Tasks</span><span class="text-textDark">4</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Next Deadline</span><span class="text-accent font-medium">June 12, 2026</span></div>
-            </div>
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs text-textMuted">Progress</span>
-                <span class="text-xs font-semibold text-primary">82%</span>
-              </div>
-              <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                <div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 82%;"></div>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary text-xs px-3 py-2">View Tasks</a>
-              <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="action-btn action-btn-secondary text-xs px-3 py-2">Course Detail</a>
-            </div>
-          </div>
-
-          <!-- Computer Networks -->
-          <div class="warm-card p-5 course-card fade-in-d2">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <h3 class="text-sm font-bold text-textDark">Computer Networks</h3>
-                <p class="text-xs text-textMuted mt-0.5 font-pixel" style="font-size:8px;">COMP2009J</p>
-              </div>
-              <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">In Progress</span>
-            </div>
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Lecturer</span><span class="text-textDark">Prof. Daniel Hughes</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Active Tasks</span><span class="text-textDark">3</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Next Deadline</span><span class="text-accent font-medium">June 18, 2026</span></div>
-            </div>
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs text-textMuted">Progress</span>
-                <span class="text-xs font-semibold text-accent">64%</span>
-              </div>
-              <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                <div class="h-full bg-accent rounded-full progress-bar" style="--target-width: 64%;"></div>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary text-xs px-3 py-2">View Tasks</a>
-              <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="action-btn action-btn-secondary text-xs px-3 py-2">Course Detail</a>
-            </div>
-          </div>
-
-          <!-- Discrete Mathematics -->
-          <div class="warm-card p-5 course-card fade-in-d3">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <h3 class="text-sm font-bold text-textDark">Discrete Mathematics</h3>
-                <p class="text-xs text-textMuted mt-0.5 font-pixel" style="font-size:8px;">MATH1015</p>
-              </div>
-              <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">In Progress</span>
-            </div>
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Lecturer</span><span class="text-textDark">Dr. Sarah Bennett</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Active Tasks</span><span class="text-textDark">2</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Next Deadline</span><span class="text-accent font-medium">June 20, 2026</span></div>
-            </div>
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs text-textMuted">Progress</span>
-                <span class="text-xs font-semibold text-primary">71%</span>
-              </div>
-              <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                <div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 71%;"></div>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary text-xs px-3 py-2">View Tasks</a>
-              <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="action-btn action-btn-secondary text-xs px-3 py-2">Course Detail</a>
-            </div>
-          </div>
-
-          <!-- Academic English -->
-          <div class="warm-card p-5 course-card fade-in-d3">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <h3 class="text-sm font-bold text-textDark">Academic English</h3>
-                <p class="text-xs text-textMuted mt-0.5 font-pixel" style="font-size:8px;">ENG1008</p>
-              </div>
-              <span class="text-xs bg-border text-textMuted px-2 py-0.5 rounded-full font-medium">Completed</span>
-            </div>
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Lecturer</span><span class="text-textDark">Ms. Laura Wilson</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Active Tasks</span><span class="text-textDark">0</span></div>
-              <div class="flex justify-between text-xs"><span class="text-textMuted">Next Deadline</span><span class="text-textMuted">No pending deadline</span></div>
-            </div>
-            <div class="mb-4">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs text-textMuted">Progress</span>
-                <span class="text-xs font-semibold text-primary">100%</span>
-              </div>
-              <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                <div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 100%;"></div>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary text-xs px-3 py-2">View Tasks</a>
-              <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="action-btn action-btn-secondary text-xs px-3 py-2">Course Detail</a>
-            </div>
-          </div>
-
+        <% if (enrolledCourses != null && !enrolledCourses.isEmpty()) {
+             for (Course c : enrolledCourses) { %>
+               <div class="warm-card p-5 course-card fade-in-d2">
+                 <div class="flex items-start justify-between mb-3">
+                   <div>
+                     <h3 class="text-sm font-bold text-textDark"><%= c.getCourseName() %></h3>
+                     <p class="text-xs text-textMuted mt-0.5 font-pixel" style="font-size:8px;"><%= c.getCourseCode() %></p>
+                   </div>
+                   <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Enrolled</span>
+                 </div>
+                 <div class="space-y-2 mb-4">
+                   <div class="flex justify-between text-xs"><span class="text-textMuted">Lecturer</span><span class="text-textDark"><%= c.getLecturerName() != null ? c.getLecturerName() : "N/A" %></span></div>
+                   <div class="flex justify-between text-xs"><span class="text-textMuted">Semester</span><span class="text-textDark"><%= c.getSemester() %></span></div>
+                 </div>
+                 <div class="flex gap-2">
+                   <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT&course=<%= c.getCourseId() %>" class="action-btn action-btn-primary text-xs px-3 py-2">View Tasks</a>
+                 </div>
+               </div>
+        <%   }
+           } %>
         </div>
 
         <!-- Empty State -->
+        <% if (enrolledCourses == null || enrolledCourses.isEmpty()) { %>
         <div class="warm-card p-6 fade-in-d4 opacity-60 border-dashed">
           <div class="flex items-center gap-4">
             <svg width="32" height="32" viewBox="0 0 16 16" style="image-rendering: pixelated;" class="flex-shrink-0">
@@ -494,6 +460,7 @@ body {
             <button class="action-btn action-btn-secondary text-xs px-3 py-2 ml-auto">Clear Search</button>
           </div>
         </div>
+        <% } %>
 
         <!-- Footer Note -->
         <div class="mt-8 text-center fade-in-d4">
@@ -506,6 +473,6 @@ body {
 
 </div>
 
-<script src="assets/js/app.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
 </body>
 </html>

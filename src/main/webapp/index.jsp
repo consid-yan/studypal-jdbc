@@ -113,7 +113,7 @@ body {
     <span class="absolute top-[18%] left-[5%] font-pixel text-[9px] text-primary/20 float-label" style="animation-delay: 0s;">Course</span>
     <span class="absolute top-[25%] right-[8%] font-pixel text-[9px] text-accent/20 float-label" style="animation-delay: 0.8s;">MainTask</span>
     <span class="absolute bottom-[35%] left-[10%] font-pixel text-[9px] text-primary/15 float-label" style="animation-delay: 1.6s;">SubTask</span>
-    <span class="absolute top-[55%] right-[5%] font-pixel text-[9px] text-accent/15 float-label" style="animation-delay: 2.4s;">Progress</span>
+    <span class="absolute top-[55%] right-[5%] font-pixel text-[9px] text-accent/15 float-label" style="animation-delay: 2.4s;">StudySession</span>
     <span class="absolute bottom-[22%] right-[15%] font-pixel text-[9px] text-primary/20 float-label" style="animation-delay: 3.2s;">Dashboard</span>
   </div>
 
@@ -131,7 +131,7 @@ body {
           让<span class="text-primary font-semibold">学生</span>、<span class="text-accent font-semibold">教师</span>和<span class="text-textDark font-semibold">管理员</span>在同一个清晰的系统里完成课程、任务和学习进度管理。
         </p>
         <p class="text-sm text-textMuted/80 max-w-md">
-          A calm and structured information system for courses, tasks, task progress, and role-based dashboards.
+          A calm and structured information system for courses, tasks, study sessions, and role-based dashboards.
         </p>
 
         <!-- CTA Button -->
@@ -229,7 +229,7 @@ body {
               <svg width="12" height="6" class="opacity-40 flex-shrink-0"><line x1="0" y1="3" x2="12" y2="3" stroke="#B76E45" stroke-width="1" stroke-dasharray="2 1" style="animation: dash-flow 1s linear infinite;"/></svg>
               <span class="font-pixel text-[6px] text-primary/70 whitespace-nowrap">SubTask</span>
               <svg width="12" height="6" class="opacity-40 flex-shrink-0"><line x1="0" y1="3" x2="12" y2="3" stroke="#3F5F46" stroke-width="1" stroke-dasharray="2 1" style="animation: dash-flow 1s linear infinite; animation-delay:0.3s;"/></svg>
-              <span class="font-pixel text-[6px] text-accent/70 whitespace-nowrap">Progress</span>
+              <span class="font-pixel text-[6px] text-accent/70 whitespace-nowrap">Session</span>
               <svg width="12" height="6" class="opacity-40 flex-shrink-0"><line x1="0" y1="3" x2="12" y2="3" stroke="#B76E45" stroke-width="1" stroke-dasharray="2 1" style="animation: dash-flow 1s linear infinite; animation-delay:0.6s;"/></svg>
               <span class="font-pixel text-[6px] text-primary/70 whitespace-nowrap">Dashboard</span>
             </div>
@@ -243,20 +243,20 @@ body {
   <div class="flex-shrink-0 pb-6 px-8">
     <div class="max-w-7xl mx-auto grid grid-cols-4 gap-4 max-w-lg lg:max-w-xl mx-auto">
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-primary mb-1">12</div>
-        <div class="text-xs text-textMuted">Active Courses</div>
+        <div class="text-xs text-textDark font-semibold">Course Management</div>
+        <div class="text-xs text-textMuted mt-0.5">Create and enroll courses</div>
       </div>
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-accent mb-1">48</div>
-        <div class="text-xs text-textMuted">Pending Tasks</div>
+        <div class="text-xs text-textDark font-semibold">Task Tracking</div>
+        <div class="text-xs text-textMuted mt-0.5">Publish and complete tasks</div>
       </div>
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-textDark mb-1">326</div>
-        <div class="text-xs text-textMuted">Progress Updates</div>
+        <div class="text-xs text-textDark font-semibold">Progress Dashboard</div>
+        <div class="text-xs text-textMuted mt-0.5">Real-time statistics</div>
       </div>
       <div class="warm-card px-4 py-3 text-center">
-        <div class="font-pixel text-[10px] text-primary mb-1">76%</div>
-        <div class="text-xs text-textMuted">Completion</div>
+        <div class="text-xs text-textDark font-semibold">Role-Based Access</div>
+        <div class="text-xs text-textMuted mt-0.5">Student / Lecturer / Admin</div>
       </div>
     </div>
   </div>

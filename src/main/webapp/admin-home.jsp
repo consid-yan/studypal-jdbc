@@ -1,11 +1,20 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.AdminService" %>
+<%@ page import="com.studypal.model.UserAccount" %>
+<% if (session.getAttribute("user") == null) { response.sendRedirect(request.getContextPath() + "/auth.jsp"); return; }
+   UserAccount currentUser = (UserAccount) session.getAttribute("user");
+   if (!"ADMIN".equals(currentUser.getRole())) { response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission"); return; }
+   AdminService as = new AdminService(); int[] st = null; try { st = as.getStats(); } catch (Exception e) {}
+   int us = st != null ? st[0] : 0; int stu = st != null ? st[1] : 0;
+   int lec = st != null ? st[2] : 0; int ad = st != null ? st[3] : 0;
+   int cs = st != null ? st[4] : 0; int ts = st != null ? st[5] : 0; %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin Home</title>
-<link rel="stylesheet" href="assets/css/workspace.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
 </head>
 <body>
 <div class="workspace-shell">
@@ -22,12 +31,12 @@
   <div class="workspace-main">
     <header class="workspace-header"><div class="header-inner"><div><h1>Admin Home</h1></div><div class="header-badges"><span class="pill">Active Admin</span><span class="pill strong">Spring 2026</span></div></div></header>
     <main class="workspace-content"><div class="content-inner">
-      <section class="hero-card fade-in"><p class="eyebrow">ADMIN CONSOLE</p><h2>Manage users, courses, and task progress.</h2></section>
+      <section class="hero-card fade-in"><p class="eyebrow">ADMIN CONSOLE</p><h2>Manage users, courses, and learning activity.</h2></section>
       <section class="stats-grid fade-in-d1">
-        <div class="warm-card stat-card"><p class="stat-label">Users</p><p class="stat-value">128</p><p class="stat-hint">112 students / 14 lecturers / 2 admins</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value accent">18</p><p class="stat-hint">Current semester</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Tasks</p><p class="stat-value">46</p><p class="stat-hint">9 high priority</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Planned Workload</p><p class="stat-value accent">392h</p><p class="stat-hint">Last 30 days</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Users</p><p class="stat-value"><%= us %></p><p class="stat-hint"><%= stu %> students / <%= lec %> lecturers / <%= ad %> admins</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value accent"><%= cs %></p><p class="stat-hint">All courses</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Tasks</p><p class="stat-value"><%= ts %></p><p class="stat-hint">All published tasks</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= st != null ? st[6] : 0 %></p><p class="stat-hint">Across all courses</p></div>
       </section>
       <section class="panel-grid">
         <div class="warm-card fade-in-d2">
@@ -35,7 +44,7 @@
           <div class="table-like">
             <a class="soft-card" href="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN"><p class="strong-title">User Account Control</p><p class="muted">View registered users, reset passwords, and suspend accounts.</p></a>
             <a class="soft-card" href="${pageContext.request.contextPath}/admin-overview.jsp?role=ADMIN"><p class="strong-title">Course Workload</p><p class="muted">Find courses with dense deadlines or higher estimated hours.</p></a>
-            <a class="soft-card" href="${pageContext.request.contextPath}/admin-overview.jsp?role=ADMIN"><p class="strong-title">Progress Tracking</p><p class="muted">Review student course progress and SubTask progress.</p></a>
+            <a class="soft-card" href="${pageContext.request.contextPath}/admin-overview.jsp?role=ADMIN"><p class="strong-title">Progress Tracking</p><p class="muted">Review student course progress and study activity.</p></a>
           </div>
         </div>
         <aside class="warm-card fade-in-d3">

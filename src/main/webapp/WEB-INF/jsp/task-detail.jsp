@@ -1,4 +1,58 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.TaskService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"STUDENT".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
+    Long studentId = currentUser.getUserId();
+    String taskIdStr = request.getParameter("id");
+    Long taskId = null;
+    try { taskId = Long.parseLong(taskIdStr); } catch (Exception ignored) {}
+
+    TaskService taskService = new TaskService();
+    String error = null;
+    MainTask mainTask = null;
+    List<SubTaskTemplate> templates = null;
+    List<StudentSubTask> mySubTasks = null;
+    double myProgress = 0.0;
+    int templateCount = 0;
+
+    if (taskId != null) {
+        try {
+            String genResult = taskService.ensureStudentSubTasksExist(studentId, taskId);
+            if (genResult != null) error = genResult;
+            mainTask = taskService.getMainTaskById(taskId);
+            templates = taskService.getTemplatesByMainTaskId(taskId);
+            mySubTasks = taskService.getStudentSubTasksByMainTask(studentId, taskId);
+            if (mySubTasks != null && !mySubTasks.isEmpty()) {
+                int completed = 0;
+                for (StudentSubTask sst : mySubTasks) {
+                    if ("COMPLETED".equals(sst.getStatus())) completed++;
+                }
+                myProgress = (completed * 100.0) / mySubTasks.size();
+            }
+            templateCount = (templates != null) ? templates.size() : 0;
+        } catch (Exception e) {
+            error = "Failed to load task: " + e.getMessage();
+        }
+    }
+    String impLabel = "";
+    if (mainTask != null && mainTask.getImportanceLevel() != null) {
+        switch (mainTask.getImportanceLevel()) {
+            case 1: impLabel = "LOW"; break; case 2: impLabel = "MEDIUM"; break;
+            case 3: impLabel = "HIGH"; break; case 4: impLabel = "VERY_HIGH"; break;
+            case 5: impLabel = "CRITICAL"; break; default: impLabel = "MEDIUM";
+        }
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,14 +176,25 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>
         My Courses
       </a>
-      <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="sidebar-link active">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
-        Task Detail
+      <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+        Study Sessions
       </a>
+      <% if (taskId != null) { %>
+        <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= taskId %>" class="sidebar-link active">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
+          Task Detail
+        </a>
+      <% } else { %>
+        <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
+          Task Detail
+        </span>
+      <% } %>
     </nav>
 
     <div class="p-4 border-t border-border">
@@ -145,7 +210,7 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 class="text-xl font-bold text-textDark">Task Detail</h1>
-          <p class="text-sm text-textMuted mt-0.5">Review one MainTask, its SubTask plan, and your own SubTask progress.</p>
+          <p class="text-sm text-textMuted mt-0.5">Review one MainTask, its SubTaskTemplate plan, and your own StudentSubTask progress.</p>
         </div>
         <div class="flex items-center gap-4">
           <span class="text-xs text-textMuted border border-border rounded-full px-3 py-1">Active Student</span>
@@ -159,34 +224,32 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
         <section class="warm-card p-6 mb-6 fade-in">
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p class="text-xs text-textMuted font-pixel mb-2" style="font-size:8px;">MAINTASK · DATABASE SYSTEMS</p>
-              <h2 class="text-2xl font-bold text-textDark">Database Design Project</h2>
-              <p class="text-sm text-textMuted mt-2 max-w-[720px]">Complete the project milestones and submit the required materials before the deadline.</p>
+              <p class="text-xs text-textMuted font-pixel mb-2" style="font-size:8px;">MAINTASK · <%= mainTask != null && mainTask.getCourseName() != null ? mainTask.getCourseName() : "Personal Task" %></p>
+              <h2 class="text-2xl font-bold text-textDark"><%= mainTask != null ? mainTask.getTitle() : "N/A" %></h2>
+              <p class="text-sm text-textMuted mt-2 max-w-[720px]"><%= mainTask != null && mainTask.getDescription() != null ? mainTask.getDescription() : "" %></p>
             </div>
-            <span class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-full font-semibold">VERY_HIGH</span>
+            <span class="text-xs bg-accent/15 text-accent px-3 py-1 rounded-full font-semibold"><%= impLabel %></span>
           </div>
+          <% if (error != null) { %>
+            <div class="mt-4 p-3 rounded-lg text-sm font-semibold bg-red-50 text-red-700 border border-red-200"><%= error %></div>
+          <% } %>
         </section>
 
-        <div class="detail-stats grid grid-cols-4 gap-5 mb-8 fade-in-d1">
+        <div class="detail-stats grid grid-cols-3 gap-5 mb-8 fade-in-d1">
           <div class="warm-card p-5 detail-card">
             <p class="text-xs text-textMuted mb-1">Course</p>
-            <p class="text-2xl font-bold text-primary">DB2026</p>
-            <p class="text-xs text-textMuted mt-1">Database Systems</p>
+            <p class="text-2xl font-bold text-primary"><%= mainTask != null && mainTask.getCourseCode() != null ? mainTask.getCourseCode() : "N/A" %></p>
+            <p class="text-xs text-textMuted mt-1"><%= mainTask != null && mainTask.getCourseName() != null ? mainTask.getCourseName() : "N/A" %></p>
           </div>
           <div class="warm-card p-5 detail-card">
             <p class="text-xs text-textMuted mb-1">Deadline</p>
-            <p class="text-2xl font-bold text-accent">06-01</p>
-            <p class="text-xs text-textMuted mt-1">2026 23:59</p>
+            <p class="text-2xl font-bold text-accent"><%= mainTask != null && mainTask.getDeadline() != null ? mainTask.getDeadline().toString().substring(0, 16) : "N/A" %></p>
+            <p class="text-xs text-textMuted mt-1">yyyy-MM-dd HH:mm</p>
           </div>
           <div class="warm-card p-5 detail-card">
             <p class="text-xs text-textMuted mb-1">My Progress</p>
-            <p class="text-2xl font-bold text-primary">68%</p>
-            <p class="text-xs text-textMuted mt-1">SubTask</p>
-          </div>
-          <div class="warm-card p-5 detail-card">
-            <p class="text-xs text-textMuted mb-1">Planned Time</p>
-            <p class="text-2xl font-bold text-accent">3.5h</p>
-            <p class="text-xs text-textMuted mt-1">SubTask Plan</p>
+            <p class="text-2xl font-bold text-primary"><%= (int)myProgress %>%</p>
+            <p class="text-xs text-textMuted mt-1">SubTask completion</p>
           </div>
         </div>
 
@@ -194,62 +257,55 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
           <section class="detail-primary col-span-2 space-y-6">
             <div class="warm-card p-6 fade-in-d2">
               <div class="flex items-center justify-between gap-3 mb-4">
-                <h2 class="text-base font-bold text-textDark">SubTask Plan</h2>
+                <h2 class="text-base font-bold text-textDark">SubTaskTemplate Plan</h2>
                 <span class="text-xs text-textMuted">Generated by lecturer MainTask</span>
               </div>
               <div class="space-y-3">
-                <div class="p-4 rounded-xl bg-cream border border-border/60">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p class="text-sm font-semibold text-textDark">01 · Confirm requirements and ER diagram</p>
-                      <p class="text-xs text-textMuted mt-1">Check entities, foreign keys, role enum, and task ownership.</p>
-                    </div>
-                    <span class="text-xs text-primary font-semibold">2.0h</span>
-                  </div>
-                </div>
-                <div class="p-4 rounded-xl bg-cream border border-border/60">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p class="text-sm font-semibold text-textDark">02 · Build interface screens</p>
-                      <p class="text-xs text-textMuted mt-1">Build student-facing screens and keep the navigation consistent.</p>
-                    </div>
-                    <span class="text-xs text-accent font-semibold">3.5h</span>
-                  </div>
-                </div>
-                <div class="p-4 rounded-xl bg-cream border border-border/60">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <p class="text-sm font-semibold text-textDark">03 · Complete JSP integration</p>
-                      <p class="text-xs text-textMuted mt-1">Prepare the task screens and user feedback messages.</p>
-                    </div>
-                    <span class="text-xs text-primary font-semibold">4.0h</span>
-                  </div>
-                </div>
+                <% if (templates != null && !templates.isEmpty()) {
+                     int seq = 1;
+                     for (SubTaskTemplate t : templates) { %>
+                       <div class="p-4 rounded-xl bg-cream border border-border/60">
+                         <div class="flex items-start justify-between gap-3">
+                           <div>
+                             <p class="text-sm font-semibold text-textDark"><%= String.format("%02d", seq) %> · <%= t.getTitle() %></p>
+                             <p class="text-xs text-textMuted mt-1"><%= t.getDescription() != null ? t.getDescription() : "" %></p>
+                           </div>
+                           <span class="text-xs text-primary font-semibold"><%= t.getEstimatedHours() != null ? t.getEstimatedHours() + "h" : "" %></span>
+                         </div>
+                       </div>
+                <%     seq++;
+                     }
+                   } else { %>
+                     <p class="text-xs text-textMuted text-center py-4">No templates defined for this task.</p>
+                <% } %>
               </div>
             </div>
 
             <div class="warm-card p-6 fade-in-d3">
               <div class="flex items-center justify-between gap-3 mb-4">
-                <h2 class="text-base font-bold text-textDark">My SubTask</h2>
-                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-secondary text-xs px-3 py-2">Update Progress</a>
+                <h2 class="text-base font-bold text-textDark">My StudentSubTask</h2>
+                <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="action-btn action-btn-secondary text-xs px-3 py-2">Update Progress</a>
               </div>
               <div class="space-y-4">
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-semibold text-textDark">Confirm requirements and ER diagram</span>
-                    <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">COMPLETED</span>
-                  </div>
-                  <div class="h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 100%;"></div></div>
-                  <p class="text-xs text-textMuted mt-2">ER diagram confirmed. MainTask creator and role fields are aligned.</p>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-sm font-semibold text-textDark">Build interface screens</span>
-                    <span class="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">IN_PROGRESS</span>
-                  </div>
-                  <div class="h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full progress-bar" style="--target-width: 70%;"></div></div>
-                  <p class="text-xs text-textMuted mt-2">Student home, courses, tasks, and detail pages are being unified.</p>
-                </div>
+                <% if (mySubTasks != null && !mySubTasks.isEmpty()) {
+                     for (StudentSubTask sst : mySubTasks) {
+                       String sstStatus = sst.getStatus();
+                       String sstStatusClass = "COMPLETED".equals(sstStatus) ? "bg-primary/10 text-primary" : ("IN_PROGRESS".equals(sstStatus) ? "bg-accent/15 text-accent" : "bg-border text-textMuted");
+                       int barPct = "COMPLETED".equals(sstStatus) ? 100 : ("IN_PROGRESS".equals(sstStatus) ? 70 : 0);
+                       String barColor = "COMPLETED".equals(sstStatus) ? "bg-primary" : "bg-accent";
+                %>
+                   <div>
+                     <div class="flex items-center justify-between mb-1">
+                       <span class="text-sm font-semibold text-textDark"><%= sst.getTemplateTitle() %></span>
+                       <span class="text-xs <%= sstStatusClass %> px-2 py-0.5 rounded-full font-medium"><%= sstStatus %></span>
+                     </div>
+                     <div class="h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full <%= barColor %> rounded-full progress-bar" style="--target-width: <%= barPct %>%;"></div></div>
+                     <p class="text-xs text-textMuted mt-2"><%= sst.getNotes() != null ? sst.getNotes() : "" %></p>
+                   </div>
+                <%   }
+                   } else { %>
+                     <p class="text-xs text-textMuted text-center py-4">No sub-tasks generated yet.</p>
+                <% } %>
               </div>
             </div>
           </section>
@@ -258,21 +314,11 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
             <section class="warm-card p-5 fade-in-d2">
               <h3 class="text-sm font-bold text-textDark mb-4">Task Status</h3>
               <div class="space-y-3 text-sm">
-                <div class="flex justify-between"><span class="text-textMuted">MainTask</span><span class="text-textDark font-medium">Published</span></div>
-                <div class="flex justify-between"><span class="text-textMuted">Owner</span><span class="text-textDark font-medium">Dr. Emily Carter</span></div>
-                <div class="flex justify-between"><span class="text-textMuted">SubTasks</span><span class="text-textDark font-medium">4</span></div>
-                <div class="flex justify-between"><span class="text-textMuted">My Notes</span><span class="text-primary font-medium">Updated</span></div>
+                <div class="flex justify-between"><span class="text-textMuted">MainTask</span><span class="text-textDark font-medium"><%= mainTask != null ? mainTask.getRoleEnum() : "N/A" %></span></div>
+                <div class="flex justify-between"><span class="text-textMuted">Owner</span><span class="text-textDark font-medium"><%= mainTask != null && mainTask.getCreatorName() != null ? mainTask.getCreatorName() : "N/A" %></span></div>
+                <div class="flex justify-between"><span class="text-textMuted">Templates</span><span class="text-textDark font-medium"><%= templateCount %></span></div>
+                <div class="flex justify-between"><span class="text-textMuted">My SubTasks</span><span class="text-primary font-medium"><%= mySubTasks != null ? mySubTasks.size() : 0 %></span></div>
               </div>
-            </section>
-
-            <section class="warm-card p-5 fade-in-d3">
-              <h3 class="text-sm font-bold text-textDark mb-4">SubTask Plan</h3>
-              <div class="rounded-xl bg-cream border border-border/60 p-4">
-                <p class="text-xs text-accent font-semibold">May 27 · 19:00 - 21:00</p>
-                <p class="text-sm text-textDark font-semibold mt-1">ER diagram review</p>
-                <p class="text-xs text-textMuted mt-1">Planned 19:00 - 21:00 · completed at May 27 21:00.</p>
-              </div>
-              <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary w-full mt-4">Update Progress</a>
             </section>
           </aside>
         </div>

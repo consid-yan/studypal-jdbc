@@ -1,4 +1,35 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.TaskService" %>
+<%@ page import="com.studypal.service.CourseService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"STUDENT".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
+    Long studentId = currentUser.getUserId();
+    String studentFullName = currentUser.getFullName();
+    CourseService courseService = new CourseService();
+    TaskService taskService = new TaskService();
+
+    int enrolledCount = 0, pendingTaskCount = 0;
+    double completionRate = 0.0;
+    List<StudentSubTask> upcomingDeadlines = null;
+    List<Course> enrolledCourses = null;
+    try {
+        enrolledCount = courseService.getEnrolledCourseCount(studentId);
+        pendingTaskCount = taskService.getPendingTaskCount(studentId);
+        completionRate = taskService.getCompletionRate(studentId);
+        upcomingDeadlines = taskService.getUpcomingDeadlines(studentId, 3);
+        enrolledCourses = courseService.getEnrolledCourses(studentId);
+    } catch (Exception ignored) {}
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -124,6 +155,14 @@ body {
   box-shadow: 0 4px 16px rgba(46, 36, 27, 0.1);
 }
 
+.student-content {
+  align-items: start;
+}
+
+.student-aside {
+  min-width: 0;
+}
+
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -214,14 +253,18 @@ body {
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>
         My Courses
       </a>
-      <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>
         My Tasks
       </a>
-      <a href="${pageContext.request.contextPath}/task-detail?role=STUDENT&id=1" class="sidebar-link">
+      <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+        Study Sessions
+      </a>
+      <span class="sidebar-link opacity-60 cursor-not-allowed" title="请从具体任务进入详情">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
         Task Detail
-      </a>
+      </span>
     </nav>
 
     <div class="p-4 border-t border-border">
@@ -240,7 +283,7 @@ body {
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 class="text-xl font-bold text-textDark">Student Home</h1>
-          <p class="text-sm text-textMuted mt-0.5">Welcome back, Alex. Your learning progress is organized and ready for today.</p>
+          <p class="text-sm text-textMuted mt-0.5">Welcome back, <%= studentFullName %>. Your learning progress is organized and ready for today.</p>
         </div>
         <div class="flex items-center gap-4">
           <span class="text-xs text-textMuted border border-border rounded-full px-3 py-1">Active Student</span>
@@ -257,23 +300,23 @@ body {
         <div class="student-stats grid grid-cols-4 gap-5 mb-8 fade-in">
           <div class="warm-card p-5 stat-card">
             <p class="text-xs text-textMuted mb-1">Active Courses</p>
-            <p class="text-2xl font-bold text-primary">4</p>
+            <p class="text-2xl font-bold text-primary"><%= enrolledCount %></p>
             <p class="text-xs text-textMuted mt-1">Courses currently joined</p>
           </div>
           <div class="warm-card p-5 stat-card">
             <p class="text-xs text-textMuted mb-1">Pending Tasks</p>
-            <p class="text-2xl font-bold text-accent">9</p>
+            <p class="text-2xl font-bold text-accent"><%= pendingTaskCount %></p>
             <p class="text-xs text-textMuted mt-1">Tasks still waiting for action</p>
           </div>
           <div class="warm-card p-5 stat-card">
             <p class="text-xs text-textMuted mb-1">Completion Rate</p>
-            <p class="text-2xl font-bold text-primary">76%</p>
+            <p class="text-2xl font-bold text-primary"><%= (int)completionRate %>%</p>
             <p class="text-xs text-textMuted mt-1">Overall task completion</p>
           </div>
           <div class="warm-card p-5 stat-card">
-            <p class="text-xs text-textMuted mb-1">Planned Time</p>
-            <p class="text-2xl font-bold text-accent">18.5h</p>
-            <p class="text-xs text-textMuted mt-1">From SubTask plans</p>
+            <p class="text-xs text-textMuted mb-1">Study Time</p>
+            <p class="text-2xl font-bold text-accent"><%= enrolledCount %></p>
+            <p class="text-xs text-textMuted mt-1">Courses enrolled</p>
           </div>
         </div>
 
@@ -286,40 +329,22 @@ body {
             <div class="warm-card p-6 fade-in-d1">
               <h2 class="text-base font-bold text-textDark mb-4">Today's Focus</h2>
               <div class="space-y-3">
-                <div class="flex items-center justify-between gap-4 p-3 rounded-lg bg-cream/60 border border-border/60">
-                  <div>
-                    <p class="text-sm font-semibold text-textDark">Database ER Diagram Review</p>
-                    <p class="text-xs text-textMuted mt-0.5">Database Systems</p>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs text-textMuted">Today</span>
-                    <span class="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">In Progress</span>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between gap-4 p-3 rounded-lg bg-cream/60 border border-border/60">
-                  <div>
-                    <p class="text-sm font-semibold text-textDark">Network VLAN Report</p>
-                    <p class="text-xs text-textMuted mt-0.5">Computer Networks</p>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs text-textMuted">Tomorrow</span>
-                    <span class="text-xs bg-border text-textMuted px-2 py-0.5 rounded-full font-medium">Not Started</span>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between gap-4 p-3 rounded-lg bg-cream/60 border border-border/60">
-                  <div>
-                    <p class="text-sm font-semibold text-textDark">Literature Defense Notes</p>
-                    <p class="text-xs text-textMuted mt-0.5">Academic English</p>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs text-textMuted">Friday</span>
-                    <span class="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">In Progress</span>
-                  </div>
-                </div>
+                <% if (upcomingDeadlines != null && !upcomingDeadlines.isEmpty()) {
+                     for (StudentSubTask sst : upcomingDeadlines) {
+                       String dl = sst.getDeadline() != null ? sst.getDeadline().toString().substring(0, 10) : "";
+                       String sstLabel = "IN_PROGRESS".equals(sst.getStatus()) ? "In Progress" : ("NOT_STARTED".equals(sst.getStatus()) ? "Not Started" : sst.getStatus());
+                       String sstStyle = "IN_PROGRESS".equals(sst.getStatus()) ? "bg-accent/15 text-accent" : "bg-border text-textMuted";
+                %>
+                   <div class="flex items-center justify-between gap-4 p-3 rounded-lg bg-cream/60 border border-border/60">
+                     <div><p class="text-sm font-semibold text-textDark"><%= sst.getMainTaskTitle() %></p><p class="text-xs text-textMuted mt-0.5"><%= sst.getCourseName() != null ? sst.getCourseName() : "" %></p></div>
+                     <div class="flex items-center gap-3"><span class="text-xs text-textMuted"><%= dl %></span><span class="text-xs <%= sstStyle %> px-2 py-0.5 rounded-full font-medium"><%= sstLabel %></span></div>
+                   </div>
+                <%   }
+                   } else { %><p class="text-xs text-textMuted text-center py-4">No pending tasks.</p><% } %>
               </div>
               <div class="flex gap-3 mt-5 flex-wrap">
-                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-primary">View My Tasks</a>
-                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="action-btn action-btn-secondary">Update Progress</a>
+                <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="action-btn action-btn-primary">View My Tasks</a>
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="action-btn action-btn-secondary">Record Study Session</a>
               </div>
             </div>
 
@@ -327,107 +352,53 @@ body {
             <div class="warm-card p-6 fade-in-d2">
               <h2 class="text-base font-bold text-textDark mb-4">Course Progress</h2>
               <div class="space-y-5">
-                <div>
-                  <div class="flex items-center justify-between mb-1.5">
-                    <p class="text-sm font-semibold text-textDark">Database Systems</p>
-                    <span class="text-xs font-semibold text-primary">82%</span>
-                  </div>
-                  <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 82%;"></div>
-                  </div>
-                  <p class="text-xs text-textMuted mt-1.5">MainTask 03 · Database Design - Complete SubTask review checklist</p>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between mb-1.5">
-                    <p class="text-sm font-semibold text-textDark">Computer Networks</p>
-                    <span class="text-xs font-semibold text-accent">64%</span>
-                  </div>
-                  <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                    <div class="h-full bg-accent rounded-full progress-bar" style="--target-width: 64%;"></div>
-                  </div>
-                  <p class="text-xs text-textMuted mt-1.5">Assignment 2 · Packet Tracer Report - Upload screenshots and final configuration notes</p>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between mb-1.5">
-                    <p class="text-sm font-semibold text-textDark">Academic English</p>
-                    <span class="text-xs font-semibold text-primary">71%</span>
-                  </div>
-                  <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 71%;"></div>
-                  </div>
-                  <p class="text-xs text-textMuted mt-1.5">Oral Defense Preparation - Review thesis argument and key references</p>
-                </div>
+                <% if (enrolledCourses != null && !enrolledCourses.isEmpty()) {
+                     for (Course c : enrolledCourses) { %>
+                       <div>
+                         <div class="flex items-center justify-between mb-1.5"><p class="text-sm font-semibold text-textDark"><%= c.getCourseName() %></p><span class="text-xs font-semibold text-primary"><%= c.getCourseCode() %></span></div>
+                         <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 60%;"></div></div>
+                         <p class="text-xs text-textMuted mt-1.5"><%= c.getSemester() %></p>
+                       </div>
+                <%   }
+                   } else { %><p class="text-xs text-textMuted text-center py-4">No courses enrolled.</p><% } %>
               </div>
             </div>
 
-            <!-- SubTask Plan Snapshot -->
+            <!-- Task Progress Overview -->
             <div class="warm-card p-6 fade-in-d3">
-              <h2 class="text-base font-bold text-textDark mb-4">SubTask Plan Snapshot</h2>
+              <h2 class="text-base font-bold text-textDark mb-4">Task Progress Overview</h2>
               <div class="flex items-end justify-between gap-3 h-[150px]">
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);">
-                    <div class="w-full rounded-t" style="height: 62%; background: #3F5F46;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Mon</span>
-                  <span class="text-xs text-textDark font-medium">2.5h</span>
-                </div>
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);">
-                    <div class="w-full rounded-t" style="height: 75%; background: #3F5F46;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Tue</span>
-                  <span class="text-xs text-textDark font-medium">3.0h</span>
-                </div>
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(183, 110, 69, 0.16);">
-                    <div class="w-full rounded-t" style="height: 38%; background: #B76E45;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Wed</span>
-                  <span class="text-xs text-textDark font-medium">1.5h</span>
-                </div>
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);">
-                    <div class="w-full rounded-t" style="height: 100%; background: #3F5F46;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Thu</span>
-                  <span class="text-xs text-textDark font-medium">4.0h</span>
-                </div>
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(183, 110, 69, 0.16);">
-                    <div class="w-full rounded-t" style="height: 50%; background: #B76E45;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Fri</span>
-                  <span class="text-xs text-textDark font-medium">2.0h</span>
-                </div>
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);">
-                    <div class="w-full rounded-t" style="height: 88%; background: #3F5F46;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Sat</span>
-                  <span class="text-xs text-textDark font-medium">3.5h</span>
-                </div>
-                <div class="flex flex-col items-center flex-1">
-                  <div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(183, 110, 69, 0.16);">
-                    <div class="w-full rounded-t" style="height: 50%; background: #B76E45;"></div>
-                  </div>
-                  <span class="text-xs text-textMuted mt-2">Sun</span>
-                  <span class="text-xs text-textDark font-medium">2.0h</span>
-                </div>
+                <% int completedCnt = pendingTaskCount; int totalCnt = pendingTaskCount + (int)(completionRate * pendingTaskCount / 100);
+                   int notStarted = pendingTaskCount; int inProgress = 0; int completed = 0;
+                   try {
+                       notStarted = taskService.getTasksByStudentId(studentId, null, null, "NOT_STARTED").size();
+                       inProgress = taskService.getTasksByStudentId(studentId, null, null, "IN_PROGRESS").size();
+                       completed = taskService.getTasksByStudentId(studentId, null, null, "COMPLETED").size();
+                       totalCnt = notStarted + inProgress + completed;
+                   } catch (Exception ex) {}
+                   int maxH = 86;
+                   int nsH = totalCnt > 0 ? maxH * notStarted / Math.max(totalCnt, 1) : 0;
+                   int ipH = totalCnt > 0 ? maxH * inProgress / Math.max(totalCnt, 1) : 0;
+                   int cmH = totalCnt > 0 ? maxH * completed / Math.max(totalCnt, 1) : 0;
+                %>
+                <div class="flex flex-col items-center flex-1"><div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(183, 110, 69, 0.16);"><div class="w-full rounded-t" style="height: <%= nsH %>px; background: #B76E45;"></div></div><span class="text-xs text-textMuted mt-2">待开始</span><span class="text-xs text-textDark font-medium"><%= notStarted %></span></div>
+                <div class="flex flex-col items-center flex-1"><div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);"><div class="w-full rounded-t" style="height: <%= ipH %>px; background: #3F5F46;"></div></div><span class="text-xs text-textMuted mt-2">进行中</span><span class="text-xs text-textDark font-medium"><%= inProgress %></span></div>
+                <div class="flex flex-col items-center flex-1"><div class="w-full rounded-t overflow-hidden flex items-end" style="height: 86px; background: rgba(63, 95, 70, 0.16);"><div class="w-full rounded-t" style="height: <%= cmH %>px; background: #3F5F46;"></div></div><span class="text-xs text-textMuted mt-2">已完成</span><span class="text-xs text-textDark font-medium"><%= completed %></span></div>
               </div>
             </div>
           </div>
 
           <!-- Right Column: Deadlines + Quick Actions + Profile -->
-          <div class="space-y-6">
+          <div class="student-aside space-y-6">
 
             <!-- Profile Summary -->
             <div class="warm-card p-5 fade-in-d1">
               <h3 class="text-sm font-bold text-textDark mb-3">Profile Summary</h3>
               <div class="space-y-2 text-sm">
-                <div class="flex justify-between"><span class="text-textMuted">Name</span><span class="text-textDark font-medium">Alex Chen</span></div>
+                <div class="flex justify-between"><span class="text-textMuted">Name</span><span class="text-textDark font-medium"><%= studentFullName %></span></div>
                 <div class="flex justify-between"><span class="text-textMuted">Role</span><span class="text-textDark font-medium">Student</span></div>
-                <div class="flex justify-between"><span class="text-textMuted">Student ID</span><span class="text-textDark font-medium">STU-2026-0148</span></div>
-                <div class="flex justify-between"><span class="text-textMuted">Joined Courses</span><span class="text-textDark font-medium">4</span></div>
+                <div class="flex justify-between"><span class="text-textMuted">Student ID</span><span class="text-textDark font-medium"><%= session.getAttribute("roleDetail") instanceof com.studypal.model.Student ? ((com.studypal.model.Student)session.getAttribute("roleDetail")).getStudentNo() : "N/A" %></span></div>
+                <div class="flex justify-between"><span class="text-textMuted">Joined Courses</span><span class="text-textDark font-medium"><%= enrolledCount %></span></div>
                 <div class="flex justify-between"><span class="text-textMuted">Status</span><span class="text-primary font-medium">Verified</span></div>
               </div>
               <div class="mt-4 pt-3 border-t border-border">
@@ -437,7 +408,7 @@ body {
                   <line x1="38" y1="10" x2="50" y2="10" stroke="#3F5F46" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite;"/>
                   <text x="54" y="13" class="font-pixel" font-size="6" fill="#B76E45">Task</text>
                   <line x1="78" y1="10" x2="90" y2="10" stroke="#B76E45" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite; animation-delay:0.3s;"/>
-                  <text x="94" y="13" class="font-pixel" font-size="6" fill="#3F5F46">Plan</text>
+                  <text x="94" y="13" class="font-pixel" font-size="6" fill="#3F5F46">Session</text>
                   <line x1="136" y1="10" x2="148" y2="10" stroke="#3F5F46" stroke-width="1" stroke-dasharray="3 2" style="animation: dash-flow 2s linear infinite; animation-delay:0.6s;"/>
                   <text x="152" y="13" class="font-pixel" font-size="6" fill="#B76E45">Dash</text>
                 </svg>
@@ -448,37 +419,14 @@ body {
             <div class="warm-card p-5 fade-in-d2">
               <h3 class="text-sm font-bold text-textDark mb-3">Upcoming Deadlines</h3>
               <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <span class="w-2 h-2 rounded-full bg-accent mt-1.5 flex-shrink-0"></span>
-                  <div>
-                    <p class="text-xs font-semibold text-accent">Today</p>
-                    <p class="text-sm text-textDark">Database ER Diagram Review</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <span class="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
-                  <div>
-                    <p class="text-xs font-semibold text-primary">Tomorrow</p>
-                    <p class="text-sm text-textDark">Network VLAN Report</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <span class="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
-                  <div>
-                    <p class="text-xs font-semibold text-primary">Friday</p>
-                    <p class="text-sm text-textDark">Academic English Defense Notes</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <span class="w-2 h-2 rounded-full bg-textMuted mt-1.5 flex-shrink-0"></span>
-                  <div>
-                    <p class="text-xs font-semibold text-textMuted">Next Monday</p>
-                    <p class="text-sm text-textDark">SubTask Plan Summary</p>
-                  </div>
+                <% if (upcomingDeadlines != null && !upcomingDeadlines.isEmpty()) {
+                     for (StudentSubTask sst : upcomingDeadlines) {
+                       String dl = sst.getDeadline() != null ? sst.getDeadline().toString().substring(0, 10) : "N/A"; %>
+                       <div class="flex items-start gap-3"><span class="w-2 h-2 rounded-full bg-accent mt-1.5 flex-shrink-0"></span><div><p class="text-xs font-semibold text-accent"><%= dl %></p><p class="text-sm text-textDark"><%= sst.getMainTaskTitle() %></p></div></div>
+                <%   }
+                   } else { %><p class="text-xs text-textMuted text-center py-2">No upcoming deadlines.</p><% } %>
                 </div>
               </div>
-            </div>
-
             <!-- Quick Actions -->
             <div class="warm-card p-5 fade-in-d3">
               <h3 class="text-sm font-bold text-textDark mb-3">Quick Actions</h3>
@@ -487,13 +435,13 @@ body {
                   <p class="text-sm font-semibold text-primary">Join a Course</p>
                   <p class="text-xs text-textMuted mt-0.5">Add a course using a course code from your lecturer.</p>
                 </a>
-                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-primary hover:bg-cream/40 transition-all">
+                <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-primary hover:bg-cream/40 transition-all">
                   <p class="text-sm font-semibold text-primary">View My Tasks</p>
                   <p class="text-xs text-textMuted mt-0.5">Check task status, subtasks, notes, and planned time.</p>
                 </a>
-                <a href="${pageContext.request.contextPath}/sub-tasks?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
-                  <p class="text-sm font-semibold text-accent">Update Progress</p>
-                  <p class="text-xs text-textMuted mt-0.5">Edit task status, plan time, and progress notes.</p>
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
+                  <p class="text-sm font-semibold text-accent">Record Study Session</p>
+                  <p class="text-xs text-textMuted mt-0.5">Save study time and connect it to a course or task.</p>
                 </a>
               </div>
             </div>

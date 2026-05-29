@@ -1,11 +1,69 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.studypal.service.AdminService" %>
+<%@ page import="com.studypal.model.*" %>
+<%@ page import="java.util.List" %>
+<%
+    if (session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/auth.jsp");
+        return;
+    }
+    UserAccount currentUser = (UserAccount) session.getAttribute("user");
+    if (!"ADMIN".equals(currentUser.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission");
+        return;
+    }
+    AdminService adminService = new AdminService();
+    String error = null, success = null;
+
+    String roleFilter = request.getParameter("roleFilter");
+    String keyword = request.getParameter("keyword");
+    if ("All Roles".equals(roleFilter) || "".equals(roleFilter)) roleFilter = null;
+
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        String action = request.getParameter("action");
+        if ("createAccount".equals(action)) {
+            String uname = request.getParameter("username");
+            String email = request.getParameter("email");
+            String pw = request.getParameter("password");
+            String fullName = request.getParameter("fullName");
+            String role = request.getParameter("newRole");
+            String dept = request.getParameter("department");
+            try {
+                String r = adminService.createAccount(uname, email, pw, fullName, role, dept, null, null, null);
+                if (r == null) success = "Account created successfully.";
+                else error = r;
+            } catch (Exception e) { error = "Create failed: " + e.getMessage(); }
+        } else if ("resetPassword".equals(action)) {
+            String uidStr = request.getParameter("userId");
+            String newPw = request.getParameter("newPassword");
+            String targetName = request.getParameter("userName");
+            try {
+                Long uid = Long.parseLong(uidStr);
+                String r = adminService.resetPassword(uid, newPw);
+                if (r == null) success = "已将 " + (targetName != null && !targetName.isEmpty() ? targetName : "该用户") + " 的密码重置为 " + newPw + "。";
+                else error = r;
+            } catch (Exception e) { error = "Reset failed: " + e.getMessage(); }
+        }
+    }
+
+    List<UserAccount> users = null;
+    int[] stats = null;
+    try {
+        users = adminService.getAllUsers(roleFilter, keyword);
+        stats = adminService.getStats();
+    } catch (Exception e) { error = "Failed to load: " + e.getMessage(); }
+    int totalUsers = stats != null ? stats[0] : 0;
+    int studentCount = stats != null ? stats[1] : 0;
+    int lecturerCount = stats != null ? stats[2] : 0;
+    int adminCount = stats != null ? stats[3] : 0;
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin User Management</title>
-<link rel="stylesheet" href="assets/css/workspace.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
 </head>
 <body>
 <div class="workspace-shell">
@@ -27,10 +85,10 @@
     <main class="workspace-content"><div class="content-inner">
       <section class="hero-card fade-in"><p class="eyebrow">ACCOUNT CONTROL</p><h2>Manage registered StudyPal users.</h2></section>
       <section class="stats-grid fade-in-d1">
-        <div class="warm-card stat-card"><p class="stat-label">Total Users</p><p class="stat-value">128</p><p class="stat-hint">All registered accounts</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent">112</p><p class="stat-hint">Public registration</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value">14</p><p class="stat-hint">Created by admins</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Admins</p><p class="stat-value accent">2</p><p class="stat-hint">Administrator accounts</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Total Users</p><p class="stat-value"><%= totalUsers %></p><p class="stat-hint">All registered accounts</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent"><%= studentCount %></p><p class="stat-hint">Registered students</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value"><%= lecturerCount %></p><p class="stat-hint">Teaching staff</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Admins</p><p class="stat-value accent"><%= adminCount %></p><p class="stat-hint">System administrators</p></div>
       </section>
       <section class="management-grid">
         <div class="warm-card fade-in-d2">
@@ -38,50 +96,49 @@
             <h2>Registered Users</h2>
             <a class="action-btn action-btn-secondary" href="#create-account">Create Account</a>
           </div>
-          <form class="filter-bar" data-ui-message="Filters applied.">
-            <div><label>Search</label><input name="keyword" placeholder="Name, username, or email"></div>
-            <div><label>Role</label><select name="role"><option>All Roles</option><option>STUDENT</option><option>LECTURER</option><option>ADMIN</option></select></div>
+          <form class="filter-bar" method="GET" action="${pageContext.request.contextPath}/admin-users.jsp">
+            <div><label>Search</label><input name="keyword" value="<%= keyword != null ? keyword : "" %>" placeholder="Name, username, or email"></div>
+            <div><label>Role</label><select name="roleFilter"><option value="">All Roles</option><option value="STUDENT" <%= "STUDENT".equals(roleFilter) ? "selected" : "" %>>STUDENT</option><option value="LECTURER" <%= "LECTURER".equals(roleFilter) ? "selected" : "" %>>LECTURER</option><option value="ADMIN" <%= "ADMIN".equals(roleFilter) ? "selected" : "" %>>ADMIN</option></select></div>
             <button class="action-btn action-btn-primary" type="submit">Apply</button>
           </form>
+          <% if (error != null) { %><div style="margin:12px 0;padding:12px;border-radius:8px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;font-size:13px;"><%= error %></div><% } %>
+          <% if (success != null) { %><div style="margin:12px 0;padding:12px;border-radius:8px;background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;font-size:13px;"><%= success %></div><% } %>
           <div class="table-like">
-            <div class="soft-card user-row">
-              <div class="user-meta"><p class="strong-title">Alex Chen</p><span class="muted">alexchen</span></div>
-              <span class="badge">STUDENT</span>
-              <span class="muted">alexchen@studypal.test</span>
-              <span class="muted">Joined DB2026, SE2026</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Alex Chen?">Update Password</button></div>
-            </div>
-            <div class="soft-card user-row">
-              <div class="user-meta"><p class="strong-title">Dr. Sarah Johnson</p><span class="muted">sjohnson</span></div>
-              <span class="badge accent">LECTURER</span>
-              <span class="muted">sjohnson@studypal.test</span>
-              <span class="muted">Owns SE2026</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Dr. Sarah Johnson?">Update Password</button></div>
-            </div>
-            <div class="soft-card user-row">
-              <div class="user-meta"><p class="strong-title">Nina Roy</p><span class="muted">ninaroy</span></div>
-              <span class="badge">STUDENT</span>
-              <span class="muted">ninaroy@studypal.test</span>
-              <span class="muted">No active courses</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for Nina Roy?">Update Password</button></div>
-            </div>
-            <div class="soft-card user-row">
-              <div class="user-meta"><p class="strong-title">System Admin</p><span class="muted">admin</span></div>
-              <span class="badge muted">ADMIN</span>
-              <span class="muted">admin@studypal.test</span>
-              <span class="muted">System owner</span>
-              <div class="button-row"><button class="action-btn action-btn-secondary" type="button" data-confirm="Generate a temporary password for System Admin?">Update Password</button></div>
-            </div>
+            <% if (users != null && !users.isEmpty()) {
+                 for (UserAccount u : users) {
+                   String badgeClass = "STUDENT".equals(u.getRole()) ? "badge" : ("LECTURER".equals(u.getRole()) ? "badge accent" : "badge muted");
+            %>
+                   <div class="soft-card user-row">
+                     <div class="user-meta"><p class="strong-title"><%= u.getFullName() %></p><span class="muted"><%= u.getUsername() %></span></div>
+                     <span class="<%= badgeClass %>"><%= u.getRole() %></span>
+                     <span class="muted"><%= u.getEmail() %></span>
+                     <span class="muted">ID: <%= u.getUserId() %></span>
+                     <div class="button-row">
+                       <form method="post" action="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN" style="display:inline;">
+                         <input type="hidden" name="action" value="resetPassword">
+                         <input type="hidden" name="userId" value="<%= u.getUserId() %>">
+                         <input type="hidden" name="userName" value="<%= u.getFullName() %>">
+                         <input type="hidden" name="newPassword" value="studypal123">
+                         <button class="action-btn action-btn-secondary" type="submit">重置该用户密码为 studypal123</button>
+                       </form>
+                     </div>
+                   </div>
+            <%   }
+               } else { %>
+                 <div class="soft-card"><p class="muted" style="text-align:center;padding:20px;">No users found.</p></div>
+            <% } %>
           </div>
         </div>
         <aside class="warm-card fade-in-d3" id="create-account">
           <h2>Create Managed Account</h2>
-          <form class="form-stack" data-ui-message="Account saved.">
-            <div><label>Full Name</label><input name="fullName" placeholder="Dr. Emily Carter"></div>
-            <div><label>Email</label><input name="email" type="email" placeholder="name@studypal.test"></div>
-            <div><label>Username</label><input name="username" placeholder="ecarter"></div>
-            <div><label>Role</label><select name="role"><option>LECTURER</option><option>ADMIN</option><option>STUDENT</option></select></div>
-            <div><label>Initial Password</label><input name="password" type="password" placeholder="Temporary password"></div>
+          <form class="form-stack" method="post" action="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN">
+            <input type="hidden" name="action" value="createAccount">
+            <div><label>Full Name</label><input name="fullName" placeholder="Dr. Emily Carter" required></div>
+            <div><label>Email</label><input name="email" type="email" placeholder="name@studypal.test" required></div>
+            <div><label>Username</label><input name="username" placeholder="ecarter" required></div>
+            <div><label>Role</label><select name="newRole" required><option value="LECTURER">LECTURER</option><option value="ADMIN">ADMIN</option><option value="STUDENT">STUDENT</option></select></div>
+            <div><label>Department</label><input name="department" placeholder="e.g. Computer Science"></div>
+            <div><label>Initial Password</label><input name="password" type="password" placeholder="Temporary password" required></div>
             <button class="action-btn action-btn-primary" type="submit">Create Account</button>
           </form>
         </aside>
@@ -89,6 +146,6 @@
     </div></main>
   </div>
 </div>
-<script src="assets/js/app.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
 </body>
 </html>

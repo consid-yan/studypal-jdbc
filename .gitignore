@@ -1,4 +1,7 @@
 target/
+CLAUDE.md
+src/main/resources/studypal-local.properties
+studypal-local.properties
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

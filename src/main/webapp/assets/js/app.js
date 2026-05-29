@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         form.addEventListener("submit", function (event) {
             if (form.dataset.studentUrl) {
                 event.preventDefault();
-                window.alert("学生账号创建成功，角色为 STUDENT。");
+                window.alert("The student account has been successfully created with the role STUDENT.");
                 window.location.href = form.dataset.studentUrl;
             }
         });
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var end = form.querySelector("[data-end-time]");
             if (start && end && start.value && end.value && start.value >= end.value) {
                 event.preventDefault();
-                window.alert("结束时间必须晚于开始时间。");
+                window.alert("The end time must be later than the start time.");
             }
         });
     });

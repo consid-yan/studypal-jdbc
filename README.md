@@ -1,45 +1,30 @@
-# StudyPal Frontend
+# StudyPal JDBC
 
-This repository has been cleaned down to the documentation archive and the frontend work that can be reused for a fresh rebuild.
+## Local AI config
 
-## What Remains
+AI sub-task generation is configured locally. The real API key should not be committed.
 
-```text
-StudyPal/
-+-- docs/                 Lightweight rebuild/reference documents
-+-- preview/              Runnable static frontend preview pages
-+-- src/main/webapp/      JSP-era frontend templates plus shared CSS/JS assets
-+-- 前端设计/              Original standalone frontend design drafts
-+-- LICENSE
-+-- README.md
-```
+1. Copy the template:
 
-The Java backend, JDBC DAO/service/servlet code, SQL scripts, Maven project files, CI configuration, build output, and old report documents have been removed so the project can be rebuilt from a clean slate.
+   ```bash
+   cp src/main/resources/studypal-local.properties.example src/main/resources/studypal-local.properties
+   ```
 
-## Documents
+2. Fill in these values in `src/main/resources/studypal-local.properties`:
 
-- `docs/studypal-reference.md`: merged project reference with useful product, data-model, workflow, and rebuild notes.
-- `docs/frontend-backend-integration-guide.md`: detailed frontend/backend page and Servlet integration guide.
+   ```properties
+   studypal.ai.apiUrl=https://your-ai-provider-base-url
+   studypal.ai.apiKey=your-api-key
+   studypal.ai.model=your-model-name
+   ```
 
-## Run The Frontend Preview
+3. Restart the application.
 
-The most reliable runnable frontend entrypoint is the static preview:
+The application also supports JVM properties and environment variables. Precedence is:
 
-```bash
-python3 -m http.server 5173
-```
+1. JVM properties, such as `-Dstudypal.ai.apiKey=...`
+2. Environment variables, such as `STUDYPAL_AI_API_KEY`
+3. `src/main/resources/studypal-local.properties`
+4. Built-in defaults
 
-Then open:
-
-```text
-http://localhost:5173/preview/index.html
-```
-
-Most preview pages are plain HTML and navigate to each other within `preview/`. Several shared workspace pages still reuse CSS/JS from `src/main/webapp/assets`, so start the static server from the repository root and keep `src/main/webapp` next to `preview` unless those assets are copied into a new frontend structure later.
-
-## Notes For Rebuild
-
-- Treat `preview/` as the current runnable UI prototype.
-- Treat `src/main/webapp/` as reusable frontend source from the old JSP application.
-- Treat `docs/` as lightweight rebuild reference, not as active backend source.
-- A new backend can be created independently without needing to preserve the removed Java/JDBC/Maven layout.
+When AI config is missing or the API call fails, StudyPal still creates the task and falls back to one default sub-task.
