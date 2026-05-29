@@ -81,7 +81,7 @@
       <section class="stats-grid fade-in-d1">
         <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value"><%= totalCourses %></p><p class="stat-hint">Current semester</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value accent"><%= totalLecturers %></p><p class="stat-hint">Registered lecturer accounts</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent"><%= totalEnrollments %></p><p class="stat-hint">Enrolled across all courses</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= totalEnrollments %></p><p class="stat-hint">选课记录总数（含同一学生多门课，非去重人数）</p></div>
       </section>
       <section class="panel-grid">
         <div class="warm-card fade-in-d2">

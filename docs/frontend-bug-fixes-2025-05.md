@@ -101,6 +101,24 @@
 
 ---
 
+### 7. 管理员统计口径误导 (`admin-courses.jsp`、`admin-home.jsp`)
+
+**问题**
+- 课程管理页 (`admin-courses.jsp`) "Students" 卡片的数值实际取自 `getTotalEnrollmentCount()`（`SELECT COUNT(*) FROM ENROLLMENT`），即选课记录总数。一个学生选 N 门课会被计 N 次，标签写 "Students" 直接误导成"学生人数"。
+- 首页 (`admin-home.jsp`) "Enrollments" 卡片同样是选课记录数，hint "Across all courses" 未说明它不是去重学生数。
+
+**根本原因**
+选课记录数（enrollment 行数）被当作学生人数展示。纯前端无法拿到去重学生数（`CourseService` 无对应方法），故只纠正语义、不伪造数据。
+
+**修复**
+- `admin-courses.jsp`：标签 "Students" → "Enrollments"，hint 改为"选课记录总数（含同一学生多门课，非去重人数）"。
+- `admin-home.jsp`：标签 "Enrollments" 保持不变，hint "Across all courses" → "选课记录总数（非去重学生数）"。
+- 标签保持英文，仅在 hint 用中文明确口径。
+- 注：首页 Users 卡片 hint 中的 `<%= stu %> students`（取自 `USER_ACCOUNT GROUP BY role`）才是真实去重学生数，未改动。
+- 遗留：课程管理页若要展示真实去重学生数，需后端在 `CourseService` 新增 `SELECT COUNT(DISTINCT student_id) FROM ENROLLMENT` 方法，属后端工作。
+
+---
+
 ## 测试说明
 
 1. **注册流程**：密码不一致/邮箱重复/用户名重复 → 保留注册表单，对应字段清空，中文提示。
@@ -110,3 +128,4 @@
 5. **CSV 导出**：讲师任务详情页点击 "Export CSV"，下载文件用 Excel 打开中文不乱码。
 6. **Follow Up/View**：点击按钮后页面平滑滚动至对应学生行并短暂绿色高亮。
 7. **管理员重置**：重置密码后提示"已将 xxx 的密码重置为 studypal123。"。
+8. **统计口径**：构造 1 个学生选 2 门课，课程管理页 "Enrollments" 显示 2 且 hint 说明非去重；用户管理页/首页 Users 卡片仍显示真实学生数 1。
