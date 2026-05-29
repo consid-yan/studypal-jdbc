@@ -1,9 +1,15 @@
 package com.studypal.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.*;
+import java.util.Properties;
 
 public class DBUtils {
 
+    private static final Properties LOCAL_CONFIG = loadLocalConfig();
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = config("studypal.db.url", "STUDYPAL_DB_URL",
             "jdbc:mysql://localhost:3306/studypal_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8");
@@ -35,7 +41,30 @@ public class DBUtils {
         if (envValue != null && !envValue.isBlank()) {
             return envValue;
         }
+        String localValue = LOCAL_CONFIG.getProperty(propertyName);
+        if (localValue != null && !localValue.isBlank()) {
+            return localValue;
+        }
         return defaultValue;
+    }
+
+    private static Properties loadLocalConfig() {
+        Properties props = new Properties();
+        String customConfigPath = System.getProperty("studypal.config");
+        if (customConfigPath != null && !customConfigPath.isBlank()) {
+            try (InputStream in = Files.newInputStream(Path.of(customConfigPath))) {
+                props.load(in);
+                return props;
+            } catch (IOException ignored) {}
+        }
+
+        try (InputStream in = DBUtils.class.getClassLoader()
+                .getResourceAsStream("studypal-local.properties")) {
+            if (in != null) {
+                props.load(in);
+            }
+        } catch (IOException ignored) {}
+        return props;
     }
 
     public static void close(ResultSet rs, Statement st, Connection conn) {

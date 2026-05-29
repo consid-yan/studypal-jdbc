@@ -1,0 +1,14 @@
+# Copy this file to src/main/resources/studypal-local.properties
+# Fill in your own values. Do not commit the copied file.
+
+# Database config. Keep the defaults if your local MySQL uses these values.
+studypal.db.url=jdbc:mysql://localhost:3306/studypal_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+studypal.db.user=root
+studypal.db.password=
+
+# AI config. Use an OpenAI-compatible chat completions endpoint.
+# Example base URL format: https://api.example.com
+# The code will append /chat/completions automatically when needed.
+studypal.ai.apiUrl=
+studypal.ai.apiKey=
+studypal.ai.model=
