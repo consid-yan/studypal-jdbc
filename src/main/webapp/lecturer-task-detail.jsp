@@ -100,7 +100,7 @@
                      <div class="student-progress-cell"><div class="progress-track"><div class="progress-fill <%= badgeClass.contains("accent") ? "accent" : "" %>" style="--target-width:<%= pct %>%"></div></div></div>
                      <span class="muted student-progress-pct"><%= pct %>%</span>
                      <span class="muted">--</span>
-                     <button class="<%= btnClass %>" type="button" data-focus-student="student-progress-<%= sp.getStudentId() %>"><%= btnLabel %></button>
+                     <button class="<%= btnClass %>" type="button" data-followup-name="<%= sp.getStudentName() %>" data-followup-email="<%= sp.getStudentEmail() != null ? sp.getStudentEmail() : "" %>" data-followup-task="<%= task != null && task.getTitle() != null ? task.getTitle() : "" %>"><%= btnLabel %></button>
                    </div>
             <%   }
                } else { %>
@@ -168,19 +168,25 @@
     });
   }
 
-  document.querySelectorAll('[data-focus-student]').forEach(function (button) {
+  document.querySelectorAll('[data-followup-email]').forEach(function (button) {
     button.addEventListener('click', function () {
-      var row = document.getElementById(button.getAttribute('data-focus-student'));
-      if (!row) {
+      var name = button.getAttribute('data-followup-name') || 'this student';
+      var email = (button.getAttribute('data-followup-email') || '').trim();
+      var taskTitle = button.getAttribute('data-followup-task') || '';
+      if (!email) {
+        window.alert('No email on file for ' + name + '. Unable to start a follow-up.');
         return;
       }
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.style.outline = '2px solid #3F5F46';
-      row.style.outlineOffset = '2px';
-      window.setTimeout(function () {
-        row.style.outline = '';
-        row.style.outlineOffset = '';
-      }, 1800);
+      var proceed = window.confirm('Follow up with ' + name + ' (' + email + ')?\n\nClick OK to open your email client.');
+      if (!proceed) {
+        return;
+      }
+      var subject = 'StudyPal follow-up' + (taskTitle ? ': ' + taskTitle : '');
+      var body = 'Hi ' + name + ',\n\nI noticed your progress on "' + taskTitle + '" is falling behind. '
+        + 'Let me know if you need any help catching up.\n\nBest regards';
+      window.location.href = 'mailto:' + encodeURIComponent(email)
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
     });
   });
 })();

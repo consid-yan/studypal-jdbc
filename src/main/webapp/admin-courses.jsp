@@ -87,7 +87,7 @@
         <div class="warm-card fade-in-d2">
           <div class="row-between">
             <h2>Courses</h2>
-            <a class="action-btn action-btn-secondary" href="#course-form">Add Course</a>
+            <button class="action-btn action-btn-secondary" type="button" data-toggle-target="course-form" data-toggle-label-expanded="Cancel"><%= (error != null) ? "Cancel" : "Add Course" %></button>
           </div>
           <div class="table-like">
             <% if (courses != null && !courses.isEmpty()) {
@@ -96,7 +96,6 @@
                      <div><p class="strong-title"><%= c.getCourseName() %></p><p class="muted"><%= c.getCourseCode() %> · <%= c.getSemester() %></p></div>
                      <span class="muted"><%= c.getLecturerName() != null ? c.getLecturerName() : "N/A" %></span>
                      <span class="badge"><%= c.getEnrollmentCount() %> students</span>
-                     <a class="action-btn action-btn-secondary" href="#course-form">Edit</a>
                    </div>
             <%   }
                } else { %>
@@ -104,7 +103,7 @@
             <% } %>
           </div>
         </div>
-        <aside class="warm-card fade-in-d3" id="course-form">
+        <aside class="warm-card fade-in-d3" id="course-form" style="display:<%= (error != null) ? "" : "none" %>;">
           <h2>Create Course</h2>
           <% if (error != null) { %>
             <div style="margin-bottom:16px;padding:12px;border-radius:8px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;font-size:13px;"><%= error %></div>

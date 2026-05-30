@@ -400,7 +400,7 @@ body {
                                <p class="text-xs text-textMuted"><%= taskItems.size() %> sub-tasks</p>
                              </div>
                              <% if (firstTask.getMainTaskId() != null) { %>
-                               <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= firstTask.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-primary border border-border rounded-lg hover:border-primary transition-all font-medium">View Main Task</a>
+                               <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= firstTask.getMainTaskId() %>" class="px-3 py-1.5 text-xs text-primary border border-border rounded-lg hover:border-primary transition-all font-medium">View Task Detail</a>
                              <% } %>
                            </div>
                            <div class="space-y-3">

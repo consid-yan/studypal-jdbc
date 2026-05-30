@@ -53,6 +53,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    document.querySelectorAll("[data-toggle-target]").forEach(function (button) {
+        var target = document.getElementById(button.getAttribute("data-toggle-target"));
+        if (!target) {
+            return;
+        }
+        var expandedLabel = button.getAttribute("data-toggle-label-expanded");
+        var collapsedLabel = button.textContent;
+        button.addEventListener("click", function () {
+            var isHidden = target.style.display === "none" || target.style.display === "";
+            if (isHidden) {
+                target.style.display = "";
+                if (expandedLabel) {
+                    button.textContent = expandedLabel;
+                }
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+                var firstField = target.querySelector("input, select, textarea");
+                if (firstField) {
+                    firstField.focus();
+                }
+            } else {
+                target.style.display = "none";
+                button.textContent = collapsedLabel;
+            }
+        });
+    });
+
     document.querySelectorAll("[data-fill-form]").forEach(function (button) {
         button.addEventListener("click", function () {
             var target = document.querySelector(button.getAttribute("data-fill-form"));

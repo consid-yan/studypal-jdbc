@@ -34,14 +34,14 @@
         <div class="warm-card stat-card"><p class="stat-label">Users</p><p class="stat-value"><%= us %></p><p class="stat-hint"><%= stu %> students / <%= lec %> lecturers</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value accent"><%= cs %></p><p class="stat-hint">All available courses</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Tasks</p><p class="stat-value"><%= ts %></p><p class="stat-hint">All published tasks</p></div>
-        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= en %></p><p class="stat-hint">Course registrations</p></div>
+        <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= en %></p><p class="stat-hint">Total enrollment records, not unique students</p></div>
       </section>
       <section class="warm-card fade-in-d1">
         <h2>System Metrics</h2>
         <div class="table-like">
           <div class="soft-card admin-row"><p class="strong-title">Total Courses</p><span class="muted">Active semester</span><span class="badge"><%= cs %></span><p class="muted">With assigned lecturers</p></div>
           <div class="soft-card admin-row"><p class="strong-title">Total Tasks</p><span class="muted">Published</span><span class="badge accent"><%= ts %></span><p class="muted">Across all courses</p></div>
-          <div class="soft-card admin-row"><p class="strong-title">Total Enrollments</p><span class="muted">Student registrations</span><span class="badge"><%= en %></span><p class="muted">Course selections</p></div>
+          <div class="soft-card admin-row"><p class="strong-title">Total Enrollments</p><span class="muted">Student registrations</span><span class="badge"><%= en %></span><p class="muted">Enrollment records (one student in N courses counts N times)</p></div>
         </div>
       </section>
     </div></main>

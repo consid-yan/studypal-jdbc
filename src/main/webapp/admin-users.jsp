@@ -94,7 +94,7 @@
         <div class="warm-card fade-in-d2">
           <div class="row-between">
             <h2>Registered Users</h2>
-            <a class="action-btn action-btn-secondary" href="#create-account">Create Account</a>
+            <button class="action-btn action-btn-secondary" type="button" data-toggle-target="create-account" data-toggle-label-expanded="Cancel"><%= (success != null || error != null) ? "Cancel" : "Create Account" %></button>
           </div>
           <form class="filter-bar" method="GET" action="${pageContext.request.contextPath}/admin-users.jsp">
             <div><label>Search</label><input name="keyword" value="<%= keyword != null ? keyword : "" %>" placeholder="Name, username, or email"></div>
@@ -129,7 +129,7 @@
             <% } %>
           </div>
         </div>
-        <aside class="warm-card fade-in-d3" id="create-account">
+        <aside class="warm-card fade-in-d3" id="create-account" style="display:<%= (success != null || error != null) ? "" : "none" %>;">
           <h2>Create Managed Account</h2>
           <form class="form-stack" method="post" action="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN">
             <input type="hidden" name="action" value="createAccount">
