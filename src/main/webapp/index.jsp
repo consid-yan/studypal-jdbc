@@ -131,7 +131,7 @@ body {
           A single, clear system where <span class="text-primary font-semibold">students</span>, <span class="text-accent font-semibold">lecturers</span>, and <span class="text-textDark font-semibold">administrators</span> manage courses, tasks, and study progress together.
         </p>
         <p class="text-sm text-textMuted/80 max-w-md">
-          A calm and structured information system for courses, tasks, study sessions, and role-based dashboards.
+          A calm and structured information system for courses, tasks and role-based dashboards.
         </p>
 
         <!-- CTA Button -->

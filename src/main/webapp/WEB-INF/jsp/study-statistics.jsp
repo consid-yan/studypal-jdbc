@@ -9,17 +9,19 @@
     if (!"STUDENT".equals(cu.getRole())) { response.sendRedirect(request.getContextPath() + "/states.jsp?state=no-permission"); return; }
     TaskService ts = new TaskService(); CourseService cs = new CourseService();
     int pending = 0, completed = 0; double rate = 0; List<StudentSubTask> upcoming = null;
-    List<Course> enrolledC = null;
+    List<CourseProgress> courseProgress = null;
     try {
         pending = ts.getPendingTaskCount(cu.getUserId());
         rate = ts.getCompletionRate(cu.getUserId());
         List<StudentSubTask> comp = ts.getTasksByStudentId(cu.getUserId(), null, null, "COMPLETED");
         completed = comp != null ? comp.size() : 0;
         upcoming = ts.getUpcomingDeadlines(cu.getUserId(), 3);
-        enrolledC = cs.getEnrolledCourses(cu.getUserId());
     } catch (Exception ignored) {}
-    int courseCount = enrolledC != null ? enrolledC.size() : 0;
-    String courseHint = enrolledC == null ? "No course data" : (courseCount == 0 ? "Not enrolled in any course" : "Enrolled");
+    try {
+        courseProgress = cs.getStudentCourseProgress(cu.getUserId());
+    } catch (Exception ignored) {}
+    int courseCount = courseProgress != null ? courseProgress.size() : 0;
+    String courseHint = courseProgress == null ? "No course data" : (courseCount == 0 ? "No course progress yet" : "Courses tracked");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,12 +69,12 @@ body{background-color:#F4EBDD;min-height:100vh;overflow-x:hidden}
 <a href="${pageContext.request.contextPath}/student-home.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>Dashboard</a>
 <a href="${pageContext.request.contextPath}/student-courses.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h12v10H2z"/><path d="M5 1v4"/></svg>My Courses</a>
 <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="sidebar-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="1.5"/></svg>My Tasks</a>
-<a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link active"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>Study Sessions</a>
+<a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link active"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>Study Statistics</a>
 <span class="sidebar-link" style="opacity:.6;cursor:not-allowed" title="Open from a specific task"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Task Detail</span>
 </nav>
 </aside>
 <div class="student-main ml-[240px] flex-1">
-<header class="sticky top-0 z-30 bg-cream/90 backdrop-blur border-b border-border px-8 py-4"><div class="flex items-center justify-between"><div><h1 class="text-xl font-bold text-textDark">Study Statistics</h1><p class="text-sm text-textMuted mt-0.5">Track study sessions and learning progress.</p></div><div class="flex items-center gap-4"><span class="text-xs text-textMuted border border-border rounded-full px-3 py-1">Active Student</span><span class="text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1">Spring 2026</span></div></div></header>
+<header class="sticky top-0 z-30 bg-cream/90 backdrop-blur border-b border-border px-8 py-4"><div class="flex items-center justify-between"><div><h1 class="text-xl font-bold text-textDark">Study Statistics</h1><p class="text-sm text-textMuted mt-0.5">Track learning progress.</p></div><div class="flex items-center gap-4"><span class="text-xs text-textMuted border border-border rounded-full px-3 py-1">Active Student</span><span class="text-xs text-primary font-semibold border border-primary/30 rounded-full px-3 py-1">Spring 2026</span></div></div></header>
 <main class="p-8"><div class="max-w-[1160px] mx-auto">
 <div class="study-stats grid grid-cols-4 gap-4 mb-8 fade-in">
 <div class="warm-card p-5"><p class="text-xs text-textMuted mb-1">This Week</p><p class="text-2xl font-bold text-primary"><%= pending %></p><p class="text-xs text-textMuted mt-1">Pending tasks</p></div>
@@ -93,11 +95,26 @@ body{background-color:#F4EBDD;min-height:100vh;overflow-x:hidden}
 </div>
 <div class="warm-card p-6 fade-in-d2"><h2 class="text-base font-bold text-textDark mb-4">Course Progress</h2>
 <div class="space-y-4">
-<% if (enrolledC != null && !enrolledC.isEmpty()) {
-     for (Course c : enrolledC) { %>
-       <div><div class="flex items-center justify-between mb-1"><span class="text-xs text-textMuted"><%= c.getCourseName() %></span><span class="text-xs font-semibold text-primary"><%= c.getCourseCode() %></span></div><div class="w-full h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full" style="width:60%"></div></div></div>
+<% if (courseProgress != null && !courseProgress.isEmpty()) {
+     for (CourseProgress cp : courseProgress) {
+       int coursePct = cp.getCompletionPercentage();
+       String stepSummary = cp.getTotalSteps() > 0
+               ? cp.getCompletedSteps() + " / " + cp.getTotalSteps() + " steps completed"
+               : "No tasks published yet";
+%>
+       <div>
+         <div class="flex items-center justify-between gap-3 mb-1">
+           <span class="text-sm font-semibold text-textDark"><%= cp.getCourseName() %></span>
+           <span class="text-xs font-semibold text-primary"><%= coursePct %>%</span>
+         </div>
+         <div class="flex items-center justify-between gap-3 mb-1.5">
+           <span class="text-xs text-textMuted"><%= cp.getCourseCode() %> · <%= cp.getSemester() != null ? cp.getSemester() : "N/A" %></span>
+           <span class="text-xs text-textMuted"><%= stepSummary %></span>
+         </div>
+         <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full progress-bar" style="--target-width:<%= coursePct %>%"></div></div>
+       </div>
 <%   }
-   } else { %><p class="text-xs text-textMuted py-4">No courses enrolled.</p><% } %>
+   } else { %><p class="text-xs text-textMuted py-4">No course progress yet.</p><% } %>
 </div>
 </div>
 </section>
