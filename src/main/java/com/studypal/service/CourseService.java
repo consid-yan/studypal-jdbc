@@ -131,6 +131,8 @@ public class CourseService {
                 ps.executeUpdate();
             }
 
+            createStudentSubTasksForExistingCourseTasks(conn, studentId, courseId);
+
             conn.commit();
             return null;
         } catch (SQLException e) {
@@ -144,14 +146,72 @@ public class CourseService {
         }
     }
 
+    private void createStudentSubTasksForExistingCourseTasks(Connection conn, Long studentId,
+                                                            Long courseId) throws SQLException {
+        String sql = "INSERT INTO STUDENT_SUB_TASK (student_id, template_id, status) " +
+                     "SELECT ?, t.template_id, 'NOT_STARTED' " +
+                     "FROM MAIN_TASK m " +
+                     "JOIN SUB_TASK_TEMPLATE t ON t.main_task_id = m.main_task_id " +
+                     "LEFT JOIN STUDENT_SUB_TASK sst ON sst.student_id = ? " +
+                     "AND sst.template_id = t.template_id " +
+                     "WHERE m.course_id = ? AND sst.student_sub_task_id IS NULL";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, studentId);
+            ps.setLong(2, studentId);
+            ps.setLong(3, courseId);
+            ps.executeUpdate();
+        }
+    }
+
     public List<Course> getEnrolledCourses(Long studentId) throws SQLException {
         String sql = "SELECT c.*, u.full_name AS lecturer_name, " +
                      "(SELECT COUNT(*) FROM ENROLLMENT ec WHERE ec.course_id = c.course_id) AS enrollment_count " +
                      "FROM COURSE c JOIN ENROLLMENT e ON c.course_id = e.course_id " +
                      "JOIN LECTURER l ON c.lecturer_id = l.lecturer_id " +
                      "JOIN USER_ACCOUNT u ON l.lecturer_id = u.user_id " +
-                     "WHERE e.student_id = ? ORDER BY e.enrollment_date DESC";
+                     "WHERE e.student_id = ? ORDER BY e.enrollment_id DESC";
         return queryCourses(sql, studentId);
+    }
+
+    public List<CourseProgress> getStudentCourseProgress(Long studentId) throws SQLException {
+        String sql = "SELECT c.course_id, c.course_code, c.course_name, c.semester, u.full_name AS lecturer_name, " +
+                     "COUNT(t.template_id) AS total_steps, " +
+                     "COALESCE(SUM(CASE WHEN sst.status = 'COMPLETED' THEN 1 ELSE 0 END), 0) AS completed_steps " +
+                     "FROM (" +
+                     "SELECT e.course_id FROM ENROLLMENT e WHERE e.student_id = ? " +
+                     "UNION " +
+                     "SELECT DISTINCT m.course_id FROM STUDENT_SUB_TASK task_sst " +
+                     "JOIN SUB_TASK_TEMPLATE task_t ON task_sst.template_id = task_t.template_id " +
+                     "JOIN MAIN_TASK m ON task_t.main_task_id = m.main_task_id " +
+                     "WHERE task_sst.student_id = ? AND m.course_id IS NOT NULL" +
+                     ") sc " +
+                     "JOIN COURSE c ON sc.course_id = c.course_id " +
+                     "LEFT JOIN USER_ACCOUNT u ON c.lecturer_id = u.user_id " +
+                     "LEFT JOIN MAIN_TASK m ON m.course_id = c.course_id " +
+                     "LEFT JOIN SUB_TASK_TEMPLATE t ON t.main_task_id = m.main_task_id " +
+                     "LEFT JOIN STUDENT_SUB_TASK sst ON sst.template_id = t.template_id AND sst.student_id = ? " +
+                     "GROUP BY c.course_id, c.course_code, c.course_name, c.semester, u.full_name " +
+                     "ORDER BY c.course_name";
+        List<CourseProgress> list = new ArrayList<>();
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, studentId);
+            ps.setLong(2, studentId);
+            ps.setLong(3, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new CourseProgress(
+                            rs.getLong("course_id"),
+                            rs.getString("course_code"),
+                            rs.getString("course_name"),
+                            rs.getString("semester"),
+                            rs.getString("lecturer_name"),
+                            rs.getInt("total_steps"),
+                            rs.getInt("completed_steps")));
+                }
+            }
+        }
+        return list;
     }
 
     public int getEnrolledCourseCount(Long studentId) throws SQLException {

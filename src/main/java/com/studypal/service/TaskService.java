@@ -52,6 +52,22 @@ public class TaskService {
         }
     }
 
+    public int createStudentSubTasksForEnrolledStudents(Long mainTaskId) throws SQLException {
+        String sql = "INSERT INTO STUDENT_SUB_TASK (student_id, template_id, status) " +
+                     "SELECT e.student_id, t.template_id, 'NOT_STARTED' " +
+                     "FROM MAIN_TASK m " +
+                     "JOIN ENROLLMENT e ON e.course_id = m.course_id " +
+                     "JOIN SUB_TASK_TEMPLATE t ON t.main_task_id = m.main_task_id " +
+                     "LEFT JOIN STUDENT_SUB_TASK sst ON sst.student_id = e.student_id " +
+                     "AND sst.template_id = t.template_id " +
+                     "WHERE m.main_task_id = ? AND sst.student_sub_task_id IS NULL";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, mainTaskId);
+            return ps.executeUpdate();
+        }
+    }
+
     // ==================== Instructor: List of Published Assignments ====================
 
     public List<MainTask> getTasksByCreatorId(Long creatorId) throws SQLException {
@@ -414,7 +430,8 @@ public class TaskService {
     }
 
     public List<StudentSubTask> getUpcomingDeadlines(Long studentId, int limit) throws SQLException {
-        String sql = "SELECT sst.*, t.title AS template_title, m.main_task_id AS mt_id, " +
+        String sql = "SELECT sst.*, t.title AS template_title, t.description AS template_description, " +
+                     "m.main_task_id AS mt_id, " +
                      "m.title AS main_task_title, m.deadline, c.course_name " +
                      "FROM STUDENT_SUB_TASK sst JOIN SUB_TASK_TEMPLATE t ON sst.template_id = t.template_id " +
                      "JOIN MAIN_TASK m ON t.main_task_id = m.main_task_id " +

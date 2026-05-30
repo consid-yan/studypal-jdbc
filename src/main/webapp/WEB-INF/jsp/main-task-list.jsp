@@ -39,6 +39,7 @@
                         Long newTaskId = tasks.get(0).getMainTaskId();
                         String cName = tasks.get(0).getCourseName();
                         taskService.generateSubTaskTemplates(newTaskId, cName, title, description);
+                        taskService.createStudentSubTasksForEnrolledStudents(newTaskId);
                     }
                     response.sendRedirect(request.getContextPath() + "/main-tasks.jsp?role=LECTURER");
                     return;

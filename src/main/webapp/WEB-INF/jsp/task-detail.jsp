@@ -182,7 +182,7 @@ body { background-color: #F4EBDD; min-height: 100vh; overflow-x: hidden; }
       </a>
       <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
-        Study Sessions
+          Study Statistics
       </a>
       <% if (taskId != null) { %>
         <a href="${pageContext.request.contextPath}/task-detail.jsp?role=STUDENT&id=<%= taskId %>" class="sidebar-link active">

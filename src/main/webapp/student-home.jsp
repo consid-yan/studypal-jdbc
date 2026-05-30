@@ -21,13 +21,16 @@
     int enrolledCount = 0, pendingTaskCount = 0;
     double completionRate = 0.0;
     List<StudentSubTask> upcomingDeadlines = null;
-    List<Course> enrolledCourses = null;
+    List<CourseProgress> courseProgress = null;
     try {
         enrolledCount = courseService.getEnrolledCourseCount(studentId);
         pendingTaskCount = taskService.getPendingTaskCount(studentId);
         completionRate = taskService.getCompletionRate(studentId);
         upcomingDeadlines = taskService.getUpcomingDeadlines(studentId, 3);
-        enrolledCourses = courseService.getEnrolledCourses(studentId);
+        courseProgress = courseService.getStudentCourseProgress(studentId);
+        if (courseProgress != null && courseProgress.size() > enrolledCount) {
+            enrolledCount = courseProgress.size();
+        }
     } catch (Exception ignored) {}
 %>
 <!DOCTYPE html>
@@ -259,7 +262,7 @@ body {
       </a>
       <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="sidebar-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
-        Study Sessions
+        Study Statistics
       </a>
       <span class="sidebar-link opacity-60 cursor-not-allowed" title="Open from a specific task">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2h8v12H4z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
@@ -344,7 +347,7 @@ body {
               </div>
               <div class="flex gap-3 mt-5 flex-wrap">
                 <a href="${pageContext.request.contextPath}/sub-tasks.jsp?role=STUDENT" class="action-btn action-btn-primary">View My Tasks</a>
-                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="action-btn action-btn-secondary">Record Study Session</a>
+                <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="action-btn action-btn-secondary">Study Statistics</a>
               </div>
             </div>
 
@@ -352,15 +355,20 @@ body {
             <div class="warm-card p-6 fade-in-d2">
               <h2 class="text-base font-bold text-textDark mb-4">Course Progress</h2>
               <div class="space-y-5">
-                <% if (enrolledCourses != null && !enrolledCourses.isEmpty()) {
-                     for (Course c : enrolledCourses) { %>
+                <% if (courseProgress != null && !courseProgress.isEmpty()) {
+                     for (CourseProgress cp : courseProgress) {
+                       int coursePct = cp.getCompletionPercentage();
+                       String stepSummary = cp.getTotalSteps() > 0
+                               ? cp.getCompletedSteps() + " / " + cp.getTotalSteps() + " steps completed"
+                               : "No tasks published yet";
+                %>
                        <div>
-                         <div class="flex items-center justify-between mb-1.5"><p class="text-sm font-semibold text-textDark"><%= c.getCourseName() %></p><span class="text-xs font-semibold text-primary"><%= c.getCourseCode() %></span></div>
-                         <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full progress-bar" style="--target-width: 60%;"></div></div>
-                         <p class="text-xs text-textMuted mt-1.5"><%= c.getSemester() %></p>
+                         <div class="flex items-center justify-between gap-3 mb-1.5"><p class="text-sm font-semibold text-textDark"><%= cp.getCourseName() %></p><span class="text-xs font-semibold text-primary"><%= coursePct %>%</span></div>
+                         <div class="w-full h-2 bg-border/60 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full progress-bar" style="--target-width: <%= coursePct %>%;"></div></div>
+                         <p class="text-xs text-textMuted mt-1.5"><%= cp.getCourseCode() %> · <%= stepSummary %></p>
                        </div>
                 <%   }
-                   } else { %><p class="text-xs text-textMuted text-center py-4">No courses enrolled.</p><% } %>
+                   } else { %><p class="text-xs text-textMuted text-center py-4">No course progress yet.</p><% } %>
               </div>
             </div>
 
@@ -440,7 +448,7 @@ body {
                   <p class="text-xs text-textMuted mt-0.5">Check task status, subtasks, notes, and planned time.</p>
                 </a>
                 <a href="${pageContext.request.contextPath}/study-statistics.jsp?role=STUDENT" class="block p-3 rounded-lg border border-border/60 hover:border-accent hover:bg-cream/40 transition-all">
-                  <p class="text-sm font-semibold text-accent">Record Study Session</p>
+                  <p class="text-sm font-semibold text-accent">Study Statistics</p>
                   <p class="text-xs text-textMuted mt-0.5">Save study time and connect it to a course or task.</p>
                 </a>
               </div>
@@ -448,8 +456,7 @@ body {
           </div>
         </div>
 
-        <div class="mt-8 text-center">
-        </div>
+        <div class="mt-8 text-center">        </div>
       </div>
     </main>
   </div>
