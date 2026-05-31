@@ -34,7 +34,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Lecturer Home</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=3">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=4">
 </head>
 <body>
 <div class="workspace-shell">
@@ -64,7 +64,7 @@
           <p class="eyebrow">LECTURER WORKSPACE</p>
           <h2>Teaching progress stays visible.</h2>
         </section>
-        <section class="stats-grid fade-in-d1">
+        <section class="stats-grid stats-grid-3 fade-in-d1">
           <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value"><%= courseCount %></p><p class="stat-hint">Currently teaching</p></div>
           <div class="warm-card stat-card"><p class="stat-label">Published Tasks</p><p class="stat-value accent"><%= publishedTaskCount %></p><p class="stat-hint">Across active courses</p></div>
           <div class="warm-card stat-card"><p class="stat-label">Students</p><p class="stat-value accent"><%= totalStudents %></p><p class="stat-hint">Enrolled across courses</p></div>

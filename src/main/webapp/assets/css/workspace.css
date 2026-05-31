@@ -247,6 +247,11 @@ textarea {
     margin-bottom: 28px;
 }
 
+/* 仅 3 个统计卡片的页面：均分整行宽度，避免右侧空出一列 */
+.stats-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .panel-grid {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);

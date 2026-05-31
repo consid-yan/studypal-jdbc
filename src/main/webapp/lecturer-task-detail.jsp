@@ -45,7 +45,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Lecturer Task Detail</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=3">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=4">
 </head>
 <body>
 <div class="workspace-shell">
@@ -81,8 +81,8 @@
       </section>
       <section class="management-grid">
         <div class="warm-card fade-in-d2">
-          <div class="row-between">
-            <h2>Student Completion</h2>
+          <div class="row-between" style="align-items:center;margin-bottom:16px">
+            <h2 style="margin:0">Student Completion</h2>
             <button class="action-btn action-btn-secondary" type="button" id="exportTaskReportButton">Export CSV</button>
           </div>
           <div class="table-like">

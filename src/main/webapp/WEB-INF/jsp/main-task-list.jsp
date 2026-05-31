@@ -67,7 +67,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Lecturer MainTasks</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=3">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=4">
 <%-- flatpickr：英文日期选择器，不受浏览器/系统语言影响，取代原生中文日历 --%>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>

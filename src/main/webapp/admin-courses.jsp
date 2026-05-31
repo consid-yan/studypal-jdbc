@@ -57,7 +57,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin Course Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=4">
 </head>
 <body>
 <div class="workspace-shell">
@@ -78,15 +78,15 @@
     <header class="workspace-header"><div class="header-inner"><div><h1>Course Management</h1></div><div class="header-badges"><span class="pill">Active Admin</span><span class="pill strong">Spring 2026</span></div></div></header>
     <main class="workspace-content"><div class="content-inner">
       <section class="hero-card fade-in"><p class="eyebrow">COURSE SETUP</p><h2>Create courses and assign registered lecturers.</h2></section>
-      <section class="stats-grid fade-in-d1">
+      <section class="stats-grid stats-grid-3 fade-in-d1">
         <div class="warm-card stat-card"><p class="stat-label">Courses</p><p class="stat-value"><%= totalCourses %></p><p class="stat-hint">Current semester</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Lecturers</p><p class="stat-value accent"><%= totalLecturers %></p><p class="stat-hint">Registered lecturer accounts</p></div>
         <div class="warm-card stat-card"><p class="stat-label">Enrollments</p><p class="stat-value accent"><%= totalEnrollments %></p><p class="stat-hint">Total enrollment records (a student in multiple courses counts more than once)</p></div>
       </section>
       <section class="panel-grid">
         <div class="warm-card fade-in-d2">
-          <div class="row-between">
-            <h2>Courses</h2>
+          <div class="row-between" style="align-items:center;margin-bottom:16px">
+            <h2 style="margin:0">Courses</h2>
             <button class="action-btn action-btn-secondary" type="button" data-toggle-target="course-form" data-toggle-label-expanded="Cancel"><%= (error != null) ? "Cancel" : "Add Course" %></button>
           </div>
           <div class="table-like">

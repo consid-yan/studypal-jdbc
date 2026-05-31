@@ -63,7 +63,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Admin User Management</title>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=2">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=4">
 </head>
 <body>
 <div class="workspace-shell">
@@ -92,8 +92,8 @@
       </section>
       <section class="management-grid">
         <div class="warm-card fade-in-d2">
-          <div class="row-between">
-            <h2>Registered Users</h2>
+          <div class="row-between" style="align-items:center;margin-bottom:16px">
+            <h2 style="margin:0">Registered Users</h2>
             <button class="action-btn action-btn-secondary" type="button" data-toggle-target="create-account" data-toggle-label-expanded="Cancel"><%= (success != null || error != null) ? "Cancel" : "Create Account" %></button>
           </div>
           <form class="filter-bar" method="GET" action="${pageContext.request.contextPath}/admin-users.jsp">
