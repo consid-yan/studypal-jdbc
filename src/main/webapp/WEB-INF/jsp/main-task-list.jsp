@@ -68,6 +68,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyPal Lecturer MainTasks</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/workspace.css?v=3">
+<%-- flatpickr：英文日期选择器，不受浏览器/系统语言影响，取代原生中文日历 --%>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 </head>
 <body>
 <div class="workspace-shell">
@@ -100,7 +103,7 @@
               <%   }
                  } %>
             </select></div></div>
-            <div class="form-grid"><div><label>Deadline</label><input name="deadline" type="datetime-local" required></div><div><label>Importance</label><select name="importance">
+            <div class="form-grid"><div><label>Deadline</label><input id="deadlineInput" name="deadline" type="text" placeholder="YYYY-MM-DD HH:MM" autocomplete="off" required></div><div><label>Importance</label><select name="importance">
               <option value="1">LOW</option><option value="2">MEDIUM</option><option value="3" selected>HIGH</option><option value="4">VERY_HIGH</option><option value="5">CRITICAL</option>
             </select></div></div>
             <div><label>Description</label><textarea name="description" placeholder="Task description"></textarea></div>
@@ -148,5 +151,17 @@
   </div>
 </div>
 <script src="${pageContext.request.contextPath}/assets/js/app.js"></script>
+<script>
+  // 英文日期时间选择器。输出 "Y-m-d H:i"（如 2026-05-30 14:30），后端 Timestamp.valueOf 可直接解析
+  if (window.flatpickr) {
+    flatpickr("#deadlineInput", {
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      allowInput: true
+    });
+  }
+</script>
 </body>
 </html>

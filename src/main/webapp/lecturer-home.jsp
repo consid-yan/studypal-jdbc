@@ -72,7 +72,7 @@
         <section class="panel-grid">
           <div class="panel-stack">
             <div class="warm-card fade-in-d2">
-              <div class="row-between"><h2>Active Tasks</h2><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">Publish Task</a></div>
+              <div class="row-between" style="align-items:center;margin-bottom:16px"><h2 style="margin:0">Active Tasks</h2><a class="action-btn action-btn-primary" href="${pageContext.request.contextPath}/main-tasks.jsp?role=LECTURER">Publish Task</a></div>
               <div class="table-like">
                 <% if (activeTasks != null && !activeTasks.isEmpty()) {
                      for (MainTask mt : activeTasks) {

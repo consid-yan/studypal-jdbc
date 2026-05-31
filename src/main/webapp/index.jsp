@@ -65,12 +65,18 @@ tailwind.config = {
   0%, 100% { transform: translateX(0) translateY(0); opacity: 0.7; }
   50% { transform: translateX(12px) translateY(-4px); opacity: 1; }
 }
+@keyframes highlight-roles {
+  0% { box-shadow: 0 0 0 0 rgba(63, 95, 70, 0); }
+  25% { box-shadow: 0 0 0 4px rgba(63, 95, 70, 0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(63, 95, 70, 0); }
+}
 
 .float-char { animation: float-char 6s ease-in-out infinite; }
 .blink-eyes { animation: blink-eyes 3s ease-in-out infinite; }
 .float-label { animation: float-label 4s ease-in-out infinite; }
 .card-move { animation: card-move 4s ease-in-out infinite; }
 .fade-in { animation: fade-in-up 0.6s ease-out both; }
+.highlight-roles { animation: highlight-roles 1.2s ease-out; border-radius: 12px; }
 
 .warm-card {
   background: #FFF9EF;
@@ -261,6 +267,21 @@ body {
     </div>
   </div>
 </main>
+
+<script>
+// "View Roles" / "Roles" 锚点：单屏布局禁止滚动，点击后用脉冲高亮给出明确反馈
+document.querySelectorAll('a[href="#roles"]').forEach(function (link) {
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+    var target = document.getElementById('roles');
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.remove('highlight-roles');
+    void target.offsetWidth; // 强制回流以重启动画
+    target.classList.add('highlight-roles');
+  });
+});
+</script>
 
 </body>
 </html>
