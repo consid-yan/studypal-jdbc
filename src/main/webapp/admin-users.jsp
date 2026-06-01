@@ -26,10 +26,11 @@
             String email = request.getParameter("email");
             String pw = request.getParameter("password");
             String fullName = request.getParameter("fullName");
+            String phone = request.getParameter("phone");
             String role = request.getParameter("newRole");
             String dept = request.getParameter("department");
             try {
-                String r = adminService.createAccount(uname, email, pw, fullName, role, dept, null, null, null);
+                String r = adminService.createAccount(uname, email, pw, fullName, phone, role, dept, null, null, null);
                 if (r == null) success = "Account created successfully.";
                 else error = r;
             } catch (Exception e) { error = "Create failed: " + e.getMessage(); }
@@ -112,6 +113,7 @@
                      <div class="user-meta"><p class="strong-title"><%= u.getFullName() %></p><span class="muted"><%= u.getUsername() %></span></div>
                      <span class="<%= badgeClass %>"><%= u.getRole() %></span>
                      <span class="muted"><%= u.getEmail() %></span>
+                     <span class="muted"><%= u.getPhone() != null && !u.getPhone().isEmpty() ? u.getPhone() : "No phone" %></span>
                      <span class="muted">ID: <%= u.getUserId() %></span>
                      <div class="button-row">
                        <form method="post" action="${pageContext.request.contextPath}/admin-users.jsp?role=ADMIN" style="display:inline;">
@@ -135,6 +137,7 @@
             <input type="hidden" name="action" value="createAccount">
             <div><label>Full Name</label><input name="fullName" placeholder="Dr. Emily Carter" required></div>
             <div><label>Email</label><input name="email" type="email" placeholder="name@studypal.test" required></div>
+            <div><label>Phone</label><input name="phone" placeholder="e.g. 13800000000"></div>
             <div><label>Username</label><input name="username" placeholder="ecarter" required></div>
             <div><label>Role</label><select name="newRole" required><option value="LECTURER">LECTURER</option><option value="ADMIN">ADMIN</option><option value="STUDENT">STUDENT</option></select></div>
             <div><label>Department</label><input name="department" placeholder="e.g. Computer Science"></div>

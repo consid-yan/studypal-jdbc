@@ -37,6 +37,7 @@ public class AdminService {
                     u.setFullName(rs.getString("full_name"));
                     u.setRole(rs.getString("role"));
                     u.setCreatedAt(rs.getTimestamp("created_at"));
+                    u.setPhone(rs.getString("phone"));
                     list.add(u);
                 }
             }
@@ -45,7 +46,7 @@ public class AdminService {
     }
 
     public String createAccount(String username, String email, String password,
-                                String fullName, String role, String department,
+                                String fullName, String phone, String role, String department,
                                 String studentNo, String major, String grade) throws SQLException {
         Connection conn = null;
         try {
@@ -68,13 +69,14 @@ public class AdminService {
 
             conn.setAutoCommit(false);
 
-            String sql = "INSERT INTO USER_ACCOUNT (username, email, password_hash, full_name, role) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO USER_ACCOUNT (username, email, password_hash, full_name, role, phone) VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, username);
                 ps.setString(2, email);
                 ps.setString(3, password);
                 ps.setString(4, fullName);
                 ps.setString(5, role);
+                ps.setString(6, normalizeOptional(phone));
                 ps.executeUpdate();
                 ResultSet rs = ps.getGeneratedKeys();
                 if (!rs.next()) { conn.rollback(); return "Failed to create account."; }
@@ -117,6 +119,10 @@ public class AdminService {
         } finally {
             if (conn != null) { conn.setAutoCommit(true); conn.close(); }
         }
+    }
+
+    private String normalizeOptional(String value) {
+        return value != null && !value.trim().isEmpty() ? value.trim() : null;
     }
 
     public String resetPassword(Long userId, String newPassword) {

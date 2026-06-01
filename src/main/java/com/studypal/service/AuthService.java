@@ -24,6 +24,7 @@ public class AuthService {
                         u.setFullName(rs.getString("full_name"));
                         u.setRole(rs.getString("role"));
                         u.setCreatedAt(rs.getTimestamp("created_at"));
+                        u.setPhone(rs.getString("phone"));
                         return u;
                     }
                 }
@@ -33,7 +34,9 @@ public class AuthService {
     }
 
     public Lecturer getLecturerDetail(Long userId) throws SQLException {
-        String sql = "SELECT * FROM LECTURER WHERE lecturer_id = ?";
+        String sql = "SELECT l.lecturer_id, l.employee_no, l.department, l.title, l.office, u.full_name " +
+                     "FROM LECTURER l JOIN USER_ACCOUNT u ON l.lecturer_id = u.user_id " +
+                     "WHERE l.lecturer_id = ?";
         try (Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
@@ -44,7 +47,7 @@ public class AuthService {
                             rs.getString("department"),
                             rs.getString("title"),
                             rs.getString("office"),
-                            rs.getString("phone"));
+                            rs.getString("full_name"));
                 }
             }
         }
@@ -64,7 +67,6 @@ public class AuthService {
                     s.setMajor(rs.getString("major"));
                     s.setGrade(rs.getString("grade"));
                     s.setClassName(rs.getString("class_name"));
-                    s.setPhone(rs.getString("phone"));
                     return s;
                 }
             }
@@ -84,7 +86,6 @@ public class AuthService {
                     a.setAdminNo(rs.getString("admin_no"));
                     a.setDepartment(rs.getString("department"));
                     a.setPosition(rs.getString("position"));
-                    a.setCreatedAt(rs.getTimestamp("created_at"));
                     return a;
                 }
             }
@@ -97,7 +98,7 @@ public class AuthService {
      * @return null indicates successful registration; a non-null string indicates an error message
      */
     public String registerStudent(String username, String email, String password,
-                                  String fullName) throws SQLException {
+                                  String fullName, String phone) throws SQLException {
         Connection conn = null;
         try {
             conn = DBUtils.getConnection();
@@ -121,12 +122,13 @@ public class AuthService {
 
             conn.setAutoCommit(false);
 
-            String sqlUser = "INSERT INTO USER_ACCOUNT (username, email, password_hash, full_name, role) VALUES (?, ?, ?, ?, 'STUDENT')";
+            String sqlUser = "INSERT INTO USER_ACCOUNT (username, email, password_hash, full_name, role, phone) VALUES (?, ?, ?, ?, 'STUDENT', ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, username);
                 ps.setString(2, email);
                 ps.setString(3, password);
                 ps.setString(4, fullName);
+                ps.setString(5, normalizeOptional(phone));
                 ps.executeUpdate();
                 ResultSet rs = ps.getGeneratedKeys();
                 if (!rs.next()) {
@@ -156,5 +158,9 @@ public class AuthService {
                 conn.close();
             }
         }
+    }
+
+    private String normalizeOptional(String value) {
+        return value != null && !value.trim().isEmpty() ? value.trim() : null;
     }
 }

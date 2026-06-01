@@ -45,6 +45,7 @@
             String username = request.getParameter("username");
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
             String password = request.getParameter("password");
             String passwordConfirm = request.getParameter("passwordConfirm");
 
@@ -54,7 +55,7 @@
                 request.setAttribute("registerErrorField", registerErrorField);
             } else {
                 try {
-                    String result = authService.registerStudent(username, email, password, fullName);
+                    String result = authService.registerStudent(username, email, password, fullName, phone);
                     if (result == null) {
                         // Registration succeeded: a null result means no error
                         UserAccount user = authService.authenticate(username, password);
@@ -133,7 +134,7 @@ tailwind.config = {
   100% { stroke-dashoffset: 0; }
 }
 @keyframes progress-bar {
-  0% { width: 0%; }
+  0% { width: 0; }
   100% { width: 76%; }
 }
 @keyframes fade-in-up {
@@ -221,6 +222,7 @@ body {
     String submittedFullName = showRegisterForm && request.getParameter("fullName") != null ? request.getParameter("fullName") : "";
     String submittedUsername = showRegisterForm && !"username".equals(errorField) && request.getParameter("username") != null ? request.getParameter("username") : "";
     String submittedEmail = showRegisterForm && !"email".equals(errorField) && request.getParameter("email") != null ? request.getParameter("email") : "";
+    String submittedPhone = showRegisterForm && request.getParameter("phone") != null ? request.getParameter("phone") : "";
 %>
 <body class="font-sans text-textDark paper-texture">
 
@@ -373,6 +375,10 @@ body {
             <div>
               <label class="block text-sm text-textDark mb-1.5">Email</label>
               <input type="email" name="email" class="auth-input" value="<%= submittedEmail %>" placeholder="Enter your email address" required>
+            </div>
+            <div>
+              <label class="block text-sm text-textDark mb-1.5">Phone</label>
+              <input type="text" name="phone" class="auth-input" value="<%= submittedPhone %>" placeholder="Enter your phone number">
             </div>
             <div>
               <label class="block text-sm text-textDark mb-1.5">Password</label>
