@@ -1,6 +1,6 @@
 # StudyPal JDBC
 
-StudyPal is a JSP + JDBC + MySQL learning task management system for the COMP2013J Database and Information Systems course project.
+StudyPal is a JSP + JDBC + MySQL learning task management system for the COMP2013J Database and Information Systems course project. It uses a lightweight JSP Model 1 architecture with plain JDBC (no ORM, no heavyweight MVC framework).
 
 ## Features
 
@@ -9,15 +9,23 @@ StudyPal is a JSP + JDBC + MySQL learning task management system for the COMP201
 - Main task and sub-task management
 - Student task progress updates and completion tracking
 - Administrator user, course, and system overview pages
+- Optional AI-assisted sub-task generation (OpenAI-compatible chat endpoint)
 
 ## Tech Stack
 
 - Java 21
-- Jakarta Servlet 6.0
-- JSP
+- Jakarta Servlet 6.0 / JSP (Jakarta namespace)
 - JDBC
-- MySQL
+- MySQL 8+
+- Apache Tomcat 10
 - Maven WAR packaging
+
+## Prerequisites
+
+- JDK 21
+- Maven 3.9+
+- MySQL 8 or later
+- Apache Tomcat 10 (required — it provides the Jakarta Servlet/JSP runtime this project targets)
 
 ## Project Structure
 
@@ -31,22 +39,25 @@ pom.xml                         Maven build configuration
 
 ## Database Setup
 
-1. Create a MySQL database named `studypal_db`.
-2. Run the schema script:
+The schema script creates the `studypal_db` database itself, so you do not need to create it first.
+
+1. Run the schema script:
 
    ```bash
-   mysql -u root -p studypal_db < sql/creat-tables.sql
+   mysql -u root -p < sql/creat-tables.sql
    ```
 
-3. Optionally load demo data:
+2. Load demo data (recommended — provides the demo accounts below):
 
    ```bash
    mysql -u root -p studypal_db < sql/demo-data.sql
    ```
 
-## Local Configuration
+## Local Configuration (optional)
 
-Copy the example configuration file and adjust the database connection and sub-task generation service values if needed:
+The application ships with working defaults (host `localhost:3306`, database `studypal_db`, user `root`, empty password). If your MySQL matches these, no extra configuration is needed.
+
+To use different connection settings, or to enable the AI sub-task generation feature, copy the example file and fill in your values:
 
 ```bash
 cp src/main/resources/studypal-local.properties.example src/main/resources/studypal-local.properties
@@ -60,4 +71,24 @@ The local configuration file is ignored by Git and should not be committed.
 mvn clean package
 ```
 
-The generated WAR file will be created under `target/`.
+This produces `target/studypal.war`.
+
+## Run / Deploy
+
+1. Make sure MySQL is running and the schema + demo data are loaded.
+2. Deploy `target/studypal.war` to Tomcat 10 — either copy it into Tomcat's `webapps/` directory and start Tomcat, or run it from your IDE's Tomcat 10 configuration.
+3. Open the app at:
+
+   ```text
+   http://localhost:8080/studypal/
+   ```
+
+## Demo Accounts
+
+After loading `sql/demo-data.sql`, you can log in with:
+
+| Role     | Username   | Password      |
+| -------- | ---------- | ------------- |
+| Admin    | `admin`    | `admin123`    |
+| Lecturer | `lecturer` | `lecturer123` |
+| Student  | `student`  | `student123`  |
