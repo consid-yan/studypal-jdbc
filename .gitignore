@@ -1,7 +1,13 @@
 target/
-CLAUDE.md
 src/main/resources/studypal-local.properties
 studypal-local.properties
+docs/
+preview/
+报告输出/
+测试bug反馈/
+StudyPal视频文案.docx
+StudyPal*.docx
+*.DS_Store
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

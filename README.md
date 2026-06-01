@@ -1,30 +1,63 @@
 # StudyPal JDBC
 
-## Local AI config
+StudyPal is a JSP + JDBC + MySQL learning task management system for the COMP2013J Database and Information Systems course project.
 
-AI sub-task generation is configured locally. The real API key should not be committed.
+## Features
 
-1. Copy the template:
+- Role-based login for students, lecturers, and administrators
+- Course creation, enrollment, and course progress display
+- Main task and sub-task management
+- Student task progress updates and completion tracking
+- Administrator user, course, and system overview pages
+
+## Tech Stack
+
+- Java 21
+- Jakarta Servlet 6.0
+- JSP
+- JDBC
+- MySQL
+- Maven WAR packaging
+
+## Project Structure
+
+```text
+src/main/java/com/studypal/     Java models, services, and database utilities
+src/main/webapp/                JSP pages and static assets
+src/main/resources/             Local configuration template
+sql/                            Database schema and demo data
+pom.xml                         Maven build configuration
+```
+
+## Database Setup
+
+1. Create a MySQL database named `studypal_db`.
+2. Run the schema script:
 
    ```bash
-   cp src/main/resources/studypal-local.properties.example src/main/resources/studypal-local.properties
+   mysql -u root -p studypal_db < sql/creat-tables.sql
    ```
 
-2. Fill in these values in `src/main/resources/studypal-local.properties`:
+3. Optionally load demo data:
 
-   ```properties
-   studypal.ai.apiUrl=https://your-ai-provider-base-url
-   studypal.ai.apiKey=your-api-key
-   studypal.ai.model=your-model-name
+   ```bash
+   mysql -u root -p studypal_db < sql/demo-data.sql
    ```
 
-3. Restart the application.
+## Local Configuration
 
-The application also supports JVM properties and environment variables. Precedence is:
+Copy the example configuration file and adjust the database connection and sub-task generation service values if needed:
 
-1. JVM properties, such as `-Dstudypal.ai.apiKey=...`
-2. Environment variables, such as `STUDYPAL_AI_API_KEY`
-3. `src/main/resources/studypal-local.properties`
-4. Built-in defaults
+```bash
+cp src/main/resources/studypal-local.properties.example src/main/resources/studypal-local.properties
+```
 
-When AI config is missing or the API call fails, StudyPal still creates the task and falls back to one default sub-task.
+The local configuration file is ignored by Git and should not be committed.
+
+## Build
+
+```bash
+mvn clean package
+```
+
+The generated WAR file will be created under `target/`.
