@@ -48,7 +48,6 @@ public class CourseService {
                         rs.getString("department"),
                         rs.getString("title"),
                         rs.getString("office"),
-                        rs.getString("phone"),
                         rs.getString("full_name")));
             }
         }

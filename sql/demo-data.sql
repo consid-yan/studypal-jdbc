@@ -1,18 +1,18 @@
 USE studypal_db;
 
-INSERT INTO USER_ACCOUNT (user_id, username, email, password_hash, full_name, role) VALUES
-  (1, 'admin', 'admin@studypal.test', 'admin123', 'System Admin', 'ADMIN'),
-  (2, 'lecturer', 'lecturer@studypal.test', 'lecturer123', 'Dr. Wang', 'LECTURER'),
-  (3, 'student', 'student@studypal.test', 'student123', 'Lei Student', 'STUDENT');
+INSERT INTO USER_ACCOUNT (user_id, username, email, password_hash, full_name, role, phone) VALUES
+  (1, 'admin', 'admin@studypal.test', 'admin123', 'System Admin', 'ADMIN', '13348291056'),
+  (2, 'lecturer', 'lecturer@studypal.test', 'lecturer123', 'Dr. Wang', 'LECTURER', '18957203614'),
+  (3, 'student', 'student@studypal.test', 'student123', 'Lei Student', 'STUDENT', '15206483971');
 
 INSERT INTO ADMIN (admin_id, admin_no, department, position) VALUES
   (1, 'ADM001', 'Academic Affairs', 'System Manager');
 
-INSERT INTO LECTURER (lecturer_id, employee_no, department, title, office, phone) VALUES
-  (2, 'EMP001', 'Computer Science', 'Lecturer', 'Room 301', '13800000002');
+INSERT INTO LECTURER (lecturer_id, employee_no, department, title, office) VALUES
+  (2, 'EMP001', 'Computer Science', 'Lecturer', 'Room 301');
 
-INSERT INTO STUDENT (student_id, student_no, major, grade, class_name, phone) VALUES
-  (3, 'STU001', 'Software Engineering', 'Stage 2', 'SE-2401', '13800000003');
+INSERT INTO STUDENT (student_id, student_no, major, grade, class_name) VALUES
+  (3, 'STU001', 'Software Engineering', 'Stage 2', 'SE-2401');
 
 INSERT INTO COURSE (course_id, course_code, course_name, lecturer_id, semester, description) VALUES
   (1, 'DB101', 'Database Systems', 2, 'Spring 2026', 'Relational modeling, SQL, JDBC, and web integration.'),

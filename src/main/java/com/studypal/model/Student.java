@@ -6,7 +6,6 @@ public class Student {
     private String major;
     private String grade;
     private String className;
-    private String phone;
 
     public Long getStudentId() { return studentId; }
     public void setStudentId(Long id) { studentId = id; }
@@ -22,7 +21,4 @@ public class Student {
 
     public String getClassName() { return className; }
     public void setClassName(String name) { className = name; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
 }

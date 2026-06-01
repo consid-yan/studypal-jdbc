@@ -1,13 +1,10 @@
 package com.studypal.model;
 
-import java.sql.Timestamp;
-
 public class Admin {
     private Long adminId;
     private String adminNo;
     private String department;
     private String position;
-    private Timestamp createdAt;
 
     public Long getAdminId() { return adminId; }
     public void setAdminId(Long id) { adminId = id; }
@@ -20,7 +17,4 @@ public class Admin {
 
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
-
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }

@@ -27,7 +27,8 @@ CREATE TABLE USER_ACCOUNT (
         password_hash VARCHAR(255) NOT NULL,
         full_name VARCHAR(100) NOT NULL,
         role VARCHAR(20) NOT NULL, -- Enumeration values: ‘STUDENT’, ‘LECTURER’, ‘ADMIN’
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        phone VARCHAR(20)
 ) ENGINE=InnoDB;
 
 -- Lecturer Details Table (Subtype)
@@ -37,7 +38,6 @@ CREATE TABLE LECTURER (
         department VARCHAR(100) NOT NULL,
         title VARCHAR(50),
         office VARCHAR(100),
-        phone VARCHAR(20),
         FOREIGN KEY (lecturer_id) REFERENCES USER_ACCOUNT(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -48,7 +48,6 @@ CREATE TABLE STUDENT (
         major VARCHAR(100) NOT NULL,
         grade VARCHAR(20) NOT NULL,
         class_name VARCHAR(50),
-        phone VARCHAR(20),
         FOREIGN KEY (student_id) REFERENCES USER_ACCOUNT(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -58,7 +57,6 @@ CREATE TABLE ADMIN (
         admin_no VARCHAR(50) NOT NULL UNIQUE,
         department VARCHAR(100) NOT NULL,
         position VARCHAR(50),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (admin_id) REFERENCES USER_ACCOUNT(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
